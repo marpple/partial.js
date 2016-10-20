@@ -19,9 +19,17 @@
       return _.mr(20, 5);
     },
     function(a, b) {
-
     }
   )(10);
+
+  _.pipe([
+    function(a) {
+      console.log(a);
+    },
+    function(a, b) {
+    }
+  ])(10);
+
 
 </script>
 

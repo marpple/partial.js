@@ -83,6 +83,14 @@
   function dsetter(r, s) { for (var key in s) if (!_.has(r, key)) r[key] = s[key]; }
   _.extend = function() { return bexdf.apply(null, [setter].concat(_.toArray(arguments))); };
   _.defaults = function() { return bexdf.apply(null, [dsetter].concat(_.toArray(arguments))); };
+  function flat(new_arr, arr, noDeep, start) {
+    each(arr, function(v) {
+      if (!_.isArrayLike(v) || (!_.isArray(v) && !_.isArguments(v))) return new_arr.push(v);
+      noDeep ? each(v, function(v) { new_arr.push(v); }) : flat(new_arr, v, noDeep);
+    }, start);
+    return new_arr;
+  }
+  _.flatten = function (arr, noDeep, start) { return flat([], arr, noDeep, start); };
 
   _.pipe = function() {};
   _.mr = function() {};
