@@ -2,12 +2,6 @@
   var window = typeof window != 'object' ? G : window;
   window._ = {};
 
-  function each(list, iter, start) {
-    if (!list) return list;
-    for (var i = start || 0, length = list.length; i < length ;i++) iter(list[i], i, list);
-    return list;
-  }
-
   // <respect _>
   each(['Arguments', 'Function', 'String', 'Number', 'Date', 'RegExp', 'Error'], function(name) {
     _['is_' + name.toLowerCase()] = _['is' + name] = function(obj) { return Object.prototype.toString.call(obj) === '[object ' + name + ']'; }
@@ -17,9 +11,8 @@
     var type = typeof obj;
     return type === 'function' || type === 'object' && !!obj;
   };
-  _.has = function(obj, key) { return obj != null && obj.hasOwnProperty(key); };
-  _.keys = function(obj) {
-    return _.isObject(obj) ? Object.keys(obj) : [];
+  _.has = function(obj, key) {
+    return obj != null && obj.hasOwnProperty(key);
   };
   var MAX_ARRAY_INDEX = Math.pow(2, 53) - 1;
   _.is_array_like = _.isArrayLike = function(collection) {
@@ -29,7 +22,7 @@
   var slice = Array.prototype.slice;
   _.rest = function(array, n, guard) { return slice.call(array, n == null || guard ? 1 : n); };
   _.values = function(obj) {
-    var keys = _.keys(obj), length = keys.length, values = Array(length);
+    var keys = _keys(obj), length = keys.length, values = Array(length);
     for (var i = 0; i < length; i++) values[i] = obj[keys[i]];
     return values;
   };
@@ -59,7 +52,17 @@
     var id = ++idCounter + '';
     return prefix ? prefix + id : id;
   };
+  _.clone = function(obj) { return !_.isObject(obj) ? obj : _.isArray(obj) ? obj.slice() : _.extend({}, obj); };
   // </respect _>
+
+  function each(list, iter, start) {
+    if (!list) return list;
+    for (var i = start || 0, length = list.length; i < length ;i++) iter(list[i], i, list);
+    return list;
+  }
+  _.keys = function(obj) {
+    return _.isObject(obj) ? Object.keys(obj) : [];
+  };
   _.is_array = _.isArray = Array.isArray;
   _.wrapArray = _.wrap_arr = function(v) { return _.isArray(v) ? v : [v]; };
   try { var has_lambda = true; eval('a=>a'); } catch (err) { var has_lambda = false; }
@@ -80,7 +83,9 @@
   function dsetter(r, s) { for (var key in s) if (!_.has(r, key)) r[key] = s[key]; }
   _.extend = function() { return bexdf.apply(null, [setter].concat(_.toArray(arguments))); };
   _.defaults = function() { return bexdf.apply(null, [dsetter].concat(_.toArray(arguments))); };
-  _.clone = function(obj) { return !_.isObject(obj) ? obj : _.isArray(obj) ? obj.slice() : _.extend({}, obj); };
+
+  _.pipe = function() {};
+  _.mr = function() {};
 
 }(typeof global == 'object' && global.global == global && (global.G = global) || window);
 
