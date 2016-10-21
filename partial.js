@@ -97,7 +97,7 @@
     var funcs = _.flatten(arguments);
     var i = 0;
     return function(arg) {
-      //if ( i == funcs.length) return arg;
+      if ( i == funcs.length) return arg;
       //var args = arg._is_mr ? arg : arguments ;
       //return arguments.callee(funcs[i++].apply(null, args));
       return arguments.callee(funcs[i++].apply(null, arg._is_mr ? arg : arguments));
