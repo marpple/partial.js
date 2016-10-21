@@ -92,8 +92,22 @@
   }
   _.flatten = function (arr, noDeep, start) { return flat([], arr, noDeep, start); };
 
-  _.pipe = function() {};
-  _.mr = function() {};
+  // 재귀
+  _.pipe = function() {
+    var funcs = _.flatten(arguments);
+    var i = 0;
+    return function(arg) {
+      //if ( i == funcs.length) return arg;
+      //var args = arg._is_mr ? arg : arguments ;
+      return arguments.callee(funcs[i++].apply(null, /*args*/arg._is_mr ? arg : arguments));
+    }
+  };
+
+  _.mr = function(arg) {
+    //if (arguments.length < 2) return arg;
+    //return _.extend(_.toArray(arguments), { _is_mr : true });
+    return (arguments.length < 2) ? arg : _.extend(_.toArray(arguments), { _is_mr : true });
+  };
 
 }(typeof global == 'object' && global.global == global && (global.G = global) || window);
 
