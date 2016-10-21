@@ -10,6 +10,7 @@
     }
     return function() { return fn.apply(this, merge_args(args1, arguments, args3)); };
   }
+  _.partial = _;
   function _to_unde(args1, args2, args3) {
     if (args2) args1 = args1.concat(args2);
     if (args3) args1 = args1.concat(args3);
@@ -122,23 +123,60 @@
   }
   _.flatten = function (arr, noDeep, start) { return flat([], arr, noDeep, start); };
 
-  // 재귀
-  _.pipe = function() {
-    var funcs = _.flatten(arguments);
-    var i = 0;
-    return function(arg) {
-      if ( i == funcs.length) return arg;
-      //var args = arg._is_mr ? arg : arguments ;
-      //return arguments.callee(funcs[i++].apply(null, args));
-      return arguments.callee(funcs[i++].apply(null, arg._is_mr ? arg : arguments));
+  function base_pipe(ctx) {
+    return function() {
+      var fs = arguments, l = fs.length;
+      return function(ov) {
+        var self = ctx(this, arguments), v = arguments.length < 2 ? ov : (arguments._mr = true) && arguments;
+        for (var i = 0; i < l; i++) v = (v && v._mr) ? fs[i].apply(self, v) : fs[i].call(self, v);
+        return v;
+      }
     }
+  }
+
+  _.pipe = base_pipe(function(v) { return v; });
+  _.indent = base_pipe(function(self, args) { return { args: args, parent: self }; });
+  _.mr = function(arg) {
+    return (arguments.length < 2) ? arg : ((arguments._mr = true) && arguments);
   };
 
-  _.mr = function(arg) {
-    //if (arguments.length < 2) return arg;
-    //return _.extend(_.toArray(arguments), { _is_mr : true });
-    return (arguments.length < 2) ? arg : _.extend(_.toArray(arguments), { _is_mr : true });
+  _.map = function(data, iteratee) { // ary, obj
+    var l = data.length;
+    var res = Array(l);
+    for (var i=0; i<l; i++) {
+      res[i] = (iteratee(data[i], i, data));
+    }
   };
+  _.each = function() {
+
+  };
+
+  _.filter = function(predicate) {
+    return function(ary) {
+      var l = ary.length;
+      var res = [];
+      var tmp;
+      for(var i=0; i<l; i++) {
+        if (tmp = predicate(ary[i])) res.push(tmp);
+      }
+    }
+
+  };
+  _.reject = function() {
+
+  };
+
+  _.find = function(predicate) {
+    return function(ary) {
+      var l = ary.length;
+      for(var i=0; i<l; i++) {
+        if (tmp = predicate(ary[i])) return tmp;
+      }
+
+    }
+
+  };
+
 
 }(typeof global == 'object' && global.global == global && (global.G = global) || window);
 
