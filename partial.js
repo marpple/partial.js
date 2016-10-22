@@ -42,7 +42,7 @@
     delete arguments[len];
     return fn.apply(this == _ ? null : this, arguments);
   };
-  _.r_apply = function(args, fn) { return fn.apply(this == _ ? null : this, args); };
+  _.righta = function(args, fn) { return fn.apply(this == _ ? null : this, args); };
 
   /* Pipeline */
   _.pipe = pipe, _.pipec = pipec, _.pipea = pipea, _.pipea2 = pipea2;
