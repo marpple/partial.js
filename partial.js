@@ -1,4 +1,14 @@
+// partial.js
+// History - lmn.js -> lego.js -> L.js -> abc.js -> partial.js
+// Project Lead - Indong Yoo
+// Maintainers - Piljung Park, Hanah Choi
+// Contributors - Byeongjin Kim, Joeun Ha, Hoonil Kim
+// (c) 2015-2016 Marpple. MIT Licensed.
 !function(G) {
+  var window = typeof window != 'object' ? G : window;
+  window._ ? window.__ = _ : window._ = _;
+  var ___ = window.___ = ___;
+
   function _(fn) {
     fn = lambda(fn);
     var args1 = [], args3, len = arguments.length, ___idx = len;
@@ -18,17 +28,34 @@
     return args1;
   }
   function merge_args(args1, args2, args3) {
-    if (!args2.length) return args3 ? _to_unde(args1, args3) : _to_unde(clone(args1));
-    var n_args1 = clone(args1), args2 = _.to_array(args2), i = -1, len = n_args1.length;
+    if (!args2.length) return args3 ? _to_unde(args1, args3) : _to_unde(_.clone(args1));
+    var n_args1 = _.clone(args1), args2 = _.to_array(args2), i = -1, len = n_args1.length;
     while (++i < len) if (n_args1[i] == _) n_args1[i] = args2.shift();
     if (!args3) return _to_unde(n_args1, args2.length ? args2 : undefined);
-    var n_arg3 = clone(args3), i = n_arg3.length;
+    var n_arg3 = _.clone(args3), i = n_arg3.length;
     while (i--) if (n_arg3[i] == _) n_arg3[i] = args2.pop();
     return args2.length ? _to_unde(n_args1, args2, n_arg3) : _to_unde(n_args1, n_arg3);
   }
-  var window = typeof window != 'object' ? G : window;
-  window._ ? window.__ = _ : window._ = _;
-  var ___ = window.___ = ___;
+  _.right = function() {
+    var len = --arguments.length, fn = arguments[len];
+    delete arguments[len];
+    return fn.apply(this == _ ? null : this, arguments);
+  };
+  _.r_apply = function(args, fn) { return fn.apply(this == _ ? null : this, args); };
+
+  _.noop = function() {};
+  _.this = function() { return this; };
+  _.i = _.identity = function(v) { return v; };
+  _.args0 = _.identity;
+  _.args1 = function() { return arguments[1]; };
+  _.args2 = function() { return arguments[2]; };
+  _.args3 = function() { return arguments[3]; };
+  _.args4 = function() { return arguments[4]; };
+  _.args5 = function() { return arguments[5]; };
+  _.always = function(v) { return function() { return v; }; };
+  _.true = _.always(true);
+  _.false = _.always(false);
+  _.null = _.always(null);
 
   // <respect _>
   each(['Arguments', 'Function', 'String', 'Number', 'Date', 'RegExp', 'Error'], function(name) {
@@ -48,8 +75,9 @@
     return typeof length == 'number' && length >= 0 && length <= MAX_ARRAY_INDEX;
   };
   var slice = Array.prototype.slice;
-  function rest(array, n, guard) { return slice.call(array, n == null || guard ? 1 : n); };
-  _.rest = rest;
+  _.rest = function(array, n, guard) {
+    return slice.call(array, n == null || guard ? 1 : n);
+  };
   _.values = function(obj) {
     var keys = _.keys(obj), length = keys.length, values = Array(length);
     for (var i = 0; i < length; i++) values[i] = obj[keys[i]];
@@ -81,8 +109,9 @@
     var id = ++idCounter + '';
     return prefix ? prefix + id : id;
   };
-  function clone(obj) { return !_.isObject(obj) ? obj : _.isArray(obj) ? obj.slice() : _.extend({}, obj); };
-  _.clone = clone;
+  _.clone = function(obj) {
+    return !_.isObject(obj) ? obj : _.isArray(obj) ? obj.slice() : _.extend({}, obj);
+  };
   // </respect _>
 
   function each(list, iter, start) {
@@ -90,9 +119,7 @@
     for (var i = start || 0, length = list.length; i < length ;i++) iter(list[i], i, list);
     return list;
   }
-  _.keys = function(obj) {
-    return _.isObject(obj) ? Object.keys(obj) : [];
-  };
+  _.keys = function(obj) { return _.isObject(obj) ? Object.keys(obj) : []; };
   _.is_array = _.isArray = Array.isArray;
   _.wrapArray = _.wrap_arr = function(v) { return _.isArray(v) ? v : [v]; };
   try { var has_lambda = true; eval('a=>a'); } catch (err) { var has_lambda = false; }
@@ -114,6 +141,7 @@
   function dsetter(r, s) { for (var key in s) if (!_.has(r, key)) r[key] = s[key]; }
   _.extend = function() { return bexdf.apply(null, [setter].concat(_.toArray(arguments))); };
   _.defaults = function() { return bexdf.apply(null, [dsetter].concat(_.toArray(arguments))); };
+
   function flat(new_arr, arr, noDeep, start) {
     each(arr, function(v) {
       if (!_.isArrayLike(v) || (!_.isArray(v) && !_.isArguments(v))) return new_arr.push(v);
@@ -122,24 +150,81 @@
     return new_arr;
   }
   _.flatten = function (arr, noDeep, start) { return flat([], arr, noDeep, start); };
-
-  function base_pipe(ctx) {
-    return function() {
-      var fs = arguments, l = fs.length;
-      return function(ov) {
-        var self = ctx(this, arguments), v = arguments.length < 2 ? ov : (arguments._mr = true) && arguments;
-        for (var i = 0; i < l; i++) v = (v && v._mr) ? fs[i].apply(self, v) : fs[i].call(self, v);
-        return v;
-      }
-    }
-  }
-
-  _.pipe = base_pipe(function(v) { return v; });
-  _.indent = base_pipe(function(self, args) { return { args: args, parent: self }; });
-  _.mr = function(arg) {
-    return (arguments.length < 2) ? arg : ((arguments._mr = true) && arguments);
+  _.method =function(obj, method) { return obj[method].apply(obj, _.rest(arguments, 2)); };
+  _.val = function(obj, key, keys) {
+    return (function v(obj, i, keys, li) {
+      return (obj = obj[keys[i]]) ? li == i ? obj : v(obj, i + 1, keys, li) : li == i ? obj : void 0;
+    })(obj, 0, keys = key.split('.'), keys.length - 1);
   };
 
+  /* Pipeline */
+  _.pipe = function(v) {
+    var i = 0, f;
+    while (f = arguments[++i]) v = (v && v._mr) ? f.apply(undefined, v) : v === undefined ? f() : f(v);
+    return v;
+  };
+  _.pipec = function(self, v) {
+    var i = 1, f;
+    while (f = arguments[++i]) v = (v && v._mr) ? f.apply(self, v) : v === undefined ? f.call(self) : f.call(self, v);
+    return v;
+  };
+  _.pipea = function(self, v, fs) {
+    var i = 0, f;
+    while (f = fs[++i]) v = (v && v._mr) ? f.apply(self, v) : v === undefined ? f.call(self) : f.call(self, v);
+    return v;
+  };
+  _.is_mr = function(v) { return v && v._mr; };
+  _.mr = function() {
+    arguments._mr = true;
+    return arguments;
+  };
+  _.to_mr = function(args) {
+    args._mr = true;
+    return args;
+  };
+  _.Pipe = function() {
+    var fs = arguments;
+    return function() { return _.pipea(this, _.to_mr(arguments), fs); }
+  };
+  _.Indent = function() {
+    var fs = arguments;
+    return function() { return _.pipea(indent(this, arguments), _.to_mr(arguments), fs); }
+  };
+  function indent(self, args) { return { args: args, parent: self }; }
+
+  // TODO
+  _.async = {};
+  _.async.Pipe = _.Pipe;
+  _.async.pipe = _.pipe;
+  _.async.Indent = _.Indent;
+
+  /* mutable, immutable */
+  _.set = function(obj, key, valueOrFunc) {
+    if (!_.isFunction(valueOrFunc)) return _.mr(obj[key] = valueOrFunc, key, obj);
+    return _.async.go(valueOrFunc, function(_value) { return _.mr(obj[key] = _value, key, obj) })(obj, key);
+  };
+  _.unset = function(obj, key) { var val = obj[key]; delete obj[key]; return _.mr(val, key, obj); };
+  _.remove = function(arr, remove) { return _.mr(remove, _.removeByIndex(arr, arr.indexOf(remove)), arr); };
+  _.pop = function(arr) { return _.mr(arr.pop(), arr.length, arr); };
+  _.shift = function(arr) { return _.mr(arr.shift(), 0, arr); };
+  _.push = function(arr, itemOrFunc) {
+    if (!_.isFunction(itemOrFunc)) return _.mr(itemOrFunc, arr.push(itemOrFunc), arr);
+    return _.async.pipe(itemOrFunc, function(_item) { return _.mr(_item, arr.push(_item), arr); })(arr);
+  };
+  _.unshift = function(arr, itemOrFunc) {
+    if (!_.isFunction(itemOrFunc)) return _.mr(itemOrFunc, arr.unshift(itemOrFunc), arr);
+    return _.async.pipe(itemOrFunc, function(_item) { return _.mr(_item, arr.unshift(_item), arr); })(arr);
+  };
+  _.removeByIndex = function(arr, from) {
+    if (from !== -1) {
+      var rest = arr.slice(from + 1 || arr.length);
+      arr.length = from;
+      arr.push.apply(arr, rest);
+    }
+    return from;
+  };
+
+  /* each - reduce */
   _.map = function(data, iteratee) { // ary, obj
     var l = data.length;
     var res = Array(l);
@@ -172,10 +257,11 @@
       for(var i=0; i<l; i++) {
         if (tmp = predicate(ary[i])) return tmp;
       }
-
     }
-
   };
+
+
+
 
 
 }(typeof global == 'object' && global.global == global && (global.G = global) || window);
