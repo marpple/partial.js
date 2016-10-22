@@ -45,35 +45,50 @@
   _.r_apply = function(args, fn) { return fn.apply(this == _ ? null : this, args); };
 
   /* Pipeline */
-  _.pipe = function(v) {
+  _.pipe = pipe, _.pipec = pipec, _.pipea = pipea, _.pipea2 = pipea2;
+  _.mr = mr, _.to_mr = to_mr, _.is_mr = is_mr;
+  function pipe(v) {
     var i = 0, f;
     while (f = arguments[++i]) v = (v && v._mr) ? f.apply(undefined, v) : f(v);
     return v;
-  };
-  _.pipec = function(self, v) {
+  }
+  function pipec(self, v) {
     var i = 1, f;
     while (f = arguments[++i]) v = (v && v._mr) ? f.apply(self, v) : f.call(self, v);
     return v;
-  };
-  _.pipea = function(self, v, fs) {
+  }
+  function pipea(self, v, fs) {
     var i = 0, f;
     while (f = fs[++i]) v = (v && v._mr) ? f.apply(self, v) : f.call(self, v);
     return v;
-  };
-  _.pipea2 = function(v, fs) {
+  }
+  function pipea2(v, fs) {
     var i = 0, f;
     while (f = fs[++i]) v = (v && v._mr) ? f.apply(undefined, v) : f(v);
     return v;
-  };
-  _.mr = function() {
+  }
+  function mr() {
     arguments._mr = true;
     return arguments;
-  };
-  _.to_mr = function(args) {
+  }
+  function to_mr(args) {
     args._mr = true;
     return args;
+  }
+  function is_mr(v) { return v && v._mr; };
+
+  _.Pipe = function() {
+    var fs = arguments;
+    return function() {
+      return this == undefined ? pipea2(to_mr(arguments), fs) : pipea(this, to_mr(arguments), fs);
+    }
   };
-  _.is_mr = function(v) { return v && v._mr; };
+  _.Indent = function() {
+    var fs = arguments;
+    return function() { return pipea(ithis(this, arguments), to_mr(arguments), fs); }
+  };
+  function ithis(self, args) { return { args: args, parent: self }; }
+
   _.Tap = _.tap = function() {
     // var fns = C.toArray(arguments);
     // return function() { return A(arguments, fns.concat([J(arguments), toMR]), this); };
@@ -92,17 +107,7 @@
   //     setTimeout(function() { cb.apply(null, args); }, time || 0);
   //   });
   // };
-  _.Pipe = function() {
-    var fs = arguments;
-    return function() {
-      return this == undefined ? _.pipea2(_.to_mr(arguments), fs) : _.pipea(this, _.to_mr(arguments), fs);
-    }
-  };
-  _.Indent = function() {
-    var fs = arguments;
-    return function() { return _.pipea(indent(this, arguments), _.to_mr(arguments), fs); }
-  };
-  function indent(self, args) { return { args: args, parent: self }; }
+
   _.Err = function() {};
   // function isERR(err) {
   //   err = isMR(err) ? err[0] : err;
@@ -117,6 +122,7 @@
   _.async.pipec = _.pipec;
   _.async.pipea = _.pipea;
 
+  /* Ice cream */
   _.noop = function() {};
   _.this = function() { return this; };
   _.i = _.identity = function(v) { return v; };
@@ -135,6 +141,18 @@
   _.log = window.console && window.console.log ? console.log.bind ? console.log.bind(console) : function() { console.log.apply(console, arguments); } : I;
   _.loge = window.console && window.console.error ? console.error.bind ? console.error.bind(console) : function() { console.error.apply(console, arguments); } : I;
   _.Hi = _.Tap(_.log);
+
+  _.f = function(nodes) {
+    var f = _.val(G, nodes);
+    var err = Error('warning: ' + nodes + ' is not defined');
+    return f || setTimeout(function() { (f = f || _.val(G, nodes)) || _.loge(err) }, 500)
+      && function() { return (f || (f = _.val(G, nodes))).apply(this, arguments); }
+  };
+  _.val = function(obj, key, keys) {
+    return (function v(obj, i, keys, li) {
+      return (obj = obj[keys[i]]) ? li == i ? obj : v(obj, i + 1, keys, li) : li == i ? obj : void 0;
+    })(obj, 0, keys = key.split('.'), keys.length - 1);
+  };
 
   // <respect _>
   each(['Arguments', 'Function', 'String', 'Number', 'Date', 'RegExp', 'Error'], function(name) {
@@ -240,11 +258,6 @@
   }
   _.flatten = function (arr, noDeep, start) { return flat([], arr, noDeep, start); };
   _.method =function(obj, method) { return obj[method].apply(obj, _.rest(arguments, 2)); };
-  _.val = function(obj, key, keys) {
-    return (function v(obj, i, keys, li) {
-      return (obj = obj[keys[i]]) ? li == i ? obj : v(obj, i + 1, keys, li) : li == i ? obj : void 0;
-    })(obj, 0, keys = key.split('.'), keys.length - 1);
-  };
 
   /* mutable */
   _.set = function(obj, key, valueOrFunc) {
@@ -578,13 +591,6 @@
   //     all, B.each([I, C.log]),
   //     J('------------End--------------'), C.log]);
   // };
-
-  _.f = function(nodes) {
-    var f = _.val(G, nodes);
-    var err = Error('warning: ' + nodes + ' is not defined');
-    return f || setTimeout(function() { (f = f || _.val(G, nodes)) || _.loge(err) }, 500)
-      && function() { return (f || (f = _.val(G, nodes))).apply(this, arguments); }
-  }
 
 }(typeof global == 'object' && global.global == global && (global.G = global) || window);
 
