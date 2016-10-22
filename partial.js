@@ -75,7 +75,7 @@
     args._mr = true;
     return args;
   }
-  function is_mr(v) { return v && v._mr; };
+  function is_mr(v) { return v && v._mr; }
 
   _.Pipe = function() {
     var fs = arguments;
@@ -87,7 +87,7 @@
     var fs = arguments;
     return function() { return pipea(ithis(this, arguments), to_mr(arguments), fs); }
   };
-  function ithis(self, args) { return { args: args, parent: self }; }
+  function ithis(self, args) { return { parent: self, args: args }; }
 
   _.Tap = _.tap = function() {
     // var fns = C.toArray(arguments);
@@ -593,4 +593,3 @@
   // };
 
 }(typeof global == 'object' && global.global == global && (global.G = global) || window);
-
