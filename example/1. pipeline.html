@@ -15,12 +15,9 @@
   log(_.Pipe(
     log,
     _.noop,
+    log,
     function() {
-      console.log(arguments.length, 'len');
       return 1;
-    },
-    function() {
-      console.log(arguments.length, 'len');
     },
     function(a) {
       log(this);
@@ -43,12 +40,9 @@
   log(_.Indent(
     log,
     _.noop,
+    log,
     function() {
-      console.log(arguments.length, 'len');
       return 1;
-    },
-    function() {
-      console.log(arguments.length, 'len');
     },
     function(a) {
       log(this);
@@ -71,12 +65,9 @@
   log(_.pipe(10,
     log,
     _.noop,
+    log,
     function() {
-      console.log(arguments.length, 'len');
       return 1;
-    },
-    function() {
-      console.log(arguments.length, 'len');
     },
     function(a) {
       log(this);
@@ -99,12 +90,9 @@
   log(_.pipec({hi:'hi'}, 10,
     log,
     _.noop,
+    log,
     function() {
-      console.log(arguments.length, 'len');
       return 1;
-    },
-    function() {
-      console.log(arguments.length, 'len');
     },
     function(a) {
       log(this);
@@ -127,12 +115,9 @@
   log(_.pipea({hi:'hi'}, 10, [
     log,
     _.noop,
+    log,
     function() {
-      console.log(arguments.length, 'len');
       return 1;
-    },
-    function() {
-      console.log(arguments.length, 'len');
     },
     function(a) {
       log(this);

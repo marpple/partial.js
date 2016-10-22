@@ -109,7 +109,7 @@
   // C.clone = function(obj) { return !C.isObject(obj) ? obj : C.isArray(obj) ? obj.slice() : C.extend({}, obj); };
   // C.method = C.m = method; // for method
   // C.args = function() { return arguments; };
-  C.arr_or_args_to_arr = IF(C.isArray, I).ELSE([C.args, C.toArray]);
+  // C.arr_or_args_to_arr = IF(C.isArray, I).ELSE([C.args, C.toArray]);
   // C.val = C.v = getValue; // get value with string
   // C.args.trim = function(args) { return args.length == 1 && args[0] === undefined ? [] : args; };
   // B.args = function(idx) {
@@ -134,543 +134,539 @@
   //   if (!C.isFunction(itemOrFunc)) return MR(itemOrFunc, arr.unshift(itemOrFunc), arr);
   //   return C(arr, [itemOrFunc, function(_item) { return MR(_item, arr.unshift(_item), arr); }]);
   // };
-  C.sel = C.select = C.extend(function(start, selector) {
-    return C.reduce(selector.split(/\s*->\s*/), start, function (mem, key) {
-      return !key.match(/^\((.+)\)/) ? !key.match(/\[(.*)\]/) ? mem[key] : function(mem, numbers) {
-        if (numbers.length > 2 || numbers.length < 1 || C.filter(numbers, [I, isNaN]).length) return ERR('[] selector in [num] or [num ~ num]');
-        var s = numbers[0], e = numbers[1]; return !e ? mem[s<0 ? mem.length+s : s] : slice.call(mem, s<0 ? mem.length+s : s, e<0 ? mem.length+e : e + 1);
-      }(mem, C.map(RegExp.$1.replace(/\s/g, '').split('~'), [I, parseInt])) : C.find(mem, C.lambda(RegExp.$1));
-    });
-  }, {
-    set: function(start, selector, value) {
-      var _arr = selector.split(/\s*->\s*/), last = _arr.length - 1;
-      return toMR([start].concat(C.set(_arr.length == 1 ? start : C.sel(start, _arr.slice(0, last).join('->')), _arr[last], value)));
-    },
-    unset: function(start, selector) {
-      var _arr = selector.split(/\s*->\s*/), last = _arr.length - 1;
-      return toMR([start].concat(C.unset(_arr.length == 1 ? start : C.sel(start, _arr.slice(0, last).join('->')), _arr[last])));
-    },
-    remove: function(start, selector, remove) {
-      if (remove) return toMR([start].concat(C.remove(C.sel(start, selector), remove)));
-      var _arr = selector.split(/\s*->\s*/);
-      return toMR([start].concat(C.remove(C.sel(start, _arr.slice(0, _arr.length - 1).join('->')), C.sel(start, selector))));
-    },
-    extend: function(start, selector/*, objs*/) {
-      return toMR([start].concat(C.extend.apply(null, [C.sel(start, selector)].concat(C.toArray(arguments).slice(2, arguments.length)))));
-    },
-    defaults: function(start, selector/*, objs*/) {
-      return toMR([start].concat(C.defaults.apply(null, [C.sel(start, selector)].concat(C.toArray(arguments).slice(2, arguments.length)))));
-    },
-    pop: function(start, selector) { return toMR([start].concat(C.pop(C.sel(start, selector)))); },
-    shift: function(start, selector) { return toMR([start].concat(C.shift(C.sel(start, selector)))); },
-    push: function (start, selector, item) { return toMR([start].concat(C.push(C.sel(start, selector), item))); },
-    unshift: function (start, selector, item) { return toMR([start].concat(C.unshift(C.sel(start, selector), item))); },
-    im: C.extend(function (start, selector) {
-      var im_start = C.clone(start);
-      return {
-        start: im_start,
-        selected: C.reduce(selector.split(/\s*->\s*/), im_start, function(clone, key) {
-          return !key.match(/^\((.+)\)/) ? /*start*/(!key.match(/\[(.*)\]/) ? clone[key] = C.clone(clone[key]) : function(clone, numbers) {
-            if (numbers.length > 2 || numbers.length < 1 || C.filter(numbers, [I, isNaN]).length) return ERR('[] selector in [num] or [num ~ num]');
-            var s = numbers[0], e = numbers[1]; return !e ? clone[s] = C.clone(clone[s<0 ? clone.length+s : s]) : function(clone, oris) {
-              return each(oris, function(ori) { clone[clone.indexOf(ori)] = C.clone(ori); });
-            }(clone, slice.call(clone, s<0 ? clone.length+s : s, e<0 ? clone.length+e : e + 1));
-          }(clone, C.map(RegExp.$1.replace(/\s/g, '').split('~'), [I, parseInt])))/*end*/ :
-            function(clone, ori) { return clone[clone.indexOf(ori)] = C.clone(ori); } (clone, C.find(clone, C.lambda(RegExp.$1)))
-        })
-      };
-    }, {
-      set: function(start, selector, value) {
-        var _arr = selector.split(/\s*->\s*/), last = _arr.length - 1, im = C.sel.im(start, _arr.slice(0, _arr.length == 1 ? void 0 : last).join('->'));
-        return toMR([im.start].concat(C.set(_arr.length == 1 ? im.start : im.selected, _arr[last], value)));
-      },
-      unset: function(start, selector) {
-        var _arr = selector.split(/\s*->\s*/), last = _arr.length - 1, im = C.sel.im(start, _arr.slice(0, last).join('->'));
-        return toMR([im.start].concat(C.unset(_arr.length == 1 ? im.start : im.selected, _arr[last])));
-      },
-      remove: function(start, selector, remove) {
-        var _arr = selector.split(/\s*->\s*/), im = C.sel.im(start, selector);
-        if (remove) return toMR([start].concat(C.remove(im.selected, remove)));
-        return toMR([im.start].concat(C.remove(C.sel(im.start, _arr.slice(0, _arr.length - 1).join('->')), im.selected)));
-      },
-      extend: function(start, selector/*, objs*/) {
-        var im = C.sel.im(start, selector);
-        return toMR([im.start].concat(C.extend.apply(null, [im.selected].concat(C.toArray(arguments).slice(2, arguments.length)))));
-      },
-      defaults: function(start, selector/*, objs*/) {
-        var im = C.sel.im(start, selector);
-        return toMR([im.start].concat(C.defaults.apply(null, [im.selected].concat(C.toArray(arguments).slice(2, arguments.length)))));
-      },
-      pop: function(start, selector) {
-        var im = C.sel.im(start, selector);
-        return toMR([im.start].concat(C.pop(im.selected)));
-      },
-      shift: function(start, selector) {
-        var im = C.sel.im(start, selector);
-        return toMR([im.start].concat(C.shift(im.selected)));
-      },
-      push: function (start, selector, item) {
-        var im = C.sel.im(start, selector);
-        return toMR([im.start].concat(C.push(im.selected, item)));
-      },
-      unshift: function (start, selector, item) {
-        var im = C.sel.im(start, selector);
-        return toMR([im.start].concat(C.unshift(im.selected, item)));
-      }
-    })
-  });
+  // C.sel = C.select = C.extend(function(start, selector) {
+  //   return C.reduce(selector.split(/\s*->\s*/), start, function (mem, key) {
+  //     return !key.match(/^\((.+)\)/) ? !key.match(/\[(.*)\]/) ? mem[key] : function(mem, numbers) {
+  //       if (numbers.length > 2 || numbers.length < 1 || C.filter(numbers, [I, isNaN]).length) return ERR('[] selector in [num] or [num ~ num]');
+  //       var s = numbers[0], e = numbers[1]; return !e ? mem[s<0 ? mem.length+s : s] : slice.call(mem, s<0 ? mem.length+s : s, e<0 ? mem.length+e : e + 1);
+  //     }(mem, C.map(RegExp.$1.replace(/\s/g, '').split('~'), [I, parseInt])) : C.find(mem, C.lambda(RegExp.$1));
+  //   });
+  // }, {
+  //   set: function(start, selector, value) {
+  //     var _arr = selector.split(/\s*->\s*/), last = _arr.length - 1;
+  //     return toMR([start].concat(C.set(_arr.length == 1 ? start : C.sel(start, _arr.slice(0, last).join('->')), _arr[last], value)));
+  //   },
+  //   unset: function(start, selector) {
+  //     var _arr = selector.split(/\s*->\s*/), last = _arr.length - 1;
+  //     return toMR([start].concat(C.unset(_arr.length == 1 ? start : C.sel(start, _arr.slice(0, last).join('->')), _arr[last])));
+  //   },
+  //   remove: function(start, selector, remove) {
+  //     if (remove) return toMR([start].concat(C.remove(C.sel(start, selector), remove)));
+  //     var _arr = selector.split(/\s*->\s*/);
+  //     return toMR([start].concat(C.remove(C.sel(start, _arr.slice(0, _arr.length - 1).join('->')), C.sel(start, selector))));
+  //   },
+  //   extend: function(start, selector/*, objs*/) {
+  //     return toMR([start].concat(C.extend.apply(null, [C.sel(start, selector)].concat(C.toArray(arguments).slice(2, arguments.length)))));
+  //   },
+  //   defaults: function(start, selector/*, objs*/) {
+  //     return toMR([start].concat(C.defaults.apply(null, [C.sel(start, selector)].concat(C.toArray(arguments).slice(2, arguments.length)))));
+  //   },
+  //   pop: function(start, selector) { return toMR([start].concat(C.pop(C.sel(start, selector)))); },
+  //   shift: function(start, selector) { return toMR([start].concat(C.shift(C.sel(start, selector)))); },
+  //   push: function (start, selector, item) { return toMR([start].concat(C.push(C.sel(start, selector), item))); },
+  //   unshift: function (start, selector, item) { return toMR([start].concat(C.unshift(C.sel(start, selector), item))); },
+  //   im: C.extend(function (start, selector) {
+  //     var im_start = C.clone(start);
+  //     return {
+  //       start: im_start,
+  //       selected: C.reduce(selector.split(/\s*->\s*/), im_start, function(clone, key) {
+  //         return !key.match(/^\((.+)\)/) ? /*start*/(!key.match(/\[(.*)\]/) ? clone[key] = C.clone(clone[key]) : function(clone, numbers) {
+  //           if (numbers.length > 2 || numbers.length < 1 || C.filter(numbers, [I, isNaN]).length) return ERR('[] selector in [num] or [num ~ num]');
+  //           var s = numbers[0], e = numbers[1]; return !e ? clone[s] = C.clone(clone[s<0 ? clone.length+s : s]) : function(clone, oris) {
+  //             return each(oris, function(ori) { clone[clone.indexOf(ori)] = C.clone(ori); });
+  //           }(clone, slice.call(clone, s<0 ? clone.length+s : s, e<0 ? clone.length+e : e + 1));
+  //         }(clone, C.map(RegExp.$1.replace(/\s/g, '').split('~'), [I, parseInt])))/*end*/ :
+  //           function(clone, ori) { return clone[clone.indexOf(ori)] = C.clone(ori); } (clone, C.find(clone, C.lambda(RegExp.$1)))
+  //       })
+  //     };
+  //   }, {
+  //     set: function(start, selector, value) {
+  //       var _arr = selector.split(/\s*->\s*/), last = _arr.length - 1, im = C.sel.im(start, _arr.slice(0, _arr.length == 1 ? void 0 : last).join('->'));
+  //       return toMR([im.start].concat(C.set(_arr.length == 1 ? im.start : im.selected, _arr[last], value)));
+  //     },
+  //     unset: function(start, selector) {
+  //       var _arr = selector.split(/\s*->\s*/), last = _arr.length - 1, im = C.sel.im(start, _arr.slice(0, last).join('->'));
+  //       return toMR([im.start].concat(C.unset(_arr.length == 1 ? im.start : im.selected, _arr[last])));
+  //     },
+  //     remove: function(start, selector, remove) {
+  //       var _arr = selector.split(/\s*->\s*/), im = C.sel.im(start, selector);
+  //       if (remove) return toMR([start].concat(C.remove(im.selected, remove)));
+  //       return toMR([im.start].concat(C.remove(C.sel(im.start, _arr.slice(0, _arr.length - 1).join('->')), im.selected)));
+  //     },
+  //     extend: function(start, selector/*, objs*/) {
+  //       var im = C.sel.im(start, selector);
+  //       return toMR([im.start].concat(C.extend.apply(null, [im.selected].concat(C.toArray(arguments).slice(2, arguments.length)))));
+  //     },
+  //     defaults: function(start, selector/*, objs*/) {
+  //       var im = C.sel.im(start, selector);
+  //       return toMR([im.start].concat(C.defaults.apply(null, [im.selected].concat(C.toArray(arguments).slice(2, arguments.length)))));
+  //     },
+  //     pop: function(start, selector) {
+  //       var im = C.sel.im(start, selector);
+  //       return toMR([im.start].concat(C.pop(im.selected)));
+  //     },
+  //     shift: function(start, selector) {
+  //       var im = C.sel.im(start, selector);
+  //       return toMR([im.start].concat(C.shift(im.selected)));
+  //     },
+  //     push: function (start, selector, item) {
+  //       var im = C.sel.im(start, selector);
+  //       return toMR([im.start].concat(C.push(im.selected, item)));
+  //     },
+  //     unshift: function (start, selector, item) {
+  //       var im = C.sel.im(start, selector);
+  //       return toMR([im.start].concat(C.unshift(im.selected, item)));
+  //     }
+  //   })
+  // });
 
-  B.remove = function(remove) { return B(X, remove, C.remove); };
-  B.unset = function(key) { return B(X, key, C.unset); };
-  B.set = function(key, value) { return B(X, key, value, C.set); };
-  B.extend = function() { var args = C.toArray(arguments); return B.apply(null, [X].concat(args).concat(C.extend)); };
-  B.defaults = function() { var args = C.toArray(arguments); return B.apply(null, [X].concat(args).concat(C.defaults)); };
+  // B.remove = function(remove) { return B(X, remove, C.remove); };
+  // B.unset = function(key) { return B(X, key, C.unset); };
+  // B.set = function(key, value) { return B(X, key, value, C.set); };
+  // B.extend = function() { var args = C.toArray(arguments); return B.apply(null, [X].concat(args).concat(C.extend)); };
+  // B.defaults = function() { var args = C.toArray(arguments); return B.apply(null, [X].concat(args).concat(C.defaults)); };
+  //
+  // B.sel = B.select = function(selector) { return B(X, selector, C.sel) };
+  // B.sel.set = B('set', B_sel_func);
+  // B.sel.unset = B('unset', B_sel_func);
+  // B.sel.remove = B('remove', B_sel_func);
+  // B.sel.extend = B('extend', B_sel_func);
+  // B.sel.defaults = B('defaults', B_sel_func);
+  //
+  // B.sel.im = B.select.im = function(selector) { return B(X, selector, C.sel.im) };
+  // B.sel.im.set = B('im.set', B_sel_func);
+  // B.sel.im.unset = B('im.unset', B_sel_func);
+  // B.sel.im.remove = B('im.remove', B_sel_func);
+  // B.sel.im.extend = B('im.extend', B_sel_func);
+  // B.sel.im.defaults = B('im.defaults', B_sel_func);
 
-  B.sel = B.select = function(selector) { return B(X, selector, C.sel) };
-  B.sel.set = B('set', B_sel_func);
-  B.sel.unset = B('unset', B_sel_func);
-  B.sel.remove = B('remove', B_sel_func);
-  B.sel.extend = B('extend', B_sel_func);
-  B.sel.defaults = B('defaults', B_sel_func);
+  // function B_sel_func(what, selector) { var args = C.rest(arguments); return B.apply(null, [X].concat(args).concat(C.val(C.sel, what))); }
 
-  B.sel.im = B.select.im = function(selector) { return B(X, selector, C.sel.im) };
-  B.sel.im.set = B('im.set', B_sel_func);
-  B.sel.im.unset = B('im.unset', B_sel_func);
-  B.sel.im.remove = B('im.remove', B_sel_func);
-  B.sel.im.extend = B('im.extend', B_sel_func);
-  B.sel.im.defaults = B('im.defaults', B_sel_func);
 
-  function B_sel_func(what, selector) { var args = C.rest(arguments); return B.apply(null, [X].concat(args).concat(C.val(C.sel, what))); }
+  // function each(list, iter, start) {
+  //   if (!list) return list;
+  //   for (var i = start || 0, length = list.length; i < length ;i++) iter(list[i], i, list);
+  //   return list;
+  // }
+  // function map(list, iter) {
+  //   if (!list) return [];
+  //   for (var l2 = [], i = 0, length = list.length; i < length ;i++) l2.push(iter(list[i], i, list));
+  //   return l2;
+  // }
 
-  function A(args, func) {
-    if (C.isFunction(func) && !func._ABC_is_cb && !func._ABC_just_cb) return func.apply(arguments[2] || this, args);
-    return C.apply(arguments[2] || this, C.toArray(args).concat([func]));
-  }
+  // function merge_args(args, args2) {
+  //   var args3 = C.clone(args);
+  //   for (var i = 0, length = args2.length; i < length; i++) {
+  //     var arg2 = args2[i];
+  //     var idx = args3.indexOf(X);
+  //     args3[idx == -1 ? args3.length : idx] = arg2;
+  //   }
+  //   return each(args3, function(a, i) { if (a == X) args3[i] = undefined });
+  // }
+  //
+  // function base_B(args, is_bp2) {
+  //   args = C.toArray(args);
+  //   var fns = map(C.wrap_arr(args.pop()), C.lambda);
+  //   return function() {
+  //     var args3 = merge_args(args, arguments);
+  //     return A(args3, fns, is_bp2 ? {args: args3, parent: this} : this);
+  //   };
+  // }
+  //
+  // function B() { return base_B(arguments); }
+  //
+  // function B2() { return base_B([C.toArray(arguments)]); }
 
-  function each(list, iter, start) {
-    if (!list) return list;
-    for (var i = start || 0, length = list.length; i < length ;i++) iter(list[i], i, list);
-    return list;
-  }
-  function map(list, iter) {
-    if (!list) return [];
-    for (var l2 = [], i = 0, length = list.length; i < length ;i++) l2.push(iter(list[i], i, list));
-    return l2;
-  }
+  // B.indent = function() { return base_B(arguments, true); };
+  // B2.indent = function() { return base_B([C.toArray(arguments)], true); };
+  // B.args_pass = function(fn) { return B2(C.args, B.all(I, [toMR].concat(fn)), C.args, B.v('0'), toMR); };
+  // B.val = B.v = B.V = function(key) { return B(X, key, getValue); };
+  // B.method = B.m = B.M = function() { return B.apply(void 0, [X].concat(C.toArray(arguments)).concat(method)); };
+  // B.map = function(iter) {
+  //   return B(
+  //     function(result, list, keys, i, res) {  // body
+  //       if (i) result.push(res);
+  //       return res;
+  //     },
+  //     JU, // end_q
+  //     void 0, // end
+  //     I, // complete
+  //     C.lambda(iter), // iter_or_predi
+  //     base_loop_fn_base_args,
+  //     base_loop_fn);
+  // };
+  // var arg_add_arr = function(list) { return MR(list, []); };
+  // var all_map = B.map(function(val_fn, k, l, args) { return A(args, val_fn, this); });
+  // var spread_map = B.map(function(v, k, l, fns) { return A([v], fns[k] || I, this); });
+  // B.all = function() {
+  //   var fns = C.toArray(arguments);
+  //   return function() {
+  //     return A([fns, C.toArray(arguments)], [all_map, arg_add_arr, spread_args, toMR], this);
+  //   };
+  // };
+  // B.spread = function() {
+  //   var fns = C.toArray(arguments);
+  //   return function() {
+  //     var args = C.toArray(arguments);
+  //     while (args.length < fns.length) args.push(void 0);
+  //     return A([args, fns], [spread_map, arg_add_arr, spread_args, toMR], this);
+  //   };
+  // };
+  // var c_if = IF(function() { return arguments.length > 2; }, MR).ELSE(B.all([I, C.rest], B.v('0'), C.args1));
+  // var b_if = IF(function() { return arguments.length > 1; }, MR).ELSE(B.all([I, C.rest], B.v('0')));
+  // B.reduce = function(iter) {
+  //   return B([iter == null ? c_if : b_if,
+  //     B(function(result, list, keys, i, res, tmp, args) {
+  //         return i == 0 ? args[0] : res;
+  //       }, //body
+  //       JU, // end_q
+  //       void 0, // end
+  //       C.args2, // complete
+  //       C.lambda(iter),   // iter_or_predi
+  //       function(list, keys, i, res, args) { // params
+  //         var key = keys ? keys[i] : i;
+  //         return [res, list[key], key, list].concat(C.rest(args));
+  //       },
+  //       base_loop_fn)]);
+  // };
+  // var spread_args = B.reduce(function(memo, arg) { return memo.concat(isMR(arg) ? arg : [arg]); });
+  // B.each = function(iter) {
+  //   return B(
+  //     C.args4, // body
+  //     JU, // end_q
+  //     void 0, // end
+  //     C.args1,
+  //     C.lambda(iter), // iter_or_predi
+  //     base_loop_fn_base_args,
+  //     base_loop_fn);
+  // };
+  // B.filter = function(iter) {
+  //   return B(
+  //     function(result, list, keys, i, res) {  // body
+  //       var key = keys ? keys[i - 1] : i - 1;
+  //       if (i > 0 && res) result.push(list[key]);
+  //       return res;
+  //     },
+  //     JU, // end_q
+  //     void 0, // end
+  //     I, // complete
+  //     C.lambda(iter),   // iter_or_predi
+  //     base_loop_fn_base_args,
+  //     base_loop_fn);
+  // };
+  // B.reject = function(iter) {
+  //   return B(
+  //     function(result, list, keys, i, res) {   // body
+  //       var key = keys ? keys[i - 1] : i - 1;
+  //       if (i > 0 && !res) result.push(list[key]);
+  //       return res;
+  //     },
+  //     JU, // end_q
+  //     void 0, // end
+  //     I, // complete
+  //     C.lambda(iter),
+  //     base_loop_fn_base_args,
+  //     base_loop_fn);
+  // };
+  // B.find = function(iter) {
+  //   return B(
+  //     C.args4,
+  //     I, // end_q
+  //     function(list, keys, i) {
+  //       return list[keys ? keys[i - 1] : i - 1];
+  //     }, // end
+  //     JU, // complete
+  //     C.lambda(iter),
+  //     base_loop_fn_base_args,
+  //     base_loop_fn);
+  // };
+  // B.find_key = B.findKey = function(iter) {
+  //   return B(
+  //     C.args4, // body
+  //     I, // end_q
+  //     function(list, keys, i) {
+  //       return keys ? keys[i - 1] : i - 1;
+  //     }, // end
+  //     J(undefined), // complete
+  //     C.lambda(iter),
+  //     base_loop_fn_base_args,
+  //     base_loop_fn);
+  // };
+  // B.findIndex = B.find_index = B.find_i = function(iter) {
+  //   return B(
+  //     C.args4, // body
+  //     I, // end_q
+  //     function(list, keys, i) {
+  //       return keys ? keys[i - 1] : i - 1;
+  //     }, // end
+  //     J(-1), // complete
+  //     C.lambda(iter),
+  //     base_loop_fn_base_args,
+  //     base_loop_fn);
+  // };
+  // B.some = function(iter) {
+  //   return B(
+  //     C.args4,
+  //     I, // end_q
+  //     J(true), // end
+  //     J(false), // complete
+  //     C.lambda(iter),
+  //     base_loop_fn_base_args,
+  //     base_loop_fn);
+  // };
+  // B.every = function(iter) {
+  //   return B(
+  //     function(result, list, keys, i, res) {
+  //       return i == 0 ? true : res;
+  //     },   // body
+  //     function(v) {
+  //       return !v;
+  //     }, // end_q
+  //     J(false), // end
+  //     J(true), // complete
+  //     C.lambda(iter),
+  //     base_loop_fn_base_args,
+  //     base_loop_fn);
+  // };
+  // B.uniq = function(iter) {
+  //   return B(
+  //     function(result, list, keys, i, res, tmp) { // body
+  //       if (i == 0) return;
+  //       if (tmp.indexOf(res) == -1) {
+  //         tmp.push(res);
+  //         result.push(list[i - 1]);
+  //       }
+  //     },
+  //     JU,   // end_q
+  //     void 0,   // end
+  //     I, // complete
+  //     C.lambda(iter),
+  //     base_loop_fn_base_args,
+  //     base_loop_fn);
+  // };
+  // B.tap = function() {
+  //   var fns = C.toArray(arguments);
+  //   return function() { return A(arguments, fns.concat([J(arguments), toMR]), this); };
+  // };
+  // B.boomerang = function() { // fork
+  //   var fns = arguments;
+  //   return JCB(function(res, cb) {
+  //     cb(res);
+  //     A([res], fns, this);
+  //   });
+  // };
+  // B.is = function(a) { return B2(C.arr_or_args_to_arr, B.find_i(function(v) { return a !== v;}), function(v) { return v === -1; }); };
+  // B.isnt = function(a) { return B2(C.arr_or_args_to_arr, B.find_i([I, B.is(a)]), B.is(-1)); };
+  // B.delay = function(time) {
+  //   return CB(function() {
+  //     var args = arguments, cb = args[args.length-1];
+  //     args.length = args.length - 1;
+  //     setTimeout(function() { cb.apply(null, args); }, time || 0);
+  //   });
+  // };
+  // function base_loop_fn_base_args(list, keys, i, res, args) {
+  //   var key = keys ? keys[i] : i;
+  //   return args.length ? [list[key], key, list].concat(args) : [list[key], key, list];
+  // }
+  // function base_loop_fn(body, end_q, end, complete, iter_or_predi, params) {
+  //   var context = this;
+  //   var args = C.rest(arguments, 6);
+  //   var list = args.shift();
+  //   var keys = C.isArrayLike(list) ? null : C.keys(list);
+  //   iter_or_predi = iter_or_predi || C.lambda(args.pop());
+  //   var fast = !args.length && C.isFunction(iter_or_predi);
+  //   if (fast && this != C && this != G) iter_or_predi = iter_or_predi.bind(this);
+  //   var length = (keys || list).length;
+  //   var result = [], tmp = [];
+  //   var resolve = I, async = false;
+  //   var go = fast ? function(list, keys, i, res, args, iter_or_predi) {
+  //     var key = keys ? keys[i] : i;
+  //     return iter_or_predi(list[key], key, list);
+  //   } : function(list, keys, i, res, args, iter_or_predi, context) {
+  //     return A(params(list, keys, i, res, args), iter_or_predi, context);
+  //   };
+  //   return (function f(i, res) {
+  //     do {
+  //       if (end_q(res = body(result, list, keys, i, res, tmp, args))) return resolve(end(list, keys, i));
+  //       if (i == length) return resolve(complete(result, list, res));
+  //       res = go(list, keys, i++, res, args, iter_or_predi, context);
+  //     } while (!maybe_promise(res));
+  //     res.then(function(res) { f(i, res); });
+  //     return async || C(CB(function(cb) { resolve = cb, async = true; }));
+  //   })(0);
+  // }
 
-  function merge_args(args, args2) {
-    var args3 = C.clone(args);
-    for (var i = 0, length = args2.length; i < length; i++) {
-      var arg2 = args2[i];
-      var idx = args3.indexOf(X);
-      args3[idx == -1 ? args3.length : idx] = arg2;
-    }
-    return each(args3, function(a, i) { if (a == X) args3[i] = undefined });
-  }
+  // function unpack_arr(arr) { return arr.length == 1 ? arr[0] : arr }
+  // F.CB = window.CB = B2(C.arr_or_args_to_arr, B.map([I, B(X, {_ABC_is_cb: true}, C.extend)]), unpack_arr);
+  // F.JCB = window.JCB = B(X, {_ABC_just_cb: true}, C.extend);
 
-  function base_B(args, is_bp2) {
-    args = C.toArray(args);
-    var fns = map(C.wrap_arr(args.pop()), C.lambda);
-    return function() {
-      var args3 = merge_args(args, arguments);
-      return A(args3, fns, is_bp2 ? {args: args3, parent: this} : this);
-    };
-  }
+  // function isMR(arg) { return C.isArray(arg) && arg._ABC_is_returns; }
+  // function isERR(err) {
+  //   err = isMR(err) ? err[0] : err;
+  //   return err && err.constructor == Error && err._ABC_is_err;
+  // }
+  // function maybe_promise(res) { return C.isObject(res) && res.then && C.isFunction(res.then); }
+  // function unpack_promise(res, callback) {
+  //   var is_r = isMR(res);
+  //   return (function u(i, res, length, has_promise) {
+  //     if (i == length) {
+  //       has_promise && callback(is_r ? res : res[0]);
+  //       return;
+  //     }
+  //     return maybe_promise(res[i]) && (has_promise = true) ? (function(i) {
+  //       res[i].then(function(v) {
+  //         res[i] = v;
+  //         u(i + 1, res, length, has_promise);
+  //       });
+  //       return true;
+  //     })(i) : u(i + 1, res, length, has_promise);
+  //   })(0, (res = is_r ? res : [res]), res.length, false);
+  // }
 
-  function B() { return base_B(arguments); }
+  // function flat(new_arr, arr, noDeep, start) {
+  //   each(arr, function(v) {
+  //     if (!C.isArrayLike(v) || (!C.isArray(v) && !C.isArguments(v))) return new_arr.push(v);
+  //     noDeep ? each(v, function(v) { new_arr.push(v); }) : flat(new_arr, v, noDeep);
+  //   }, start);
+  //   return new_arr;
+  // }
+  // C.flatten = function (arr, noDeep, start) { return flat([], arr, noDeep, start); };
 
-  function B2() { return base_B([C.toArray(arguments)]); }
+  // function C() {
+  //   var context = this;
+  //   var args = C.toArray(arguments);
+  //   if (!C.isArray(args[args.length - 1])) args[args.length - 1] = [args[args.length - 1]];
+  //   var fns = C.flatten(args.pop());
+  //
+  //   if (args.length == 1 && isMR(args[0])) args = args[0];
+  //
+  //   var i = 0, promise = null, resolve = null, fns_len = fns.length;
+  //   function cp() { return hasPromise() ? new Promise(function(rs) { resolve = rs; }) : { then: function(rs) { resolve = rs; } } }
+  //   return (function c(res) {
+  //     do {
+  //       if (i === fns_len) return !promise ? res : resolve ? C.lambda(resolve)(res) : setTimeout(function() { resolve && C.lambda(resolve)(res); }, 0);
+  //       if (fns[i] && ((isERR(res) && !fns[i]._ABC_is_catch) || (!isERR(res) && fns[i]._ABC_is_catch)) && i++) continue;
+  //       if (unpack_promise(res, c)) return promise || (promise = cp());
+  //       try {
+  //         if (!fns[i]._ABC_is_cb && !fns[i]._ABC_just_cb) res = C.lambda(fns[i++]).apply(context, C.args.trim(MRI(res)));
+  //         else if (!fns[i]._ABC_is_cb) C.lambda(fns[i++]).apply(context, C.args.trim(MRI(res)).concat(function() { res = toMR(arguments); }));
+  //       } catch (e) { res = ERR(e); }
+  //     } while (i == fns_len || i < fns_len && !fns[i]._ABC_is_cb);
+  //     if ((promise || (promise = cp())) && unpack_promise(res, c)) return promise;
+  //     try { C.lambda(fns[i++]).apply(context, C.args.trim(MRI(res)).concat(function() { arguments.length <= 1 ? c.apply(null, arguments) : c(toMR(arguments)); })); }
+  //     catch (e) { c(ERR(e)); }
+  //     return promise;
+  //   })(toMR(args));
+  // }
+  // function C2() { return C(C.toArray(arguments)); }
 
-  B.indent = function() { return base_B(arguments, true); };
-  B2.indent = function() { return base_B([C.toArray(arguments)], true); };
-  B.args_pass = function(fn) { return B2(C.args, B.all(I, [toMR].concat(fn)), C.args, B.v('0'), toMR); };
-  B.val = B.v = B.V = function(key) { return B(X, key, getValue); };
-  B.method = B.m = B.M = function() { return B.apply(void 0, [X].concat(C.toArray(arguments)).concat(method)); };
-  B.map = function(iter) {
-    return B(
-      function(result, list, keys, i, res) {  // body
-        if (i) result.push(res);
-        return res;
-      },
-      JU, // end_q
-      void 0, // end
-      I, // complete
-      C.lambda(iter), // iter_or_predi
-      base_loop_fn_base_args,
-      base_loop_fn);
-  };
-  var arg_add_arr = function(list) { return MR(list, []); };
-  var all_map = B.map(function(val_fn, k, l, args) { return A(args, val_fn, this); });
-  var spread_map = B.map(function(v, k, l, fns) { return A([v], fns[k] || I, this); });
-  B.all = function() {
-    var fns = C.toArray(arguments);
-    return function() {
-      return A([fns, C.toArray(arguments)], [all_map, arg_add_arr, spread_args, toMR], this);
-    };
-  };
-  B.spread = function() {
-    var fns = C.toArray(arguments);
-    return function() {
-      var args = C.toArray(arguments);
-      while (args.length < fns.length) args.push(void 0);
-      return A([args, fns], [spread_map, arg_add_arr, spread_args, toMR], this);
-    };
-  };
-  var c_if = IF(function() { return arguments.length > 2; }, MR).ELSE(B.all([I, C.rest], B.v('0'), C.args1));
-  var b_if = IF(function() { return arguments.length > 1; }, MR).ELSE(B.all([I, C.rest], B.v('0')));
-  B.reduce = function(iter) {
-    return B([iter == null ? c_if : b_if,
-      B(function(result, list, keys, i, res, tmp, args) {
-          return i == 0 ? args[0] : res;
-        }, //body
-        JU, // end_q
-        void 0, // end
-        C.args2, // complete
-        C.lambda(iter),   // iter_or_predi
-        function(list, keys, i, res, args) { // params
-          var key = keys ? keys[i] : i;
-          return [res, list[key], key, list].concat(C.rest(args));
-        },
-        base_loop_fn)]);
-  };
-  var spread_args = B.reduce(function(memo, arg) { return memo.concat(isMR(arg) ? arg : [arg]); });
-  B.each = function(iter) {
-    return B(
-      C.args4, // body
-      JU, // end_q
-      void 0, // end
-      C.args1,
-      C.lambda(iter), // iter_or_predi
-      base_loop_fn_base_args,
-      base_loop_fn);
-  };
-  B.filter = function(iter) {
-    return B(
-      function(result, list, keys, i, res) {  // body
-        var key = keys ? keys[i - 1] : i - 1;
-        if (i > 0 && res) result.push(list[key]);
-        return res;
-      },
-      JU, // end_q
-      void 0, // end
-      I, // complete
-      C.lambda(iter),   // iter_or_predi
-      base_loop_fn_base_args,
-      base_loop_fn);
-  };
-  B.reject = function(iter) {
-    return B(
-      function(result, list, keys, i, res) {   // body
-        var key = keys ? keys[i - 1] : i - 1;
-        if (i > 0 && !res) result.push(list[key]);
-        return res;
-      },
-      JU, // end_q
-      void 0, // end
-      I, // complete
-      C.lambda(iter),
-      base_loop_fn_base_args,
-      base_loop_fn);
-  };
-  B.find = function(iter) {
-    return B(
-      C.args4,
-      I, // end_q
-      function(list, keys, i) {
-        return list[keys ? keys[i - 1] : i - 1];
-      }, // end
-      JU, // complete
-      C.lambda(iter),
-      base_loop_fn_base_args,
-      base_loop_fn);
-  };
-  B.find_key = B.findKey = function(iter) {
-    return B(
-      C.args4, // body
-      I, // end_q
-      function(list, keys, i) {
-        return keys ? keys[i - 1] : i - 1;
-      }, // end
-      J(undefined), // complete
-      C.lambda(iter),
-      base_loop_fn_base_args,
-      base_loop_fn);
-  };
-  B.findIndex = B.find_index = B.find_i = function(iter) {
-    return B(
-      C.args4, // body
-      I, // end_q
-      function(list, keys, i) {
-        return keys ? keys[i - 1] : i - 1;
-      }, // end
-      J(-1), // complete
-      C.lambda(iter),
-      base_loop_fn_base_args,
-      base_loop_fn);
-  };
-  B.some = function(iter) {
-    return B(
-      C.args4,
-      I, // end_q
-      J(true), // end
-      J(false), // complete
-      C.lambda(iter),
-      base_loop_fn_base_args,
-      base_loop_fn);
-  };
-  B.every = function(iter) {
-    return B(
-      function(result, list, keys, i, res) {
-        return i == 0 ? true : res;
-      },   // body
-      function(v) {
-        return !v;
-      }, // end_q
-      J(false), // end
-      J(true), // complete
-      C.lambda(iter),
-      base_loop_fn_base_args,
-      base_loop_fn);
-  };
-  B.uniq = function(iter) {
-    return B(
-      function(result, list, keys, i, res, tmp) { // body
-        if (i == 0) return;
-        if (tmp.indexOf(res) == -1) {
-          tmp.push(res);
-          result.push(list[i - 1]);
-        }
-      },
-      JU,   // end_q
-      void 0,   // end
-      I, // complete
-      C.lambda(iter),
-      base_loop_fn_base_args,
-      base_loop_fn);
-  };
-  B.tap = function() {
-    var fns = C.toArray(arguments);
-    return function() { return A(arguments, fns.concat([J(arguments), toMR]), this); };
-  };
-  B.boomerang = function() { // fork
-    var fns = arguments;
-    return JCB(function(res, cb) {
-      cb(res);
-      A([res], fns, this);
-    });
-  };
-  B.is = function(a) { return B2(C.arr_or_args_to_arr, B.find_i(function(v) { return a !== v;}), function(v) { return v === -1; }); };
-  B.isnt = function(a) { return B2(C.arr_or_args_to_arr, B.find_i([I, B.is(a)]), B.is(-1)); };
-  B.delay = function(time) {
-    return CB(function() {
-      var args = arguments, cb = args[args.length-1];
-      args.length = args.length - 1;
-      setTimeout(function() { cb.apply(null, args); }, time || 0);
-    });
-  };
-  function base_loop_fn_base_args(list, keys, i, res, args) {
-    var key = keys ? keys[i] : i;
-    return args.length ? [list[key], key, list].concat(args) : [list[key], key, list];
-  }
-  function base_loop_fn(body, end_q, end, complete, iter_or_predi, params) {
-    var context = this;
-    var args = C.rest(arguments, 6);
-    var list = args.shift();
-    var keys = C.isArrayLike(list) ? null : C.keys(list);
-    iter_or_predi = iter_or_predi || C.lambda(args.pop());
-    var fast = !args.length && C.isFunction(iter_or_predi);
-    if (fast && this != C && this != G) iter_or_predi = iter_or_predi.bind(this);
-    var length = (keys || list).length;
-    var result = [], tmp = [];
-    var resolve = I, async = false;
-    var go = fast ? function(list, keys, i, res, args, iter_or_predi) {
-      var key = keys ? keys[i] : i;
-      return iter_or_predi(list[key], key, list);
-    } : function(list, keys, i, res, args, iter_or_predi, context) {
-      return A(params(list, keys, i, res, args), iter_or_predi, context);
-    };
-    return (function f(i, res) {
-      do {
-        if (end_q(res = body(result, list, keys, i, res, tmp, args))) return resolve(end(list, keys, i));
-        if (i == length) return resolve(complete(result, list, res));
-        res = go(list, keys, i++, res, args, iter_or_predi, context);
-      } while (!maybe_promise(res));
-      res.then(function(res) { f(i, res); });
-      return async || C(CB(function(cb) { resolve = cb, async = true; }));
-    })(0);
-  }
+  // function MRI(res) { return isMR(res) ? res : [res]; }
+  // function ERR(err, data) {
+  //   setTimeout(function() { err._ABC_caught || C.error(err); }, 500);
+  //   return err = C.extend(err.constructor == Error ? err : new Error(err), data, {_ABC_is_err: true});
+  // }
+  // F.ERR = window.ERR = ERR;
+  // F.CATCH = window.CATCH = function(f) {
+  //   return C.extend(function(err) { return (err._ABC_caught = true) && f.apply(this, arguments); },
+  //     {_ABC_is_catch: true, _ABC_is_cb: f._ABC_is_cb, _ABC_just_cb: f._ABC_just_cb});
+  // };
 
-  function unpack_arr(arr) { return arr.length == 1 ? arr[0] : arr }
-  F.CB = window.CB = B2(C.arr_or_args_to_arr, B.map([I, B(X, {_ABC_is_cb: true}, C.extend)]), unpack_arr);
-  F.JCB = window.JCB = B(X, {_ABC_just_cb: true}, C.extend);
+  // C.each = B.each(null);
+  // C.map = B.map(null);
+  // C.reduce = B.reduce(null);
+  // C.filter = B.filter(null);
+  // C.reject = B.reject(null);
+  // C.find = B.find(null);
+  // C.find_key = C.findKey = B.find_key(null);
+  // C.findIndex = C.find_index = C.find_i = B.find_index(null);
+  // C.some = B.some(null);
+  // C.every = B.every(null);
+  // C.uniq = B.uniq(null);
 
-  function isMR(arg) { return C.isArray(arg) && arg._ABC_is_returns; }
-  function isERR(err) {
-    err = isMR(err) ? err[0] : err;
-    return err && err.constructor == Error && err._ABC_is_err;
-  }
-  function maybe_promise(res) { return C.isObject(res) && res.then && C.isFunction(res.then); }
-  function unpack_promise(res, callback) {
-    var is_r = isMR(res);
-    return (function u(i, res, length, has_promise) {
-      if (i == length) {
-        has_promise && callback(is_r ? res : res[0]);
-        return;
-      }
-      return maybe_promise(res[i]) && (has_promise = true) ? (function(i) {
-        res[i].then(function(v) {
-          res[i] = v;
-          u(i + 1, res, length, has_promise);
-        });
-        return true;
-      })(i) : u(i + 1, res, length, has_promise);
-    })(0, (res = is_r ? res : [res]), res.length, false);
-  }
+  // C.add = B2(C.arr_or_args_to_arr, B.reduce('(a, b) => a + b'));
+  // C.sub = B2(C.arr_or_args_to_arr, B.reduce('(a, b) => a - b'));
+  // C.mod = B2(C.arr_or_args_to_arr, B.reduce('(a, b) => a % b'));
+  // C.mul = B2(C.arr_or_args_to_arr, B.reduce('(a, b) => a * b'));
+  // C.div = B2(C.arr_or_args_to_arr, B.reduce('(a, b) => a / b'));
 
-  function flat(new_arr, arr, noDeep, start) {
-    each(arr, function(v) {
-      if (!C.isArrayLike(v) || (!C.isArray(v) && !C.isArguments(v))) return new_arr.push(v);
-      noDeep ? each(v, function(v) { new_arr.push(v); }) : flat(new_arr, v, noDeep);
-    }, start);
-    return new_arr;
-  }
-  C.flatten = function (arr, noDeep, start) { return flat([], arr, noDeep, start); };
+  // C.parseInt = C.parse_int = function(v) { return parseInt(v, 10); };
+  // C.parseIntAll = C.parse_int_all = B2(C.arr_or_args_to_arr, B.map(C.parse_int));
+  // C.iadd = B2(C.parse_int_all, C.add);
+  // C.isub = B2(C.parse_int_all, C.sub);
 
-  function C() {
-    var context = this;
-    var args = C.toArray(arguments);
-    if (!C.isArray(args[args.length - 1])) args[args.length - 1] = [args[args.length - 1]];
-    var fns = C.flatten(args.pop());
+  // C.not = function(v) { return !v; };
+  // C.nnot = function(v) { return !!v; };
 
-    if (args.length == 1 && isMR(args[0])) args = args[0];
+  // C.and = B2(C.arr_or_args_to_arr, B.find_i(C.not), B.is(-1));
+  // C.or = B2(C.arr_or_args_to_arr, B.find(I), C.nnot);
 
-    var i = 0, promise = null, resolve = null, fns_len = fns.length;
-    function cp() { return hasPromise() ? new Promise(function(rs) { resolve = rs; }) : { then: function(rs) { resolve = rs; } } }
-    return (function c(res) {
-      do {
-        if (i === fns_len) return !promise ? res : resolve ? C.lambda(resolve)(res) : setTimeout(function() { resolve && C.lambda(resolve)(res); }, 0);
-        if (fns[i] && ((isERR(res) && !fns[i]._ABC_is_catch) || (!isERR(res) && fns[i]._ABC_is_catch)) && i++) continue;
-        if (unpack_promise(res, c)) return promise || (promise = cp());
-        try {
-          if (!fns[i]._ABC_is_cb && !fns[i]._ABC_just_cb) res = C.lambda(fns[i++]).apply(context, C.args.trim(MRI(res)));
-          else if (!fns[i]._ABC_is_cb) C.lambda(fns[i++]).apply(context, C.args.trim(MRI(res)).concat(function() { res = toMR(arguments); }));
-        } catch (e) { res = ERR(e); }
-      } while (i == fns_len || i < fns_len && !fns[i]._ABC_is_cb);
-      if ((promise || (promise = cp())) && unpack_promise(res, c)) return promise;
-      try { C.lambda(fns[i++]).apply(context, C.args.trim(MRI(res)).concat(function() { arguments.length <= 1 ? c.apply(null, arguments) : c(toMR(arguments)); })); }
-      catch (e) { c(ERR(e)); }
-      return promise;
-    })(toMR(args));
-  }
-  function C2() { return C(C.toArray(arguments)); }
+  // C.eq = B2(C.arr_or_args_to_arr, B.find_i(function(v, i, l) { return l[0] != v; }), B.is(-1));
+  // C.seq = B2(C.arr_or_args_to_arr, B.find_i(function(v, i, l) { return l[0] !== v; }), B.is(-1));
+  // C.neq = B2(C.eq, C.not);
+  // C.sneq = B2(C.seq, C.not);
 
-  function MRI(res) { return isMR(res) ? res : [res]; }
-  function ERR(err, data) {
-    setTimeout(function() { err._ABC_caught || C.error(err); }, 500);
-    return err = C.extend(err.constructor == Error ? err : new Error(err), data, {_ABC_is_err: true});
-  }
-  F.ERR = window.ERR = ERR;
-  F.CATCH = window.CATCH = function(f) {
-    return C.extend(function(err) { return (err._ABC_caught = true) && f.apply(this, arguments); },
-      {_ABC_is_catch: true, _ABC_is_cb: f._ABC_is_cb, _ABC_just_cb: f._ABC_just_cb});
-  };
+  // C.log = window.console && window.console.log ? console.log.bind ? console.log.bind(console) : function() { console.log.apply(console, arguments); } : I;
+  // C.error = window.console && window.console.error ? console.error.bind ? console.error.bind(console) : function() { console.error.apply(console, arguments); } : I;
+  // C.hi = B.args_pass(C.log);
 
-  C.each = B.each(null);
-  C.map = B.map(null);
-  C.reduce = B.reduce(null);
-  C.filter = B.filter(null);
-  C.reject = B.reject(null);
-  C.find = B.find(null);
-  C.find_key = C.findKey = B.find_key(null);
-  C.findIndex = C.find_index = C.find_i = B.find_index(null);
-  C.some = B.some(null);
-  C.every = B.every(null);
-  C.uniq = B.uniq(null);
-
-  C.add = B2(C.arr_or_args_to_arr, B.reduce('(a, b) => a + b'));
-  C.sub = B2(C.arr_or_args_to_arr, B.reduce('(a, b) => a - b'));
-  C.mod = B2(C.arr_or_args_to_arr, B.reduce('(a, b) => a % b'));
-  C.mul = B2(C.arr_or_args_to_arr, B.reduce('(a, b) => a * b'));
-  C.div = B2(C.arr_or_args_to_arr, B.reduce('(a, b) => a / b'));
-
-  C.parseInt = C.parse_int = function(v) { return parseInt(v, 10); };
-  C.parseIntAll = C.parse_int_all = B2(C.arr_or_args_to_arr, B.map(C.parse_int));
-  C.iadd = B2(C.parse_int_all, C.add);
-  C.isub = B2(C.parse_int_all, C.sub);
-
-  C.not = function(v) { return !v; };
-  C.nnot = function(v) { return !!v; };
-
-  C.and = B2(C.arr_or_args_to_arr, B.find_i(C.not), B.is(-1));
-  C.or = B2(C.arr_or_args_to_arr, B.find(I), C.nnot);
-
-  C.eq = B2(C.arr_or_args_to_arr, B.find_i(function(v, i, l) { return l[0] != v; }), B.is(-1));
-  C.seq = B2(C.arr_or_args_to_arr, B.find_i(function(v, i, l) { return l[0] !== v; }), B.is(-1));
-  C.neq = B2(C.eq, C.not);
-  C.sneq = B2(C.seq, C.not);
-
-  C.log = window.console && window.console.log ? console.log.bind ? console.log.bind(console) : function() { console.log.apply(console, arguments); } : I;
-  C.error = window.console && window.console.error ? console.error.bind ? console.error.bind(console) : function() { console.error.apply(console, arguments); } : I;
-  C.hi = B.args_pass(C.log);
-
-  !function(B, C, notices) {
-    C.noti = C.Noti = C.notice =  {
-      on: on,
-      once: B(X,X,X, true, on),
-      off: off,
-      emit: emit,
-      emitAll: emitAll
-    };
-
-    B.noti = B.Noti = B.notice = {
-      on: function() {
-        var args = arguments;
-        return function(func) { return A(args.length === 3 ? args :  C.isFunction(func) ? C.toArray(args).concat(func) : args, on); };
-      },
-      once: function(func) {
-        var args = arguments;
-        return function(func) { return A(C.toArray(args.length === 3 ? args :  C.isFunction(func) ? C.toArray(args).concat(func) : args).concat([true]), on) };
-      },
-      off: function() { return B.apply(null, C.toArray(arguments).concat(off)); },
-      emit: function() {
-        var args = arguments;
-        return function(args2) { return A(args.length == 3 ? args : C.isArray(args2) ? C.toArray(args).concat([args2]) : args, emit) };
-      },
-      emitAll: function() {
-        var args = arguments;
-        return function(args2) { return A(args.length == 2 ? args : C.isArray(args2) ? C.toArray(args).concat([args2]) : args, emitAll) };
-      }
-    }; B.noti.emit_all = emitAll;
-
-    function on(name1, name2, func, is_once) {
-      var _notice = notices[name1];
-      func.is_once = !!is_once;
-      if (!_notice) _notice = notices[name1] = {};
-      (_notice[name2] = _notice[name2] || []).push(func);
-      return func;
-    }
-
-    function off(name1, n2_or_n2s) {
-      var _notice = notices[name1];
-      if (arguments.length == 1) C.unset(notices, name1);
-      else if (_notice && arguments.length == 2) each(C.isString(n2_or_n2s) ? [n2_or_n2s] : n2_or_n2s, B(_notice, C.unset));
-    }
-
-    function emitAll(name1, emit_args) {
-      var key, _notice = notices[name1];
-      if (_notice) for(key in _notice) C(_notice, key, emit_loop(emit_args));
-    }
-
-    function emit(name1, name2, emit_args) {
-      var _notice = notices[name1];
-      if (_notice) C(name2, [
-        IF(C.isFunction, [J(void 0), name2, function(name2) { return C.isString(name2) ? [name2] : name2; }]).ELSEIF(C.isString, J([name2])).ELSE(I),
-        B(X, B([B.all(J(_notice), I), IF([C.val, function(arr) { return arr && arr.length }], emit_loop(emit_args))]), each)
-      ]);
-    }
-
-    function emit_loop(args) { return [B.tap(C.val, B(X, B([I, B(args, X, A)]), each)), function (_n, k) { _n[k] = C.reject(_n[k], B.val('is_once')); }];}
-  }(B, C, {});
+  // !function(B, C, notices) {
+  //   C.noti = C.Noti = C.notice =  {
+  //     on: on,
+  //     once: B(X,X,X, true, on),
+  //     off: off,
+  //     emit: emit,
+  //     emitAll: emitAll
+  //   };
+  //
+  //   B.noti = B.Noti = B.notice = {
+  //     on: function() {
+  //       var args = arguments;
+  //       return function(func) { return A(args.length === 3 ? args :  C.isFunction(func) ? C.toArray(args).concat(func) : args, on); };
+  //     },
+  //     once: function(func) {
+  //       var args = arguments;
+  //       return function(func) { return A(C.toArray(args.length === 3 ? args :  C.isFunction(func) ? C.toArray(args).concat(func) : args).concat([true]), on) };
+  //     },
+  //     off: function() { return B.apply(null, C.toArray(arguments).concat(off)); },
+  //     emit: function() {
+  //       var args = arguments;
+  //       return function(args2) { return A(args.length == 3 ? args : C.isArray(args2) ? C.toArray(args).concat([args2]) : args, emit) };
+  //     },
+  //     emitAll: function() {
+  //       var args = arguments;
+  //       return function(args2) { return A(args.length == 2 ? args : C.isArray(args2) ? C.toArray(args).concat([args2]) : args, emitAll) };
+  //     }
+  //   }; B.noti.emit_all = emitAll;
+  //
+  //   function on(name1, name2, func, is_once) {
+  //     var _notice = notices[name1];
+  //     func.is_once = !!is_once;
+  //     if (!_notice) _notice = notices[name1] = {};
+  //     (_notice[name2] = _notice[name2] || []).push(func);
+  //     return func;
+  //   }
+  //
+  //   function off(name1, n2_or_n2s) {
+  //     var _notice = notices[name1];
+  //     if (arguments.length == 1) C.unset(notices, name1);
+  //     else if (_notice && arguments.length == 2) each(C.isString(n2_or_n2s) ? [n2_or_n2s] : n2_or_n2s, B(_notice, C.unset));
+  //   }
+  //
+  //   function emitAll(name1, emit_args) {
+  //     var key, _notice = notices[name1];
+  //     if (_notice) for(key in _notice) C(_notice, key, emit_loop(emit_args));
+  //   }
+  //
+  //   function emit(name1, name2, emit_args) {
+  //     var _notice = notices[name1];
+  //     if (_notice) C(name2, [
+  //       IF(C.isFunction, [J(void 0), name2, function(name2) { return C.isString(name2) ? [name2] : name2; }]).ELSEIF(C.isString, J([name2])).ELSE(I),
+  //       B(X, B([B.all(J(_notice), I), IF([C.val, function(arr) { return arr && arr.length }], emit_loop(emit_args))]), each)
+  //     ]);
+  //   }
+  //
+  //   function emit_loop(args) { return [B.tap(C.val, B(X, B([I, B(args, X, A)]), each)), function (_n, k) { _n[k] = C.reject(_n[k], B.val('is_once')); }];}
+  // }(B, C, {});
 
   // C.remove_by_index = C.removeByIndex = removeByIndex;
   // function removeByIndex(arr, from) {
@@ -682,29 +678,29 @@
   //   return from;
   // }
 
-  C.test = function(tests) {
-    var fails = J([]), all = J([]), fna = J([fails(), all()]);
-    return C([J('------------Start------------'), C.log, J(tests),
-      B.map(function(f, k) {
-        return IF([all, B.m('push', k + ' ----> success')])
-          .ELSE([fna, B.map([I, B.m('push', k + ' ----> fail')])])(f());
-      }),
-      J('------------Fail-------------'), C.log,
-      fails, B.each([I, C.error]),
-      J('------------All--------------'), C.log,
-      all, B.each([I, C.log]),
-      J('------------End--------------'), C.log]);
-  };
+  // C.test = function(tests) {
+  //   var fails = J([]), all = J([]), fna = J([fails(), all()]);
+  //   return C([J('------------Start------------'), C.log, J(tests),
+  //     B.map(function(f, k) {
+  //       return IF([all, B.m('push', k + ' ----> success')])
+  //         .ELSE([fna, B.map([I, B.m('push', k + ' ----> fail')])])(f());
+  //     }),
+  //     J('------------Fail-------------'), C.log,
+  //     fails, B.each([I, C.error]),
+  //     J('------------All--------------'), C.log,
+  //     all, B.each([I, C.log]),
+  //     J('------------End--------------'), C.log]);
+  // };
 
-  function F(nodes) {
-    var f = getValue(G, nodes);
-    var err = Error('warning: ' + nodes + ' is not defined');
-    return f || setTimeout(function() { (f = f || getValue(G, nodes)) || C.error(err) }, 500)
-      && function() { return A(arguments, f || (f = getValue(G, nodes)), this); }
-  }
+  // function F(nodes) {
+  //   var f = getValue(G, nodes);
+  //   var err = Error('warning: ' + nodes + ' is not defined');
+  //   return f || setTimeout(function() { (f = f || getValue(G, nodes)) || C.error(err) }, 500)
+  //     && function() { return A(arguments, f || (f = getValue(G, nodes)), this); }
+  // }
 
   //function times(len, func) { for (var i = 0; i < len; i++) func(i); }
-  function times2(len, func) { for (var i = 1; i <= len; i++) func(i); }
+  // function times2(len, func) { for (var i = 1; i <= len; i++) func(i); }
 
   /* H start */
   var TAB_SIZE;
@@ -843,20 +839,20 @@
   function return_check(val) { return (val == null || val == void 0) ? '' : val; }
   /* H end */
 
-  function IF(predicate, fn) {
-    var store = [fn ? [predicate, fn] : [I, predicate]];
-    return C.extend(IF, {
-      ELSEIF: function(predicate, fn) { return store.push(fn ? [predicate, fn] : [I, predicate]) && IF; },
-      ELSE: function(fn) { return store.push([J(true), fn]) && IF; }
-    });
-    function IF() {
-      var context = this, args = arguments;
-      return C(store, args, [
-        B.find(function(fnset, i, l, args) { return A(args, fnset[0], context); }),
-        function(fnset) { return fnset ? A(args, fnset[1], context) : void 0; }
-      ]);
-    }
-  } F.IF = window.IF = IF;
+  // function IF(predicate, fn) {
+  //   var store = [fn ? [predicate, fn] : [I, predicate]];
+  //   return C.extend(IF, {
+  //     ELSEIF: function(predicate, fn) { return store.push(fn ? [predicate, fn] : [I, predicate]) && IF; },
+  //     ELSE: function(fn) { return store.push([J(true), fn]) && IF; }
+  //   });
+  //   function IF() {
+  //     var context = this, args = arguments;
+  //     return C(store, args, [
+  //       B.find(function(fnset, i, l, args) { return A(args, fnset[0], context); }),
+  //       function(fnset) { return fnset ? A(args, fnset[1], context) : void 0; }
+  //     ]);
+  //   }
+  // } F.IF = window.IF = IF;
 
   // function I(v) { return v; }
   // function J(v) { return function() { return v; }; }
