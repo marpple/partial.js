@@ -195,13 +195,15 @@
   // TODO
   _.async = {};
   _.async.Pipe = _.Pipe;
-  _.async.pipe = _.pipe;
   _.async.Indent = _.Indent;
+  _.async.pipe = _.pipe;
+  _.async.pipec = _.pipec;
+  _.async.pipea = _.pipea;
 
   /* mutable, immutable */
   _.set = function(obj, key, valueOrFunc) {
     if (!_.isFunction(valueOrFunc)) return _.mr(obj[key] = valueOrFunc, key, obj);
-    return _.async.go(valueOrFunc, function(_value) { return _.mr(obj[key] = _value, key, obj) })(obj, key);
+    return _.async.pipe(_.mr(obj, key), valueOrFunc, function(_value) { return _.mr(obj[key] = _value, key, obj) });
   };
   _.unset = function(obj, key) { var val = obj[key]; delete obj[key]; return _.mr(val, key, obj); };
   _.remove = function(arr, remove) { return _.mr(remove, _.removeByIndex(arr, arr.indexOf(remove)), arr); };
@@ -209,11 +211,11 @@
   _.shift = function(arr) { return _.mr(arr.shift(), 0, arr); };
   _.push = function(arr, itemOrFunc) {
     if (!_.isFunction(itemOrFunc)) return _.mr(itemOrFunc, arr.push(itemOrFunc), arr);
-    return _.async.pipe(itemOrFunc, function(_item) { return _.mr(_item, arr.push(_item), arr); })(arr);
+    return _.async.pipe(arr, itemOrFunc, function(_item) { return _.mr(_item, arr.push(_item), arr); });
   };
   _.unshift = function(arr, itemOrFunc) {
     if (!_.isFunction(itemOrFunc)) return _.mr(itemOrFunc, arr.unshift(itemOrFunc), arr);
-    return _.async.pipe(itemOrFunc, function(_item) { return _.mr(_item, arr.unshift(_item), arr); })(arr);
+    return _.async.pipe(arr, itemOrFunc, function(_item) { return _.mr(_item, arr.unshift(_item), arr); });
   };
   _.removeByIndex = function(arr, from) {
     if (from !== -1) {
