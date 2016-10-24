@@ -141,12 +141,34 @@
   };
 
   _.map = function(data, iteratee) { // ary, obj
+
     var l = data.length;
-    var res = Array(l);
-    for (var i=0; i<l; i++) {
-      res[i] = (iteratee(data[i], i, data));
+    if (l) { // 길이가 0인 배열인 경우는?
+      var res = Array(l);
+
+
+      if (arguments[3]) {
+        var args = _.toArray(arguments).slice(2)
+
+      }
+      for (var i=0; i<l; i++) {
+        res[i] = iteratee(data[i], i, data);
+      }
+
+    } else {
+      var keys = _.keys(data);
+      var res = Array(l = keys.length);
+      console.log(res);
+
+      for (var i=0; i<l; i++) {
+        res[i] = iteratee(data[keys[i]], keys[i], data);
+      }
+
     }
+
   };
+
+
   _.each = function() {
 
   };
@@ -162,19 +184,79 @@
     }
 
   };
-  _.reject = function() {
 
+
+
+  /*
+  * filter
+  * */
+  _.filter = function(data, predicate) {
+    var res = [];
+
+    if (_.isArrayLike(data)) { // 배열일 경우
+      for (var i = 0, l = data.length; i < l; i++) {
+        if (predicate(data[i], i, data)) res.push(data[i]);
+      }
+    } else { // 안배열일 경우
+      var keys = _.keys(data);
+      for (var i = 0, l = keys.length; i < l; i++) {
+        if (predicate(data[keys[i]], keys[i], data)) res.push(data[keys[i]]);
+      }
+    }
+    return res;
   };
 
-  _.find = function(predicate) {
-    return function(ary) {
-      var l = ary.length;
-      for(var i=0; i<l; i++) {
-        if (tmp = predicate(ary[i])) return tmp;
+
+
+  /*
+  * reject
+  * */
+  _.reject = function(data, predicate) {
+    var res = [];
+
+    if (_.isArrayLike(data)) { // 배열일 경우
+      for (var i = 0, l = data.length; i < l; i++) {
+        if (!predicate(data[i], i, data)) res.push(data[i]);
       }
-
+    } else { // 안배열일 경우
+      var keys = _.keys(data);
+      for (var i = 0, l = keys.length; i < l; i++) {
+        if (!predicate(data[keys[i]], keys[i], data)) res.push(data[keys[i]]);
+      }
     }
+    return res;
+  };
 
+
+
+  /*
+  * find
+  * */
+  //언더스코어 find
+  _.find = _.detect = function (obj, predicate) {
+    var key = _.isArrayLike(obj) ? _.findIndex(obj, predicate) : _.findKey(obj, predicate);
+    if (key !== void 0 && key !== -1) return obj[key];
+  };
+
+  _.find = function(data, predicate) {
+    if (_.isArrayLike(data)) // 배열일 경우
+      for (var i=0, l=data.length; i<l; i++)
+        if (predicate(data[i])) return data[i];
+    else // 안배열. 객체일 경우
+      return data[_.findKey(data, predicate)];
+  };
+
+
+
+  /*
+  * 필요한 기타 함수
+   */
+  _.findKey = function (obj, predicate) {
+    var keys = _.keys(obj), key;
+    for (var i = 0, length = keys.length; i < length; i++) {
+      key = keys[i];
+      if (predicate(obj[key], key, obj)) return key;
+    }
   };
 
 
