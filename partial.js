@@ -431,31 +431,28 @@
 
   _.map = function(data, iteratee) {
     iteratee = Iter(iteratee, arguments, 2);
-    if (_.isArrayLike(data)) {
+    if (_.isArrayLike(data))
       for (var i = 0, l = data.length, res = Array(l); i < l; i++)
         res[i] = iteratee(data[i], i, data);
-    } else {
-      for (var keys = _.keys(data), i = 0, l = keys.length, res = Array(l); i<l; i++)
+    else
+      for (var keys = _.keys(data), i = 0, l = keys.length, res = Array(l); i < l; i++)
         res[i] = iteratee(data[keys[i]], keys[i], data);
-    }
     return res;
   };
 
   _.each = function(data, iteratee) {
     iteratee = Iter(iteratee, arguments, 2);
-    if (_.isArrayLike(data)) {
+    if (_.isArrayLike(data))
       for (var i = 0, l = data.length; i < l; i++)
         iteratee(data[i], i, data);
-    } else {
-      for (var k in data)
-        iteratee(data[k], k, data);
-    }
+    else
+      for (var keys = _.keys(data), i = 0, l = keys.length; i<l; i++)
+        iteratee(data[keys[i]], keys[i], data);
     return data;
   };
 
   _.filter = function(data, predicate) {
-    predicate = Iter(predicate, arguments, 2);
-    var res = [];
+    var res = [], predicate = Iter(predicate, arguments, 2);
     if (_.isArrayLike(data)) {
       for (var i = 0, l = data.length; i < l; i++)
         if (predicate(data[i], i, data)) res.push(data[i]);
@@ -467,8 +464,7 @@
   };
 
   _.reject = function(data, predicate) {
-    predicate = Iter(predicate, arguments, 2);
-    var res = [];
+    var res = [], predicate = Iter(predicate, arguments, 2);
     if (_.isArrayLike(data)) {
       for (var i = 0, l = data.length; i < l; i++)
         if (!predicate(data[i], i, data)) res.push(data[i]);
@@ -485,11 +481,12 @@
       for (var i = 0, l = data.length; i < l; i++)
         if (predicate(data[i], i, data)) return data[i];
     } else { // 안배열. 객체일 경우
-      for (var keys = _.keys(data), i= 0, l = keys.length; i<l; i++)
-        if(predicate(data[keys[i], keys[i], data])) return data[keys[i]];
+      for (var keys = _.keys(data), i = 0, l = keys.length; i<l; i++)
+        if (predicate(data[keys[i], keys[i], data])) return data[keys[i]];
     }
   };
 
+  /* 리듀스는 데이터 3개까지는 기본 데이터이게 동작하도록요. 3번째 memo.*/
   _.reduce = function(data, predicate) {
     predicate = Iter(predicate, arguments, 2);
     if (_.isArrayLike(data)) {
@@ -509,11 +506,8 @@
   };
 
   _.find_k = _.find_key = _.findKey = function(obj, predicate) {
-    var keys = _.keys(obj), key;
-    for (var i = 0, l = keys.length; i < l; i++) {
-      key = keys[i];
-      if (predicate(obj[key], key, obj)) return key;
-    }
+    for (var keys = _.keys(obj), key, i = 0, l = keys.length; i < l; i++)
+      if (predicate(obj[key = keys[i]], key, obj)) return key;
   };
 
   _.every = function(data, predicate) {
@@ -522,11 +516,10 @@
       for (var i = 0, l = data.length; i < l; i++)
         if (!predicate(data[i], i, data)) return false;
     } else {
-      for (var k in data)
-        if (!predicate(data[k], k, data)) return false;
+      for (var keys = _.keys(data), i = 0, l = keys.length; i < l; i++)
+        if (!predicate(data[keys[i]], keys[i], data)) return false;
     }
     return true;
-
   };
 
   _.some = function(data, predicate) {
@@ -535,8 +528,8 @@
       for (var i = 0, l = data.length; i < l; i++)
         if (predicate(data[i], i, data)) return true;
     } else {
-      for (var k in data)
-        if (predicate(data[k], k, data)) return true;
+      for (var keys = _.keys(data), i = 0, l = keys.length; i < l; i++)
+        if (predicate(data[keys[i]], keys[i], data)) return true;
     }
     return false;
   };
