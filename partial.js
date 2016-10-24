@@ -373,34 +373,14 @@
   });
 
   /* Notification, Event */
-  /*!function(B, C, notices) {
-    C.noti = C.Noti = C.notice =  {
+  !function(_, notices) {
+    _.noti = _.Noti = _.notice =  {
       on: on,
-      once: B(X,X,X, true, on),
+      once: _(on, _, _ , _, true),
       off: off,
       emit: emit,
       emitAll: emitAll
     };
-
-    B.noti = B.Noti = B.notice = {
-      on: function() {
-        var args = arguments;
-        return function(func) { return A(args.length === 3 ? args :  C.isFunction(func) ? C.toArray(args).concat(func) : args, on); };
-      },
-      once: function(func) {
-        var args = arguments;
-        return function(func) { return A(C.toArray(args.length === 3 ? args :  C.isFunction(func) ? C.toArray(args).concat(func) : args).concat([true]), on) };
-      },
-      off: function() { return B.apply(null, C.toArray(arguments).concat(off)); },
-      emit: function() {
-        var args = arguments;
-        return function(args2) { return A(args.length == 3 ? args : C.isArray(args2) ? C.toArray(args).concat([args2]) : args, emit) };
-      },
-      emitAll: function() {
-        var args = arguments;
-        return function(args2) { return A(args.length == 2 ? args : C.isArray(args2) ? C.toArray(args).concat([args2]) : args, emitAll) };
-      }
-    }; B.noti.emit_all = emitAll;
 
     function on(name1, name2, func, is_once) {
       var _notice = notices[name1];
@@ -412,25 +392,30 @@
 
     function off(name1, n2_or_n2s) {
       var _notice = notices[name1];
-      if (arguments.length == 1) C.unset(notices, name1);
-      else if (_notice && arguments.length == 2) each(C.isString(n2_or_n2s) ? [n2_or_n2s] : n2_or_n2s, B(_notice, C.unset));
+      if (arguments.length == 1) _.unset(notices, name1);
+      else if (_notice && arguments.length == 2) each(_.isString(n2_or_n2s) ? [n2_or_n2s] : n2_or_n2s, _(_.unset, _notice));
     }
 
     function emitAll(name1, emit_args) {
       var key, _notice = notices[name1];
-      if (_notice) for(key in _notice) C(_notice, key, emit_loop(emit_args));
+      if (_notice) for(key in _notice) emit_loop(emit_args, _notice, key);
     }
 
-    function emit(name1, name2, emit_args) {
-      var _notice = notices[name1];
-      if (_notice) C(name2, [
-        IF(C.isFunction, [J(void 0), name2, function(name2) { return C.isString(name2) ? [name2] : name2; }]).ELSEIF(C.isString, J([name2])).ELSE(I),
-        B(X, B([B.all(J(_notice), I), IF([C.val, function(arr) { return arr && arr.length }], emit_loop(emit_args))]), each)
-      ]);
+    function emit(name, keys, emit_args) {
+      !function(_notice, keys) {
+        if (!_notice) return ;
+        if (_.isString(keys)) return emit_loop(emit_args, _notice, keys);
+        if (_.isArray(keys)) each(keys, _(emit_loop, emit_args, _notice));
+      }(notices[name], _.isFunction(keys) ? keys() : keys);
     }
 
-    function emit_loop(args) { return [B.tap(C.val, B(X, B([I, B(args, X, A)]), each)), function (_n, k) { _n[k] = C.reject(_n[k], B.val('is_once')); }];}
-  }(B, C, {});*/
+    function emit_loop(emit_args, _notice, key) {
+      _.set(_notice, key, _.reject(_notice[key], function(func) {
+        func.apply(null, emit_args);
+        return func.is_once;
+      }));
+    }
+  }(_, {});
 
   /* each - reduce */
   _.each = function() {
