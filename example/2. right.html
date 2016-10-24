@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>pure functions - pipe</title>
+</head>
+<body>
+
+<script src="../partial.js"></script>
+
+<script>
+  var log_with_this = function () {
+    console.log(this);
+    console.log.apply(null, arguments)
+  };
+
+  _.right(1,2,3, log_with_this);
+  _.righta([1,2,3], log_with_this);
+
+  // with this
+  _.right.call(4, 1,2,3, log_with_this);
+  _.righta.call(4, [1,2,3], log_with_this);
+</script>
+
+</body>
+</html>
