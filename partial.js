@@ -552,13 +552,13 @@
   };
 
   // indexOf()
-  _.uniq = function(ary, iteratee) { // 배열만
-    var tmp, res = [], new_ary = [];
-    for (var i = 0, l = ary.length; i < l; i++) {
-      tmp = iteratee(ary[i], i, ary);
-      if (res.indexOf(tmp) == -1) { res.push(tmp); new_ary.push(ary[i]); }
-    }
-    return new_ary;
+  _.uniq = function(list, iteratee) {
+    var res = [], cmp = iteratee ? _.map(list, iteratee) : list, tmp = [];
+
+    for (var i = 0, len = list.length; i < len; i++)
+      if (tmp.indexOf(cmp[i]) == -1) { tmp.push(cmp[i]); res.push(list[i]); }
+
+    return res;
   };
 
   _.all = function(args) {
