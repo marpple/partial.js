@@ -476,6 +476,166 @@
   _.spread = function() {};
 
 
+
+  function Iter(iter, args, num) {
+    if (args.length == num) return iter;
+    var args2 = _.rest(args, num);
+    var args3;
+    return function() {
+      if (args3) for (var i = 0, l = arguments.length; i < l; i++) args3[i] = arguments[i];
+      else args3 = _.to_array(arguments).concat(args2);
+      return iter.apply(null, args3);
+    }
+  }
+
+  _.map = function(data, iteratee) {
+    iteratee = Iter(iteratee, arguments, 2);
+    if (_.isArrayLike(data)) {
+      for (var i = 0, l = data.length, res = Array(l); i < l; i++)
+        res[i] = iteratee(data[i], i, data);
+    } else {
+      for (var keys = _.keys(data), i = 0, l = keys.length, res = Array(l); i<l; i++)
+        res[i] = iteratee(data[keys[i]], keys[i], data);
+    }
+    return res;
+  };
+
+  _.each = function(data, iteratee) {
+    iteratee = Iter(iteratee, arguments, 2);
+    if (_.isArrayLike(data)) {
+      for (var i = 0, l = data.length; i < l; i++)
+        iteratee(data[i], i, data);
+    } else {
+      for (var k in data)
+        iteratee(data[k], k, data);
+    }
+    return data;
+  };
+
+  _.filter = function(data, predicate) {
+    predicate = Iter(predicate, arguments, 2);
+    var res = [];
+    if (_.isArrayLike(data)) {
+      for (var i = 0, l = data.length; i < l; i++)
+        if (predicate(data[i], i, data)) res.push(data[i]);
+    } else {
+      for (var keys = _.keys(data), i = 0, l = keys.length; i < l; i++)
+        if (predicate(data[keys[i]], keys[i], data)) res.push(data[keys[i]]);
+    }
+    return res;
+  };
+
+  _.reject = function(data, predicate) {
+    predicate = Iter(predicate, arguments, 2);
+    var res = [];
+    if (_.isArrayLike(data)) {
+      for (var i = 0, l = data.length; i < l; i++)
+        if (!predicate(data[i], i, data)) res.push(data[i]);
+    } else {
+      for (var keys = _.keys(data), i = 0, l = keys.length; i < l; i++)
+        if (!predicate(data[keys[i]], keys[i], data)) res.push(data[keys[i]]);
+    }
+    return res;
+  };
+
+  _.find = function(data, predicate) {
+    predicate = Iter(predicate, arguments, 2);
+    if (_.isArrayLike(data)) { // 배열, 문자열일 경우
+      for (var i = 0, l = data.length; i < l; i++)
+        if (predicate(data[i], i, data)) return data[i];
+    } else { // 안배열. 객체일 경우
+      for (var keys = _.keys(data), i= 0, l = keys.length; i<l; i++)
+        if(predicate(data[keys[i], keys[i], data])) return data[keys[i]];
+    }
+  };
+
+  _.find_i = _.find_idx = _.findIndex = function(ary, predicate) {
+    for (var i = 0, l = ary.length; i < l; i++)
+      if (predicate(ary[i], i, ary)) return i;
+  };
+
+  _.find_k = _.find_key = _.findKey = function(obj, predicate) {
+    var keys = _.keys(obj), key;
+    for (var i = 0, l = keys.length; i < l; i++) {
+      key = keys[i];
+      if (predicate(obj[key], key, obj)) return key;
+    }
+  };
+
+  _.every = function(data, predicate) {
+    predicate = Iter(predicate, arguments, 2);
+    if (_.isArrayLike(data)) {
+      for (var i = 0, l = data.length; i < l; i++)
+        if (!predicate(data[i], i, data)) return false;
+    } else {
+      for (var k in data)
+        if (!predicate(data[k], k, data)) return false;
+    }
+    return true;
+
+  };
+
+  _.some = function(data, predicate) {
+    predicate = Iter(predicate, arguments, 2);
+    if (_.isArrayLike(data)) {
+      for (var i = 0, l = data.length; i < l; i++)
+        if (predicate(data[i], i, data)) return true;
+    } else {
+      for (var k in data)
+        if (predicate(data[k], k, data)) return true;
+    }
+    return false;
+  };
+
+  // 객체['key']
+  _.uniq = function(ary, iteratee) { // 배열만
+    var tmp, res = {}, new_ary = [];
+    for (var i = 0, l = ary.length; i < l; i++) {
+      tmp = iteratee(ary[i], i, ary);
+      if (!res[tmp]) { res[tmp] = true; new_ary.push(ary[i]); }
+    }
+    return new_ary;
+  };
+
+  // indexOf()
+  _.uniq = function(ary, iteratee) { // 배열만
+    var tmp, res = [], new_ary = [];
+    for (var i = 0, l = ary.length; i < l; i++) {
+      tmp = iteratee(ary[i], i, ary);
+      if (res.indexOf(tmp) == -1) { res.push(tmp); new_ary.push(ary[i]); }
+    }
+    return new_ary;
+  };
+
+  _.all = function(args) {
+    var res = [], tmp;
+    for (var i = 1, l = arguments.length; i < l; i++) {
+      tmp = _.is_mr(args) ? arguments[i].apply(args) : arguments[i](args);
+      if (_.is_mr(tmp))
+        for (var j=0, len=tmp.length; j<len; j++) res.push(tmp[j]);
+      else
+        res.push(tmp);
+    }
+    return _.mr(res);
+  };
+
+  _.spread = function(args) { // args._mr 아니어도 무조건 _mr로 취급~!
+
+    var res = [], tmp;
+    // 함수 기준
+    for (var i = 1, l = arguments.length; i < l; i++) {
+      tmp = _.is_mr(args[i-1]) ? arguments[i].apply(args[i-1]) : arguments[i](args[i-1]);
+      if (_.is_mr(tmp))
+        for (var j=0, len=tmp.length; j<len; j++) res.push(tmp[j]);
+      else
+        res.push(tmp);
+    }
+
+    // 함수나 인자들이나 더 긴 것 기준
+    return res;
+  };
+
+
   // async each - reduce
   // function base_loop_fn(body, end_q, end, complete, iter_or_predi, params) {
   //   var context = this;
