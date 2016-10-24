@@ -9,7 +9,7 @@
   window._ ? window.__ = _ : window._ = _;
   var ___ = window.___ = ___;
 
-  /* Partail */
+  /* Partial */
   function _(fn) {
     fn = Lambda(fn);
     var args1 = [], args3, len = arguments.length, ___idx = len;
@@ -418,50 +418,6 @@
   }(_, {});
 
   /* each - reduce */
-  _.each = function() {
-
-  };
-  _.map = function(data, iteratee) { // ary, obj
-    var l = data.length;
-    var res = Array(l);
-    for (var i=0; i<l; i++) {
-      res[i] = (iteratee(data[i], i, data));
-    }
-  };
-  _.filter = function(predicate) {
-    return function(ary) {
-      var l = ary.length;
-      var res = [];
-      var tmp;
-      for(var i=0; i<l; i++) {
-        if (tmp = predicate(ary[i])) res.push(tmp);
-      }
-    }
-
-  };
-  _.reject = function() {
-
-  };
-  _.find = function(predicate) {
-    return function(ary) {
-      var l = ary.length;
-      for(var i=0; i<l; i++) {
-        if (tmp = predicate(ary[i])) return tmp;
-      }
-    }
-  };
-  _.find_i = _.find_idx = _.findIndex = function() {
-  };
-  _.find_k = _.find_key = _.findKey = function() {
-  };
-  _.every = function() {};
-  _.some = function() {};
-  _.uniq = function() {};
-  _.all = function() {};
-  _.spread = function() {};
-
-
-
   function Iter(iter, args, num) {
     if (args.length == num) return iter;
     var args2 = _.rest(args, num);
@@ -534,6 +490,19 @@
     }
   };
 
+  _.reduce = function(data, predicate) {
+    predicate = Iter(predicate, arguments, 2);
+    if (_.isArrayLike(data)) {
+      for (var res = data[0], i = 1, len = data.length; i < len; i++)
+        res = predicate(res, data[i], i, data);
+    } else {
+      var keys = _.keys(data);
+      for (var res = data[keys[0]], i = 1, len = keys.length; i < len; i++)
+        res = predicate(res, data[keys[i]], i, data);
+    }
+    return res;
+  };
+
   _.find_i = _.find_idx = _.findIndex = function(ary, predicate) {
     for (var i = 0, l = ary.length; i < l; i++)
       if (predicate(ary[i], i, ary)) return i;
@@ -595,31 +564,29 @@
   _.all = function(args) {
     var res = [], tmp;
     for (var i = 1, l = arguments.length; i < l; i++) {
-      tmp = _.is_mr(args) ? arguments[i].apply(args) : arguments[i](args);
+      tmp = _.is_mr(args) ? arguments[i].apply(null, args) : arguments[i](args);
       if (_.is_mr(tmp))
         for (var j=0, len=tmp.length; j<len; j++) res.push(tmp[j]);
       else
         res.push(tmp);
     }
-    return _.mr(res);
+    return _.to_mr(res);
   };
 
-  _.spread = function(args) { // args._mr 아니어도 무조건 _mr로 취급~!
+  _.spread = function(args) {
+    var fns = _.rest(arguments, 1), res = [], value;
 
-    var res = [], tmp;
-    // 함수 기준
-    for (var i = 1, l = arguments.length; i < l; i++) {
-      tmp = _.is_mr(args[i-1]) ? arguments[i].apply(args[i-1]) : arguments[i](args[i-1]);
-      if (_.is_mr(tmp))
-        for (var j=0, len=tmp.length; j<len; j++) res.push(tmp[j]);
+    for (var i = 0, fl = fns.length, al = args.length; i < fl && i < al; i++) {
+      value = fns[i] ? fns[i](args[i] ? args[i] : _.noop) : _.i(args[i]);
+
+      if (_.is_mr(value) && (value = _.toArray(value)))
+        while (value.length) res.push(value.shift());
       else
-        res.push(tmp);
+        res.push(value);
     }
 
-    // 함수나 인자들이나 더 긴 것 기준
-    return res;
+    return _.to_mr(res);
   };
-
 
   // async each - reduce
   // function base_loop_fn(body, end_q, end, complete, iter_or_predi, params) {
