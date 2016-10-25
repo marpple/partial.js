@@ -446,7 +446,7 @@
       for (var i = 0, l = data.length; i < l; i++)
         iteratee(data[i], i, data);
     else
-      for (var keys = _.keys(data), i = 0, l = keys.length; i<l; i++)
+      for (var keys = _.keys(data), i = 0, l = keys.length; i < l; i++)
         iteratee(data[keys[i]], keys[i], data);
     return data;
   };
@@ -486,14 +486,14 @@
     }
   };
 
-  /* memo 있는 버전 */
+  // reduce 수정
   _.reduce = function(data, predicate, memo) {
     predicate = Iter(predicate, arguments, 3);
     if (_.isArrayLike(data)) {
-      for (var res = memo || 0, i = 0, l = data.length; i < l; i++)
+      for (var i = 0, res = memo||data[i++], l = data.length; i < l; i++)
         res = predicate(res, data[i], i, data);
     } else {
-      for (var res = memo || 0, keys = _.keys(data), i = 0, l = keys.length; i < l; i++)
+      for (var i = 0, keys = _.keys(data), res = memo||data[keys[i++]], l = keys.length; i < l; i++)
         res = predicate(res, data[keys[i]], i, data);
     }
     return res;
