@@ -420,8 +420,7 @@
   /* each - reduce */
   function Iter(iter, args, num) {
     if (args.length == num) return iter;
-    var args2 = _.rest(args, num);
-    var args3;
+    var args2 = _.rest(args, num), args3;
     return function() {
       if (args3) for (var i = 0, l = arguments.length; i < l; i++) args3[i] = arguments[i];
       else args3 = _.to_array(arguments).concat(args2);
@@ -534,11 +533,10 @@
     return false;
   };
 
-  _.uniq = function(list, iteratee) {
-    iteratee = Iter(iteratee, arguments, 2);
-    var res = [], cmp = iteratee ? _.map(list, iteratee) : list, tmp = [];
-    for (var i = 0, len = list.length; i < len; i++)
-      if (tmp.indexOf(cmp[i]) == -1) { tmp.push(cmp[i]); res.push(list[i]); }
+  _.uniq = function(arr, iteratee) {
+    var res = [], cmp = iteratee ? _.map(arr, Iter(iteratee, arguments, 2)) : arr, tmp = [];
+    for (var i = 0, l = arr.length; i < l; i++)
+      if (tmp.indexOf(cmp[i]) == -1) { tmp.push(cmp[i]); res.push(arr[i]); }
     return res;
   };
 
@@ -547,7 +545,7 @@
     for (var i = 1, l = arguments.length; i < l; i++) {
       tmp = _.is_mr(args) ? arguments[i].apply(null, args) : arguments[i](args);
       if (_.is_mr(tmp))
-        for (var j = 0, len = tmp.length; j < len; j++) res.push(tmp[j]);
+        for (var j = 0, l = tmp.length; j < l; j++) res.push(tmp[j]);
       else
         res.push(tmp);
     }
@@ -559,7 +557,7 @@
     for (var i = 0, fl = fns.length, al = args.length; i < fl && i < al; i++) {
       tmp = _.is_mr(args[i]) ? (fns[i] || _.i).apply(null, args[i]) : (fns[i] || _.i)(args[i]);
       if (_.is_mr(tmp))
-        for (var j = 0, len = tmp.length; j < len; j++) res.push(tmp[j]);
+        for (var j = 0, l = tmp.length; j < l; j++) res.push(tmp[j]);
       else
         res.push(tmp);
     }
