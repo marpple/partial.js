@@ -488,13 +488,12 @@
 
   _.reduce = function(data, predicate, memo) {
     predicate = Iter(predicate, arguments, 3);
-    if (_.isArrayLike(data)) {
+    if (_.isArrayLike(data))
       for (var i = 0, res = memo || data[i++], l = data.length; i < l; i++)
         res = predicate(res, data[i], i, data);
-    } else {
+    else
       for (var i = 0, keys = _.keys(data), res = memo || data[keys[i++]], l = keys.length; i < l; i++)
         res = predicate(res, data[keys[i]], i, data);
-    }
     return res;
   };
 
