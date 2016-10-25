@@ -682,4 +682,24 @@
   //     J('------------End--------------'), C.log]);
   // };
 
+  _.template = _.t = function() {
+
+
+  };
+
+  _.TAB_SIZE = function() {};
+
+  _.template.each = _.t.each = function() {
+
+
+  };
+
+  _.string.each = _.s.each = function() {
+
+  };
+
+  _.string = _.s = function() {
+
+  };
+
 }(typeof global == 'object' && global.global == global && (global.G = global) || window);
