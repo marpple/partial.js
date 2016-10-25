@@ -486,7 +486,6 @@
     }
   };
 
-  // reduce 수정
   _.reduce = function(data, predicate, memo) {
     predicate = Iter(predicate, arguments, 3);
     if (_.isArrayLike(data)) {
