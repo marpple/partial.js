@@ -610,13 +610,14 @@
   _.all = function(args) {
     var res = [], tmp;
     for (var i = 1, l = arguments.length; i < l; i++) {
-      tmp = _.is_mr(args) ? arguments[i].apply(args) : arguments[i](args);
+      tmp = _.is_mr(args) ? arguments[i].apply(null, args) : arguments[i](args);
       if (_.is_mr(tmp))
         for (var j=0, len=tmp.length; j<len; j++) res.push(tmp[j]);
       else
         res.push(tmp);
     }
-    return _.mr(res);
+    //return (res._mr = true) && res;
+    return _.to_mr(res);
   };
 
   _.spread = function(args) { // args._mr 아니어도 무조건 _mr로 취급~!
