@@ -420,7 +420,8 @@
   /* each - reduce */
   function Iter(iter, args, num) {
     if (args.length == num) return iter;
-    var args2 = _.rest(args, num), args3;
+    var args2 = _.rest(args, num);
+    var args3;
     return function() {
       if (args3) for (var i = 0, l = arguments.length; i < l; i++) args3[i] = arguments[i];
       else args3 = _.to_array(arguments).concat(args2);
@@ -534,20 +535,17 @@
     return false;
   };
 
-  _.uniq = function(ary, iteratee) {
+  _.uniq = function(list, iteratee) {
     iteratee = Iter(iteratee, arguments, 2);
-    var res = [], cmp = iteratee ? _.map(ary, iteratee) : ary, tmp = [];
-
-    for (var i = 0, l = ary.length; i < l; i++) {
-      if (tmp.indexOf(cmp[i]) == -1) { tmp.push(cmp[i]); res.push(ary[i]); }
-    }
+    var res = [], cmp = iteratee ? _.map(list, iteratee) : list, tmp = [];
+    for (var i = 0, len = list.length; i < len; i++)
+      if (tmp.indexOf(cmp[i]) == -1) { tmp.push(cmp[i]); res.push(list[i]); }
     return res;
   };
 
   _.all = function(args) {
     for (var i = 1, l = arguments.length, res = [], tmp; i < l; i++) {
       tmp = _.is_mr(args) ? arguments[i].apply(null, args) : arguments[i](args);
-
       if (_.is_mr(tmp))
         for (var j = 0, l = tmp.length; j < l; j++) res.push(tmp[j]);
       else
@@ -559,8 +557,7 @@
   _.spread = function(args) {
     var fns = _.rest(arguments, 1), res = [], tmp;
     for (var i = 0, fl = fns.length, al = args.length; i < fl && i < al; i++) {
-      tmp = fns[i] ? fns[i](args[i] ? args[i] : _.noop) : _.i(args[i]);
-
+      tmp = _.is_mr(args[i]) ? (fns[i] || _.i).apply(null, args[i]) : (fns[i] || _.i)(args[i]);
       if (_.is_mr(tmp))
         for (var j = 0, l = tmp.length; j < l; j++) res.push(tmp[j]);
       else
