@@ -59,12 +59,12 @@
   }
   function pipea(self, v, fs) {
     var i = 0, f;
-    while (f = fs[++i]) v = (v && v._mr) ? f.apply(self, v) : f.call(self, v);
+    while (f = fs[i++]) v = (v && v._mr) ? f.apply(self, v) : f.call(self, v);
     return v;
   }
   function pipea2(v, fs) {
     var i = 0, f;
-    while (f = fs[++i]) v = (v && v._mr) ? f.apply(undefined, v) : f(v);
+    while (f = fs[i++]) v = (v && v._mr) ? f.apply(undefined, v) : f(v);
     return v;
   }
   function mr() {
