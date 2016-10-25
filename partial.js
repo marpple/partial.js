@@ -83,6 +83,7 @@
       return this == undefined ? pipea2(to_mr(arguments), fs) : pipea(this, to_mr(arguments), fs);
     }
   };
+
   _.Indent = function() {
     var fs = arguments;
     return function() { return pipea(ithis(this, arguments), to_mr(arguments), fs); }
@@ -534,7 +535,7 @@
   };
 
   _.uniq = function(arr, iteratee) {
-    var res = [], cmp = iteratee ? _.map(arr, Iter(iteratee, arguments, 2)) : arr, tmp = [];
+    var res = [], tmp = [], cmp = iteratee ? _.map(arr, Iter(iteratee, arguments, 2)) : arr;
     for (var i = 0, l = arr.length; i < l; i++)
       if (tmp.indexOf(cmp[i]) == -1) { tmp.push(cmp[i]); res.push(arr[i]); }
     return res;
@@ -680,24 +681,152 @@
   //     J('------------End--------------'), C.log]);
   // };
 
-  _.template = _.t = function() {
+  /*
+  * 템플릿 시작
+  * */
+  var TAB_SIZE;
+  var REG1, REG2, REG3, REG4 = {}, REG5, REG6, REG7, REG8;
+  function s_matcher(length, key, re, source, var_names, self) {
+    return self[key] || (self[key] = map(source.match(re), function(matched) {
+        return new Function(var_names, "return " + matched.substring(length, matched.length-length) + ";");
+      }));
+  }
 
+  var unescaped_exec = _.partial(s_exec, /!\{.*?\}!/g, _.i, s_matcher.bind(null, 2, "unescaped_exec")); //!{}!
+  var insert_datas1 = _.partial(s_exec, /\{\{\{.*?\}\}\}/g, _.i, s_matcher.bind(null, 3, "insert_datas1")); // {{{}}}
+  var insert_datas2 = _.partial(s_exec, /\{\{.*?\}\}/g, _.escape, s_matcher.bind(null, 2, "insert_datas2")); // {{}}
 
+  _.TAB_SIZE = function(size) {
+    TAB_SIZE = size;
+    var TAB = "( {" + size + "}|\\t)";
+    var TABS = TAB + "+";
+    REG1 = new RegExp("^" + TABS);
+    REG2 = new RegExp("\/\/" + TABS + ".*?(?=((\/\/)?" + TABS + "))|\/\/" + TABS + ".*", "g");
+    REG3 = new RegExp(TABS + "\\S.*?(?=" + TABS + "\\S)|" + TABS + "\\S.*", "g");
+    REG4 = {}; times2(20, function(i) { REG4[i] = new RegExp(TAB + "{" + i + "}$") });
+    REG5 = new RegExp("^(" + TABS + ")(\\[.*?\\]|\\{.*?\\}|\\S)+\\.(?!\\S)");
+    REG6 = {}; times2(20, function(i) { REG6[i] = new RegExp("(" + TAB + "{" + i + "})", "g"); });
+    REG7 = new RegExp("\\n(" + TABS + "[\\s\\S]*)");
+    REG8 = new RegExp("^" + TABS + "\\|");
   };
+  _.TAB_SIZE(2);
+  function number_of_tab(a) {
+    var snt = a.match(REG1)[0];
+    var tab_length = (snt.match(/\t/g) || []).length;
+    var space_length = snt.replace(/\t/g, "").length;
+    return space_length / TAB_SIZE + tab_length;
+  }
 
-  _.TAB_SIZE = function() {};
+  _.template = _.t = function() { return s.apply(null, [_.t, '_.t', convert_to_html].concat(_.toArray(arguments))); };
+  _.template$ = _.t$ = function() { return s.apply(null, [_.t$, '_.t$', convert_to_html].concat('$').concat(_.toArray(arguments))); };
+  _.template.each = _.t.each = function() { return s_each.apply(null, [_.t].concat(_.toArray(arguments))); };
+  _.t.func_storage = {};
 
-  _.template.each = _.t.each = function() {
+  _.string = _.s = function() { return s.apply(null, [_.s, '_.s', _.mr].concat(_.toArray(arguments))); };
+  _.string$ = _.s$ = function() { return s.apply(null, [_.s$, '_.s$', _.mr].concat('$').concat(_.toArray(arguments))); };
+  _.string.each = _.s.each = function() { return s_each.apply(null, [_.s].concat(_.toArray(arguments))); };
+  _.s.func_storage = {};
 
+  function s(func, obj_name, option, var_names/*, source...*/) {      // used by H and S
+    var args = _.toArray(arguments);
+    var source = _.map(_.rest(args, 4), function(str_or_func) {
+      if (_.isString(str_or_func)) return str_or_func;
 
-  };
+      var key = _.uniqueId("func_storage");
+      func._ABC_func_storage[key] = str_or_func;
+      return obj_name + ".func_storage." + key;
+    }).join("");
 
-  _.string.each = _.s.each = function() {
+    var self = {};
+    return function() {
+      return _.pipe(_.mr(source, var_names, arguments, self), remove_comment, unescaped_exec, option, insert_datas1, insert_datas2, _.i);
+    }
+  }
+  function s_each(func, var_names/*, source...*/) {     // used by H.each and S.each
+    var map = _.partial(_.map, _.rest(arguments), func);
+    return function(ary /*, args...*/) {
+      return pipe(_.mr([ary].concat(_.rest(arguments))), map, function(res) { return res.join(""); })
+    };
+  }
+  function remove_comment(source, var_names, args, self) {
+    return _.mr(source.replace(/\/\*(.*?)\*\//g, "").replace(REG2, ""), var_names, args, self);
+  }
+  function s_exec(re, wrap, matcher, source, var_names, args, self) {
+    return pipe(_.mr(source.split(re), _.map(matcher(re, source, var_names, self), function(func) {
+        return pipe(func.apply(null, args), wrap, return_check);
+      })),
+      function(s, vs) { return _.mr(map(vs, function(v, i) { return s[i] + v; }).join("") + s[s.length-1], var_names, args, self); }
+    );
+  }
+  function convert_to_html(source, var_names, args, self) {
+    if (self.convert_to_html) return _.mr(self.convert_to_html, var_names, args, self);
 
-  };
+    var tag_stack = [];
+    var ary = source.match(REG3);
+    var base_tab = number_of_tab(ary[0]);
+    ary[ary.length - 1] = ary[ary.length - 1].replace(REG4[base_tab] || (REG4[base_tab] = new RegExp(TAB + "{" + base_tab + "}$")), "");
 
-  _.string = _.s = function() {
+    var is_paragraph = 0;
+    for (var i = 0; i < ary.length; i++) {
+      while (number_of_tab(ary[i]) - base_tab < tag_stack.length) { //이전 태그 닫기
+        is_paragraph = 0;
+        if (tag_stack.length == 0) break;
+        ary[i - 1] += end_tag(tag_stack.pop());
+      }
+      var tmp = ary[i];
+      if (!is_paragraph) {
+        ary[i] = line(ary[i], tag_stack);
+        if (tmp.match(REG5)) is_paragraph = number_of_tab(RegExp.$1) + 1;
+        continue;
+      }
+      ary[i] = ary[i].replace(REG6[is_paragraph] || (REG6[is_paragraph] = new RegExp("(" + TAB + "{" + is_paragraph + "})", "g")), "\n");
+      if (ary[i] !== (ary[i] = ary[i].replace(REG7, "\n"))) ary = push_in(ary, i + 1, RegExp.$1);
+    }
 
-  };
+    while (tag_stack.length) ary[ary.length - 1] += end_tag(tag_stack.pop()); // 마지막 태그
+
+    if (self.unescaped_exec.length) return _.mr(ary.join(""), var_names, args, self);
+    return _.mr(self.convert_to_html = ary.join(""), var_names, args, self);
+  }
+  function line(source, tag_stack) {
+    source = source.replace(REG8, "\n").replace(/^ */, "");
+    return source.match(/^[\[.#\w\-]/) ? source.replace(/^(\[.*\]|\{.*?\}|\S)+ ?/, function(str) {
+      return start_tag(str, tag_stack);
+    }) : source;
+  }
+  function push_in(ary, index, data) {
+    var rest_ary = ary.splice(index);
+    ary.push(data);
+    return ary.concat(rest_ary);
+  }
+  function start_tag(str, tag_stack, attrs, name, cls) {
+    attrs = '';
+    name = str.match(/^\w+/);
+
+    // name
+    name = (!name || name == 'd') ? 'div' : name == 'sp' ? 'span' : name;
+    if (name != 'input' && name != 'br' ) tag_stack.push(name);
+
+    // attrs
+    str = str.replace(/\[(.*)\]/, function(match, inner) { return (attrs += ' ' + inner) && ''; });
+
+    // attrs = class + attrs
+    (cls = _.map(str.match(/\.(\{\{\{.*?\}\}\}|\{\{.*?\}\}|[\w\-]+)/g), function(v) { return v.slice(1); }).join(' '))
+    && attrs == (attrs = attrs.replace(/class\s*=\s*((\").*?\"|(\{.*?\}|\S)+)/,
+      function(match, tmp, q) { return ' class=' + '"' + cls + ' ' + (q ? tmp.slice(1, -1) : tmp) + '"'; }))
+    && (attrs = ' class="' + cls + '"' + attrs);
+
+    // attrs = id + attrs
+    attrs = [''].concat(_.map(str.match(/#(\{\{\{.*?\}\}\}|\{\{.*?\}\}|[\w\-]+)/g),
+        function(v) { return v.slice(1); })).join(' id=') + attrs;
+
+    return '<' + name + attrs + ' >'; // 띄어쓰기 <a href=www.marpple.com/> 를 위해
+  }
+  function end_tag(tag) { return '</' + tag + '>'; }
+  function return_check(val) { return (val == null || val == void 0) ? '' : val; }
+
+  /*
+  * 템플릿 끝
+  * */
 
 }(typeof global == 'object' && global.global == global && (global.G = global) || window);
