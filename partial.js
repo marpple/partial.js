@@ -477,24 +477,23 @@
 
   _.find = function(data, predicate) {
     predicate = Iter(predicate, arguments, 2);
-    if (_.isArrayLike(data)) { // 배열, 문자열일 경우
+    if (_.isArrayLike(data)) {
       for (var i = 0, l = data.length; i < l; i++)
         if (predicate(data[i], i, data)) return data[i];
-    } else { // 안배열. 객체일 경우
-      for (var keys = _.keys(data), i = 0, l = keys.length; i<l; i++)
-        if (predicate(data[keys[i], keys[i], data])) return data[keys[i]];
+    } else {
+      for (var keys = _.keys(data), i = 0, l = keys.length; i < l; i++)
+        if (predicate(data[keys[i]], keys[i], data)) return data[keys[i]];
     }
   };
 
-  /* 리듀스는 데이터 3개까지는 기본 데이터이게 동작하도록요. 3번째 memo.*/
-  _.reduce = function(data, predicate) {
-    predicate = Iter(predicate, arguments, 2);
+  /* memo 있는 버전 */
+  _.reduce = function(data, predicate, memo) {
+    predicate = Iter(predicate, arguments, 3);
     if (_.isArrayLike(data)) {
-      for (var res = data[0], i = 1, len = data.length; i < len; i++)
+      for (var res = memo || 0, i = 0, l = data.length; i < l; i++)
         res = predicate(res, data[i], i, data);
     } else {
-      var keys = _.keys(data);
-      for (var res = data[keys[0]], i = 1, len = keys.length; i < len; i++)
+      for (var res = memo || 0, keys = _.keys(data), i = 0, l = keys.length; i < l; i++)
         res = predicate(res, data[keys[i]], i, data);
     }
     return res;
@@ -503,6 +502,7 @@
   _.find_i = _.find_idx = _.findIndex = function(ary, predicate) {
     for (var i = 0, l = ary.length; i < l; i++)
       if (predicate(ary[i], i, ary)) return i;
+    return -1;
   };
 
   _.find_k = _.find_key = _.findKey = function(obj, predicate) {
@@ -559,7 +559,7 @@
     for (var i = 1, l = arguments.length; i < l; i++) {
       tmp = _.is_mr(args) ? arguments[i].apply(null, args) : arguments[i](args);
       if (_.is_mr(tmp))
-        for (var j=0, len=tmp.length; j<len; j++) res.push(tmp[j]);
+        for (var j = 0, len = tmp.length; j < len; j++) res.push(tmp[j]);
       else
         res.push(tmp);
     }
@@ -567,15 +567,14 @@
   };
 
   _.spread = function(args) {
-    var fns = _.rest(arguments, 1), res = [], value;
-
+    var fns = _.rest(arguments, 1), res = [], tmp;
     for (var i = 0, fl = fns.length, al = args.length; i < fl && i < al; i++) {
-      value = fns[i] ? fns[i](args[i] ? args[i] : _.noop) : _.i(args[i]);
+      tmp = fns[i] ? fns[i](args[i] ? args[i] : _.noop) : _.i(args[i]);
 
-      if (_.is_mr(value) && (value = _.toArray(value)))
-        while (value.length) res.push(value.shift());
+      if (_.is_mr(tmp))
+        for (var j = 0, len = tmp.length; j < len; j++) res.push(tmp[j]);
       else
-        res.push(value);
+        res.push(tmp);
     }
 
     return _.to_mr(res);
