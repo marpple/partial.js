@@ -97,7 +97,7 @@
   };
   // B.boomerang = function() { // fork
   //   var fns = arguments;
-  //   return JCB(function(res, cb) {
+  //   return _.async.jcb(function(res, cb) {
   //     cb(res);
   //     A([res], fns, this);
   //   });
@@ -116,8 +116,9 @@
   //   return err && err.constructor == Error && err._ABC_is_err;
   // }
 
-  // TODO
-  _.async = {};
+  _.async = function (v) {
+    return async_pipe(void 0, v, arguments, 1);
+  };
   _.async.Pipe = function() {
     var fs = arguments;
     return function() {
@@ -128,9 +129,7 @@
     var fs = arguments;
     return function() { return _.async.pipea(ithis(this, arguments), to_mr(arguments), fs); }
   };
-  _.async.pipe = function(v) {
-    return async_pipe(void 0, v, arguments, 1);
-  };
+  _.async.pipe = _.async;
   _.async.pipec = function(self, v) {
     return async_pipe(self, v, arguments, 2);
   };
@@ -139,6 +138,14 @@
   };
   _.async.pipea2 = function(v, fs) {
     return async_pipe(void 0, v, fs, 0);
+  };
+  _.async.callback = _.async.cb = function(f) {
+    f._p_cb = true;
+    return f;
+  };
+  _.async.jcb = function(f) {
+    f._p_jcb = true;
+    return f;
   };
 
   function has_promise() { return has_promise.__cache || (has_promise.__cache = !!_.val(window, 'Promise.prototype.then')); }
