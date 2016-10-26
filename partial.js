@@ -649,11 +649,7 @@
 
 
   /* Arrays */
-  _.indexOf = function(arr, value, fromIndex) {
-
-  };
-
-  _.find_i = _.find_idx = _.findIndex = function(ary, predicate) {
+   _.find_i = _.find_idx = _.findIndex = function(ary, predicate) {
     predicate = Iter(predicate, arguments, 2);
     for (var i = 0, l = ary.length; i < l; i++)
       if (predicate(ary[i], i, ary)) return i;
