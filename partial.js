@@ -461,7 +461,16 @@
     return res;
   };
 
-  _.reduceRight = _.reduce_right = function() {};
+  _.reduceRight = _.reduce_right = function(data, predicate, memo) {
+    predicate = Iter(predicate, arguments, 3);
+    if (_.isArrayLike(data))
+      for (var i = data.length - 1, res = memo || data[i++]; i > -1; i--)
+        res = predicate(res, data[i], i, data);
+    else
+      for (var keys = _.keys(data), i = keys.length - 1, res = memo || data[keys[i--]]; i > -1; i--)
+        res = predicate(res, data[keys[i]], i, data);
+    return res;
+  };
 
   _.find = function(data, predicate) {
     predicate = Iter(predicate, arguments, 2);
@@ -486,9 +495,13 @@
     return res;
   };
 
-  _.where = function() {};
+  _.where = function(list, attrs) {
+    return _.filter(list, _.matcher(attrs));
+  };
 
-  _.findWhere = _.find_where = function() {};
+  _.findWhere = _.find_where = function(list, attrs) {
+    return _.find(list, _.matcher(attrs));
+  };
 
   _.reject = function(data, predicate) {
     var res = [], predicate = Iter(predicate, arguments, 2);
@@ -526,7 +539,11 @@
     return false;
   };
 
-  _.contains = function() {};
+  _.contains = function(list, value, fromIndex) {
+    if (typeof fromIndex == 'number') list = list.slice(fromIndex, list.length);
+    if (_.isArrayLike(list)) return list.indexOf(value) !== -1;
+    else return _.isMatch(list, value);
+  };
 
   _.invoke = function() {};
 
@@ -552,6 +569,10 @@
 
 
   /* Arrays */
+  _.indexOf = function(arr, value, fromIndex) {
+
+  };
+
   _.find_i = _.find_idx = _.findIndex = function(ary, predicate) {
     predicate = Iter(predicate, arguments, 2);
     for (var i = 0, l = ary.length; i < l; i++)
@@ -567,6 +588,24 @@
   };
 
   /* Object */
+  // partial version
+  _.matcher = function(attrs) { return _(_.isMatch, _, attrs);  };
+
+  // normal version
+  _.matcher = function(attrs) {
+    return function(obj) {
+      return _.isMatch(obj, attrs);
+    }
+  };
+
+  _.isMatch = function(obj, attrs) {
+    var keys = _.keys(attrs);
+    for (var i = 0, l = keys.length, key; i < l && (key = keys[i]); i++) {
+      if (obj[key] !== attrs[key]) return false;
+    }
+    return true;
+  };
+
   _.find_k = _.find_key = _.findKey = function(obj, predicate) {
     predicate = Iter(predicate, arguments, 2);
     for (var keys = _.keys(obj), key, i = 0, l = keys.length; i < l; i++)
@@ -713,22 +752,5 @@
   //     all, B.each([I, C.log]),
   //     J('------------End--------------'), C.log]);
   // };
-  
-  function arr_or_args_to_arr(args) { return _.is_array(args) ? args : _.toArray(arguments); }
-
-  _.Is = function(a) { return _.Pipe(arr_or_args_to_arr, _(_.find_i, _, function(v) { return a !== v;}), function(v) { return v === -1; }); };
-  _.Isnt = function(a) { return _.Pipe(arr_or_args_to_arr, _(_.find_i, _, _.Pipe(_.i, _.Is(a))), _.Is(-1)); };
-
-  _.and = _.Pipe(arr_or_args_to_arr, _(_.find_i, _, _.not), _.Is(-1));
-  _.or = _.Pipe(arr_or_args_to_arr, _(_.find, _, _.i), _.nnot);
-  _.eq = _.Pipe(arr_or_args_to_arr, _(_.find_i, _, function(v, i, l) { return l[0] != v; }), _.Is(-1));
-  _.seq = _.Pipe(arr_or_args_to_arr, _(_.find_i, _, function(v, i, l) { return l[0] !== v; }), _.Is(-1));
-  _.neq = _.Pipe(_.eq, _.not);
-  _.sneq = _.Pipe(_.seq, _.not);
-
-  //// 두가지 방법으로 구현하는 걸로
-  // _.Template('a, b', '..')(data);
-  // _.template(_.mr(), 'a, b', '..'); // 인자 여러개 보내려면 무조건 mr
-
 
 }(typeof global == 'object' && global.global == global && (global.G = global) || window);
