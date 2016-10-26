@@ -238,7 +238,7 @@
     return Lambda[str] = new Function(
       ex_par[0].replace(/(?:\b[A-Z]|\.[a-zA-Z_$])[a-zA-Z_$\d]*|[a-zA-Z_$][a-zA-Z_$\d]*\s*:|this|arguments|'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"/g, '').match(/([a-z_$][a-z_$\d]*)/gi) || [],
       'return (' + ex_par[1] + ')');
-  };
+  }
   _.Lambda = Lambda;
   function bexdf(setter, obj1/* objs... */) {
     for (var i = 2, len = arguments.length; i < len; i++) setter(obj1, arguments[i]);
@@ -417,7 +417,7 @@
     }
   }(_, {});
 
-  /* each - reduce */
+  /* Collections */
   function Iter(iter, args, num) {
     if (args.length == num) return iter;
     var args2 = _.rest(args, num), args3;
@@ -427,6 +427,17 @@
       return iter.apply(null, args3);
     }
   }
+
+  _.each = function(data, iteratee) {
+    iteratee = Iter(iteratee, arguments, 2);
+    if (_.isArrayLike(data))
+      for (var i = 0, l = data.length; i < l; i++)
+        iteratee(data[i], i, data);
+    else
+      for (var keys = _.keys(data), i = 0, l = keys.length; i < l; i++)
+        iteratee(data[keys[i]], keys[i], data);
+    return data;
+  };
 
   _.map = function(data, iteratee) {
     iteratee = Iter(iteratee, arguments, 2);
@@ -439,15 +450,28 @@
     return res;
   };
 
-  _.each = function(data, iteratee) {
-    iteratee = Iter(iteratee, arguments, 2);
+  _.reduce = function(data, predicate, memo) {
+    predicate = Iter(predicate, arguments, 3);
     if (_.isArrayLike(data))
-      for (var i = 0, l = data.length; i < l; i++)
-        iteratee(data[i], i, data);
+      for (var i = 0, res = memo || data[i++], l = data.length; i < l; i++)
+        res = predicate(res, data[i], i, data);
     else
+      for (var i = 0, keys = _.keys(data), res = memo || data[keys[i++]], l = keys.length; i < l; i++)
+        res = predicate(res, data[keys[i]], i, data);
+    return res;
+  };
+
+  _.reduceRight = _.reduce_right = function() {};
+
+  _.find = function(data, predicate) {
+    predicate = Iter(predicate, arguments, 2);
+    if (_.isArrayLike(data)) {
+      for (var i = 0, l = data.length; i < l; i++)
+        if (predicate(data[i], i, data)) return data[i];
+    } else {
       for (var keys = _.keys(data), i = 0, l = keys.length; i < l; i++)
-        iteratee(data[keys[i]], keys[i], data);
-    return data;
+        if (predicate(data[keys[i]], keys[i], data)) return data[keys[i]];
+    }
   };
 
   _.filter = function(data, predicate) {
@@ -462,6 +486,10 @@
     return res;
   };
 
+  _.where = function() {};
+
+  _.findWhere = _.find_where = function() {};
+
   _.reject = function(data, predicate) {
     var res = [], predicate = Iter(predicate, arguments, 2);
     if (_.isArrayLike(data)) {
@@ -472,41 +500,6 @@
         if (!predicate(data[keys[i]], keys[i], data)) res.push(data[keys[i]]);
     }
     return res;
-  };
-
-  _.find = function(data, predicate) {
-    predicate = Iter(predicate, arguments, 2);
-    if (_.isArrayLike(data)) {
-      for (var i = 0, l = data.length; i < l; i++)
-        if (predicate(data[i], i, data)) return data[i];
-    } else {
-      for (var keys = _.keys(data), i = 0, l = keys.length; i < l; i++)
-        if (predicate(data[keys[i]], keys[i], data)) return data[keys[i]];
-    }
-  };
-
-  _.reduce = function(data, predicate, memo) {
-    predicate = Iter(predicate, arguments, 3);
-    if (_.isArrayLike(data))
-      for (var i = 0, res = memo || data[i++], l = data.length; i < l; i++)
-        res = predicate(res, data[i], i, data);
-    else
-      for (var i = 0, keys = _.keys(data), res = memo || data[keys[i++]], l = keys.length; i < l; i++)
-        res = predicate(res, data[keys[i]], i, data);
-    return res;
-  };
-
-  _.find_i = _.find_idx = _.findIndex = function(ary, predicate) {
-    predicate = Iter(predicate, arguments, 2);
-    for (var i = 0, l = ary.length; i < l; i++)
-      if (predicate(ary[i], i, ary)) return i;
-    return -1;
-  };
-
-  _.find_k = _.find_key = _.findKey = function(obj, predicate) {
-    predicate = Iter(predicate, arguments, 2);
-    for (var keys = _.keys(obj), key, i = 0, l = keys.length; i < l; i++)
-      if (predicate(obj[key = keys[i]], key, obj)) return key;
   };
 
   _.every = function(data, predicate) {
@@ -533,12 +526,53 @@
     return false;
   };
 
+  _.contains = function() {};
+
+  _.invoke = function() {};
+
+  _.pluck = function() {};
+
+  _.max = function() {};
+
+  _.sortBy = _.sort_by = function() {};
+
+  _.groupBy = _.group_by = function() {};
+
+  _.indexBy = _.index_by = function() {};
+
+  _.countBy = _.count_by = function() {};
+
+  _.shuffle = function() {};
+
+  _.sample = function() {};
+
+  _.size = function() {};
+
+  _.partition = function() {};
+
+
+  /* Arrays */
+  _.find_i = _.find_idx = _.findIndex = function(ary, predicate) {
+    predicate = Iter(predicate, arguments, 2);
+    for (var i = 0, l = ary.length; i < l; i++)
+      if (predicate(ary[i], i, ary)) return i;
+    return -1;
+  };
+
   _.uniq = function(arr, iteratee) {
     var res = [], cmp = iteratee ? _.map(arr, Iter(iteratee, arguments, 2)) : arr, tmp = [];
     for (var i = 0, l = arr.length; i < l; i++)
       if (tmp.indexOf(cmp[i]) == -1) { tmp.push(cmp[i]); res.push(arr[i]); }
     return res;
   };
+
+  /* Object */
+  _.find_k = _.find_key = _.findKey = function(obj, predicate) {
+    predicate = Iter(predicate, arguments, 2);
+    for (var keys = _.keys(obj), key, i = 0, l = keys.length; i < l; i++)
+      if (predicate(obj[key = keys[i]], key, obj)) return key;
+  };
+
 
   _.all = function(args) {
     var res = [], tmp;
@@ -679,5 +713,22 @@
   //     all, B.each([I, C.log]),
   //     J('------------End--------------'), C.log]);
   // };
+  
+  function arr_or_args_to_arr(args) { return _.is_array(args) ? args : _.toArray(arguments); }
+
+  _.Is = function(a) { return _.Pipe(arr_or_args_to_arr, _(_.find_i, _, function(v) { return a !== v;}), function(v) { return v === -1; }); };
+  _.Isnt = function(a) { return _.Pipe(arr_or_args_to_arr, _(_.find_i, _, _.Pipe(_.i, _.Is(a))), _.Is(-1)); };
+
+  _.and = _.Pipe(arr_or_args_to_arr, _(_.find_i, _, _.not), _.Is(-1));
+  _.or = _.Pipe(arr_or_args_to_arr, _(_.find, _, _.i), _.nnot);
+  _.eq = _.Pipe(arr_or_args_to_arr, _(_.find_i, _, function(v, i, l) { return l[0] != v; }), _.Is(-1));
+  _.seq = _.Pipe(arr_or_args_to_arr, _(_.find_i, _, function(v, i, l) { return l[0] !== v; }), _.Is(-1));
+  _.neq = _.Pipe(_.eq, _.not);
+  _.sneq = _.Pipe(_.seq, _.not);
+
+  //// 두가지 방법으로 구현하는 걸로
+  // _.Template('a, b', '..')(data);
+  // _.template(_.mr(), 'a, b', '..'); // 인자 여러개 보내려면 무조건 mr
+
 
 }(typeof global == 'object' && global.global == global && (global.G = global) || window);
