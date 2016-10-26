@@ -72,6 +72,7 @@
     return arguments;
   }
   function to_mr(args) {
+    if (args.length < 2) return args;
     args._mr = true;
     return args;
   }
@@ -92,11 +93,11 @@
 
   _.Tap = _.tap = function() {
     // var fns = C.toArray(arguments);
-    // return function() { return A(arguments, fns.concat([J(arguments), toMR]), this); };
+    // return function() { return A(arguments, fns.concat([J(arguments), to_mr]), this); };
   };
   // B.boomerang = function() { // fork
   //   var fns = arguments;
-  //   return JCB(function(res, cb) {
+  //   return _.async.jcb(function(res, cb) {
   //     cb(res);
   //     A([res], fns, this);
   //   });
@@ -111,17 +112,77 @@
 
   _.Err = function() {};
   // function isERR(err) {
-  //   err = isMR(err) ? err[0] : err;
+  //   err = is_mr(err) ? err[0] : err;
   //   return err && err.constructor == Error && err._ABC_is_err;
   // }
 
-  // TODO
-  _.async = {};
-  _.async.Pipe = _.Pipe;
-  _.async.Indent = _.Indent;
-  _.async.pipe = _.pipe;
-  _.async.pipec = _.pipec;
-  _.async.pipea = _.pipea;
+  _.async = function (v) {
+    return async_pipe(void 0, v, arguments, 1);
+  };
+  _.async.Pipe = function() {
+    var fs = arguments;
+    return function() {
+      return this == undefined ? _.async.pipea2(to_mr(arguments), fs) : _.async.pipea(this, to_mr(arguments), fs);
+    }
+  };
+  _.async.Indent = function() {
+    var fs = arguments;
+    return function() { return _.async.pipea(ithis(this, arguments), to_mr(arguments), fs); }
+  };
+  _.async.pipe = _.async;
+  _.async.pipec = function(self, v) {
+    return async_pipe(self, v, arguments, 2);
+  };
+  _.async.pipea = function(self, v, fs) {
+    return async_pipe(self, v, fs, 0);
+  };
+  _.async.pipea2 = function(v, fs) {
+    return async_pipe(void 0, v, fs, 0);
+  };
+  _.async.callback = _.async.cb = function(f) {
+    f._p_cb = true;
+    return f;
+  };
+  _.async.jcb = function(f) {
+    f._p_jcb = true;
+    return f;
+  };
+
+  function has_promise() { return has_promise.__cache || (has_promise.__cache = !!_.val(window, 'Promise.prototype.then')); }
+  function maybe_promise(res) { return _.isObject(res) && res.then && _.isFunction(res.then); }
+  function unpack_promise(res, callback) {
+    var is_r = is_mr(res);
+    return (function u(i, res, length, has_promise) {
+      if (i == length) {
+        has_promise && callback(is_r ? res : res[0]);
+        return;
+      }
+      return maybe_promise(res[i]) && (has_promise = true) ? (function(i) {
+        res[i].then(function(v) {
+          res[i] = v;
+          u(i + 1, res, length, has_promise);
+        });
+        return true;
+      })(i) : u(i + 1, res, length, has_promise);
+    })(0, (res = is_r ? res : [res]), res.length, false);
+  }
+  function async_pipe(self, v, args, i) {
+    var args_len = args.length, promise = null, resolve = null;
+    function cp() { return has_promise() ? new Promise(function(rs) { resolve = rs; }) : { then: function(rs) { resolve = rs; } } }
+    return (function c(res) {
+      do {
+        if (i === args_len) return !promise ? res : resolve ? resolve(res) : setTimeout(function() { resolve && resolve(res); }, 0);
+        if (unpack_promise(res, c)) return promise || (promise = cp());
+        if (!args[i]._p_cb && !args[i]._p_jcb) res = is_mr(res) ? _.Lambda(args[i++]).apply(self, res) : _.Lambda(args[i++]).call(self, res);
+        else if (!args[i]._p_cb) is_mr(res) ?
+          _.Lambda(args[i++]).apply(self, res[res.length++] = function() { res = to_mr(arguments); } && res) :
+          _.Lambda(args[i++]).call(self, res, function() { res = to_mr(arguments); });
+      } while (i == args_len || i < args_len && !args[i]._p_cb);
+      if ((promise || (promise = cp())) && unpack_promise(res, c)) return promise;
+      is_mr(res) ? _.Lambda(args[i++]).apply(self, res[res.length++] = c && res) : _.Lambda(args[i++]).call(self, res, c);
+      return promise;
+    })(v);
+  }
 
   /* Ice cream */
   _.noop = function() {};
@@ -593,61 +654,8 @@
   //     return async || C(CB(function(cb) { resolve = cb, async = true; }));
   //   })(0);
   // }
-  // function maybe_promise(res) { return C.isObject(res) && res.then && C.isFunction(res.then); }
-  // function unpack_promise(res, callback) {
-  //   var is_r = isMR(res);
-  //   return (function u(i, res, length, has_promise) {
-  //     if (i == length) {
-  //       has_promise && callback(is_r ? res : res[0]);
-  //       return;
-  //     }
-  //     return maybe_promise(res[i]) && (has_promise = true) ? (function(i) {
-  //       res[i].then(function(v) {
-  //         res[i] = v;
-  //         u(i + 1, res, length, has_promise);
-  //       });
-  //       return true;
-  //     })(i) : u(i + 1, res, length, has_promise);
-  //   })(0, (res = is_r ? res : [res]), res.length, false);
-  // }
-  /* async pipe */
-  // function C() {
-  //   var context = this;
-  //   var args = C.toArray(arguments);
-  //   if (!C.isArray(args[args.length - 1])) args[args.length - 1] = [args[args.length - 1]];
-  //   var fns = C.flatten(args.pop());
-  //
-  //   if (args.length == 1 && isMR(args[0])) args = args[0];
-  //
-  //   var i = 0, promise = null, resolve = null, fns_len = fns.length;
-  //   function cp() { return hasPromise() ? new Promise(function(rs) { resolve = rs; }) : { then: function(rs) { resolve = rs; } } }
-  //   return (function c(res) {
-  //     do {
-  //       if (i === fns_len) return !promise ? res : resolve ? C.lambda(resolve)(res) : setTimeout(function() { resolve && C.lambda(resolve)(res); }, 0);
-  //       if (fns[i] && ((isERR(res) && !fns[i]._ABC_is_catch) || (!isERR(res) && fns[i]._ABC_is_catch)) && i++) continue;
-  //       if (unpack_promise(res, c)) return promise || (promise = cp());
-  //       try {
-  //         if (!fns[i]._ABC_is_cb && !fns[i]._ABC_just_cb) res = C.lambda(fns[i++]).apply(context, C.args.trim(MRI(res)));
-  //         else if (!fns[i]._ABC_is_cb) C.lambda(fns[i++]).apply(context, C.args.trim(MRI(res)).concat(function() { res = toMR(arguments); }));
-  //       } catch (e) { res = ERR(e); }
-  //     } while (i == fns_len || i < fns_len && !fns[i]._ABC_is_cb);
-  //     if ((promise || (promise = cp())) && unpack_promise(res, c)) return promise;
-  //     try { C.lambda(fns[i++]).apply(context, C.args.trim(MRI(res)).concat(function() { arguments.length <= 1 ? c.apply(null, arguments) : c(toMR(arguments)); })); }
-  //     catch (e) { c(ERR(e)); }
-  //     return promise;
-  //   })(toMR(args));
-  // }
-  // function MRI(res) { return isMR(res) ? res : [res]; }
-  // function ERR(err, data) {
-  //   setTimeout(function() { err._ABC_caught || C.error(err); }, 500);
-  //   return err = C.extend(err.constructor == Error ? err : new Error(err), data, {_ABC_is_err: true});
-  // }
-  /* ERR와 CATCH는 if나 switch나 다른 구조를 만들어서 해결할지 고민 */
-  // F.ERR = window.ERR = ERR;
-  // F.CATCH = window.CATCH = function(f) {
-  //   return C.extend(function(err) { return (err._ABC_caught = true) && f.apply(this, arguments); },
-  //     {_ABC_is_catch: true, _ABC_is_cb: f._ABC_is_cb, _ABC_just_cb: f._ABC_just_cb});
-  // };
+
+
 
   /* if else */
   // function IF(predicate, fn) {
