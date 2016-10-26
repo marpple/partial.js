@@ -717,15 +717,24 @@
     return space_length / TAB_SIZE + tab_length;
   }
 
+  //_.template = _.t = function(args) {
+  //  return _.is_mr(args) ? s.apply(null, [_.t, '_.t', convert_to_html].concat(_.rest(arguments))).apply(null, args) :
+  //    s.apply(null, [_.t, '_.t', convert_to_html].concat(_.rest(arguments)))(args);
+  //};
+  //_.template$ = _.t$ = function(args) {
+  //  return _.is_mr(args) ? s.apply(null, [_.t$, '_.t$', convert_to_html].concat('$').concat(_.rest(arguments))).apply(null, args) :
+  //    s.apply(null, [_.t$, '_.t$', convert_to_html].concat('$').concat(_.rest(arguments)))(args);
+  //};
 
   _.template = _.t = function(args) {
-    return _.is_mr(args) ? s.apply(null, [_.t, '_.t', convert_to_html].concat(_.rest(arguments))).apply(null, args) :
-      s.apply(null, [_.t, '_.t', convert_to_html].concat(_.rest(arguments)))(args);
+    var f = s.apply(null, [_.t, '_.t', convert_to_html].concat(_.rest(arguments)));
+    return _.is_mr(args) ? f.apply(null, args) : f(args);
   };
   _.template$ = _.t$ = function(args) {
-    return _.is_mr(args) ? s.apply(null, [_.t$, '_.t$', convert_to_html].concat('$').concat(_.rest(arguments))).apply(null, args) :
-      s.apply(null, [_.t$, '_.t$', convert_to_html].concat('$').concat(_.rest(arguments)))(args);
+    var f = s.apply(null, [_.t$, '_.t$', convert_to_html].concat('$').concat(_.rest(arguments)));
+    return _.is_mr(args) ? f.apply(null, args) : f(args);
   };
+
   _.template.each = _.t.each = function() { return s_each.apply(null, [_.t].concat(_.toArray(arguments))); };
 
   _.Template = _.T = function() { return s.apply(null, [_.T, '_.T', convert_to_html].concat(_.toArray(arguments))); };
@@ -767,8 +776,11 @@
     //var map = _.partial(_.map, _.rest(arguments), func);
     return function(ary /*, args...*/) {
       //return A([ary].concat(C.rest(arguments)), [map, function(res) { return res.join(""); }]);
-      //return pipe(_.mr([ary].concat(_.rest(arguments))), map, function(res) { return res.join(""); });
-      return pipe(ary, map, function(res) { return res.join(""); });; //나머지 인자가 안감
+      //console.log(_.rest(arguments));
+      //console.log([ary].concat(_.rest(arguments)));
+      //return pipea2([ary].concat(_.rest(arguments)), map, function(res) { return res.join(""); });
+      //return pipea2(_.mr(ary.concat(_.rest(arguments))), map, function(res) { return res.join(""); });
+      return pipe(ary, map, function(res) { return res.join(""); }); //나머지 인자가 안감
     };
   }
   function remove_comment(source, var_names, args, self) {
