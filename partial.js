@@ -697,9 +697,16 @@
   var TAB_SIZE;
   var REG1, REG2, REG3, REG4 = {}, REG5, REG6, REG7, REG8;
   function s_matcher(length, key, re, source, var_names, self) {
-    return self[key] || (self[key] = map(source.match(re), function(matched) {
-        return new Function(var_names, "return " + matched.substring(length, matched.length-length) + ";");
-      }));
+
+    // test
+    if (self) console.log("self 캐쉬 사용!!!!!!!!!!!!");
+
+    if (self && self[key]) return self[key];
+    var res = map(source.match(re), function(matched) {
+      return new Function(var_names, "return " + matched.substring(length, matched.length-length) + ";");
+    });
+    if (self) self[key] = res;
+    return res;
   }
 
   var insert_datas1 = _.partial(s_exec, /\{\{\{.*?\}\}\}/g, _.escape, s_matcher.bind(null, 3, "insert_datas1")); // {{{}}}
@@ -727,15 +734,10 @@
     return space_length / TAB_SIZE + tab_length;
   }
 
-  //_.template = _.t = function(args) {
-  //  return _.is_mr(args) ? s.apply(null, [_.t, '_.t', convert_to_html].concat(_.rest(arguments))).apply(null, args) :
-  //    s.apply(null, [_.t, '_.t', convert_to_html].concat(_.rest(arguments)))(args);
-  //};
-  //_.template$ = _.t$ = function(args) {
-  //  return _.is_mr(args) ? s.apply(null, [_.t$, '_.t$', convert_to_html].concat('$').concat(_.rest(arguments))).apply(null, args) :
-  //    s.apply(null, [_.t$, '_.t$', convert_to_html].concat('$').concat(_.rest(arguments)))(args);
-  //};
-
+  // _.T, _.t, _.S, _.s 함수 하나로 합칠 수 있을 듯.
+  _.Template = _.T = function() { return s.apply(null, [_.T, '_.T', convert_to_html].concat(_.toArray(arguments))); };
+  _.Template$ = _.T$ = function() { return s.apply(null, [_.T$, '_.T$', convert_to_html].concat('$').concat(_.toArray(arguments))); };
+  _.Template.each = _.T.each = function() { return s_each.apply(null, [_.T].concat(_.toArray(arguments))); };
   _.template = _.t = function(args) {
     var f = s.apply(null, [_.t, '_.t', convert_to_html].concat(_.rest(arguments)));
     return _.is_mr(args) ? f.apply(null, args) : f(args);
@@ -744,25 +746,28 @@
     var f = s.apply(null, [_.t$, '_.t$', convert_to_html].concat('$').concat(_.rest(arguments)));
     return _.is_mr(args) ? f.apply(null, args) : f(args);
   };
-
-  _.template.each = _.t.each = function() { return s_each.apply(null, [_.t].concat(_.toArray(arguments))); };
-
-  _.Template = _.T = function() { return s.apply(null, [_.T, '_.T', convert_to_html].concat(_.toArray(arguments))); };
-  _.Template$ = _.T$ = function() { return s.apply(null, [_.T$, '_.T$', convert_to_html].concat('$').concat(_.toArray(arguments))); };
-  _.Template.each = _.T.each = function() { return s_each.apply(null, [_.T].concat(_.toArray(arguments))); };
-
+  _.template.each = _.t.each = function(args) {
+    var f = s_each.apply(null, [_.t].concat(_.toArray(arguments)));
+    return _.is_mr(args) ? f.apply(null, args) : f(args);
+  };
   _.t.func_storage = {};
-
-  _.string = _.s = function() { return s.apply(null, [_.s, '_.s', _.mr].concat(_.toArray(arguments))); };
-  _.string$ = _.s$ = function() { return s.apply(null, [_.s$, '_.s$', _.mr].concat('$').concat(_.toArray(arguments))); };
-  _.string.each = _.s.each = function() { return s_each.apply(null, [_.s].concat(_.toArray(arguments))); };
 
   _.String = _.S = function() { return s.apply(null, [_.S, '_.S', _.mr].concat(_.toArray(arguments))); };
   _.String$ = _.S$ = function() { return s.apply(null, [_.S$, '_.S$', _.mr].concat('$').concat(_.toArray(arguments))); };
   _.String.each = _.S.each = function() { return s_each.apply(null, [_.S].concat(_.toArray(arguments))); };
-
+  _.string = _.s = function(args) {
+    var f = s.apply(null, [_.s, '_.s', _.mr].concat(_.toArray(arguments)));
+    return _.is_mr(args) ? f.apply(null, args) : f(args);
+  };
+  _.string$ = _.s$ = function(args) {
+    var f = s.apply(null, [_.s$, '_.s$', _.mr].concat('$').concat(_.toArray(arguments)));
+    return _.is_mr(args) ? f.apply(null, args) : f(args);
+  };
+  _.string.each = _.s.each = function(args) {
+    var f = s_each.apply(null, [_.s].concat(_.toArray(arguments)));
+    return _.is_mr(args) ? f.apply(null, args) : f(args);
+  };
   _.s.func_storage = {};
-
 
   function s(func, obj_name, option, var_names/*, source...*/) {      // used by H and S
     var args = _.toArray(arguments);
@@ -774,22 +779,21 @@
       return obj_name + ".func_storage." + key;
     }).join("");
 
-    var self = {};
+    //var self = {};
+    var self = (obj_name.match(/[A-Z]/)) ? {} : null;
+
     return function() {
-      return _.pipe(_.mr(source, var_names, arguments, self), remove_comment, option, insert_datas1, insert_datas2, _.i);
+      var f = obj_name.match('_.async') ? _.async.pipe : _.pipe;
+      return f(_.mr(source, var_names, arguments, self), remove_comment, option, insert_datas1, insert_datas2, _.i);
+      //return (obj_name.match('_.async') ? _.async.pipe : _.pipe)(_.mr(source, var_names, arguments, self), remove_comment, option, insert_datas1, insert_datas2, _.i);
     }
   }
   function s_each(func, var_names/*, source...*/) {     // used by H.each and S.each
     //var map = B.map(func.apply(null, C.rest(arguments)));
-    //console.log(map, _.map);
     var map = _.partial(_.map, _, func.apply(null, _.rest(arguments)));
     //var map = _.partial(_.map, _.rest(arguments), func);
     return function(ary /*, args...*/) {
       //return A([ary].concat(C.rest(arguments)), [map, function(res) { return res.join(""); }]);
-      //console.log(_.rest(arguments));
-      //console.log([ary].concat(_.rest(arguments)));
-      //return pipea2([ary].concat(_.rest(arguments)), map, function(res) { return res.join(""); });
-      //return pipea2(_.mr(ary.concat(_.rest(arguments))), map, function(res) { return res.join(""); });
       return pipe(ary, map, function(res) { return res.join(""); }); //나머지 인자가 안감
     };
   }
@@ -804,7 +808,7 @@
     );
   }
   function convert_to_html(source, var_names, args, self) {
-    if (self.convert_to_html) return _.mr(self.convert_to_html, var_names, args, self);
+    if (self && self.convert_to_html) return _.mr(self.convert_to_html, var_names, args, self);
 
     var tag_stack = [];
     var ary = source.match(REG3);
@@ -822,7 +826,7 @@
       if (!is_paragraph) {
         ary[i] = line(ary[i], tag_stack);
         if (tmp.match(REG5)) is_paragraph = number_of_tab(RegExp.$1) + 1;
-        continue;s
+        continue;
       }
       ary[i] = ary[i].replace(REG6[is_paragraph] || (REG6[is_paragraph] = new RegExp("(" + TAB + "{" + is_paragraph + "})", "g")), "\n");
       if (ary[i] !== (ary[i] = ary[i].replace(REG7, "\n"))) ary = push_in(ary, i + 1, RegExp.$1);
@@ -830,7 +834,7 @@
 
     while (tag_stack.length) ary[ary.length - 1] += end_tag(tag_stack.pop()); // 마지막 태그
 
-    return _.mr(self.convert_to_html = ary.join(""), var_names, args, self);
+    return _.mr(self ? self.convert_to_html = ary.join("") : ary.join(""), var_names, args, self);
   }
   function line(source, tag_stack) {
     source = source.replace(REG8, "\n").replace(/^ */, "");
