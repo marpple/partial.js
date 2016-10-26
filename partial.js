@@ -540,16 +540,32 @@
   };
 
   _.contains = function(list, value, fromIndex) {
-    if (typeof fromIndex == 'number') list = list.slice(fromIndex, list.length);
+    if (typeof fromIndex == 'number') list = _.rest(list, fromIndex);
     if (_.isArrayLike(list)) return list.indexOf(value) !== -1;
     else return _.isMatch(list, value);
   };
 
-  _.invoke = function() {};
+  _.invoke = function(list, method) {
+    var args = _.rest(arguments, 2), isFunc = typeof method == 'function';
+    return _.map(list, function(value) {
+      var func = isFunc ? method : value[method];
+      return func == null ? func : func.apply(value, args);
+    });
+  };
 
-  _.pluck = function() {};
+  _.pluck = function(list, key) {
+    return _.map(list, _.property(key));
+  };
+
+  _.property = function(key) {
+    return function(obj) {
+      return obj == null ? void 0 : obj[key];
+    }
+  };
 
   _.max = function() {};
+
+  _.min = function() {};
 
   _.sortBy = _.sort_by = function() {};
 
