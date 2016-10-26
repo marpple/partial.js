@@ -692,13 +692,13 @@
       }));
   }
 
-  var unescaped_exec = _.partial(s_exec, /!\{.*?\}!/g, _.i, s_matcher.bind(null, 2, "unescaped_exec")); //!{}!
-  var insert_datas1 = _.partial(s_exec, /\{\{\{.*?\}\}\}/g, _.i, s_matcher.bind(null, 3, "insert_datas1")); // {{{}}}
-  var insert_datas2 = _.partial(s_exec, /\{\{.*?\}\}/g, _.escape, s_matcher.bind(null, 2, "insert_datas2")); // {{}}
+  var insert_datas1 = _.partial(s_exec, /\{\{\{.*?\}\}\}/g, _.escape, s_matcher.bind(null, 3, "insert_datas1")); // {{{}}}
+  var insert_datas2 = _.partial(s_exec, /\{\{.*?\}\}/g, _.i, s_matcher.bind(null, 2, "insert_datas2")); // {{}}
 
+  var TAB;
   _.TAB_SIZE = function(size) {
     TAB_SIZE = size;
-    var TAB = "( {" + size + "}|\\t)";
+    TAB = "( {" + size + "}|\\t)";
     var TABS = TAB + "+";
     REG1 = new RegExp("^" + TABS);
     REG2 = new RegExp("\/\/" + TABS + ".*?(?=((\/\/)?" + TABS + "))|\/\/" + TABS + ".*", "g");
@@ -717,15 +717,33 @@
     return space_length / TAB_SIZE + tab_length;
   }
 
-  _.template = _.t = function() { return s.apply(null, [_.t, '_.t', convert_to_html].concat(_.toArray(arguments))); };
-  _.template$ = _.t$ = function() { return s.apply(null, [_.t$, '_.t$', convert_to_html].concat('$').concat(_.toArray(arguments))); };
+
+  _.template = _.t = function(args) {
+    return _.is_mr(args) ? s.apply(null, [_.t, '_.t', convert_to_html].concat(_.rest(arguments))).apply(null, args) :
+      s.apply(null, [_.t, '_.t', convert_to_html].concat(_.rest(arguments)))(args);
+  };
+  _.template$ = _.t$ = function(args) {
+    return _.is_mr(args) ? s.apply(null, [_.t$, '_.t$', convert_to_html].concat('$').concat(_.rest(arguments))).apply(null, args) :
+      s.apply(null, [_.t$, '_.t$', convert_to_html].concat('$').concat(_.rest(arguments)))(args);
+  };
   _.template.each = _.t.each = function() { return s_each.apply(null, [_.t].concat(_.toArray(arguments))); };
+
+  _.Template = _.T = function() { return s.apply(null, [_.T, '_.T', convert_to_html].concat(_.toArray(arguments))); };
+  _.Template$ = _.T$ = function() { return s.apply(null, [_.T$, '_.T$', convert_to_html].concat('$').concat(_.toArray(arguments))); };
+  _.Template.each = _.T.each = function() { return s_each.apply(null, [_.T].concat(_.toArray(arguments))); };
+
   _.t.func_storage = {};
 
   _.string = _.s = function() { return s.apply(null, [_.s, '_.s', _.mr].concat(_.toArray(arguments))); };
   _.string$ = _.s$ = function() { return s.apply(null, [_.s$, '_.s$', _.mr].concat('$').concat(_.toArray(arguments))); };
   _.string.each = _.s.each = function() { return s_each.apply(null, [_.s].concat(_.toArray(arguments))); };
+
+  _.String = _.S = function() { return s.apply(null, [_.S, '_.S', _.mr].concat(_.toArray(arguments))); };
+  _.String$ = _.S$ = function() { return s.apply(null, [_.S$, '_.S$', _.mr].concat('$').concat(_.toArray(arguments))); };
+  _.String.each = _.S.each = function() { return s_each.apply(null, [_.S].concat(_.toArray(arguments))); };
+
   _.s.func_storage = {};
+
 
   function s(func, obj_name, option, var_names/*, source...*/) {      // used by H and S
     var args = _.toArray(arguments);
@@ -739,13 +757,18 @@
 
     var self = {};
     return function() {
-      return _.pipe(_.mr(source, var_names, arguments, self), remove_comment, unescaped_exec, option, insert_datas1, insert_datas2, _.i);
+      return _.pipe(_.mr(source, var_names, arguments, self), remove_comment, option, insert_datas1, insert_datas2, _.i);
     }
   }
   function s_each(func, var_names/*, source...*/) {     // used by H.each and S.each
-    var map = _.partial(_.map, _.rest(arguments), func);
+    //var map = B.map(func.apply(null, C.rest(arguments)));
+    //console.log(map, _.map);
+    var map = _.partial(_.map, _, func.apply(null, _.rest(arguments)));
+    //var map = _.partial(_.map, _.rest(arguments), func);
     return function(ary /*, args...*/) {
-      return pipe(_.mr([ary].concat(_.rest(arguments))), map, function(res) { return res.join(""); })
+      //return A([ary].concat(C.rest(arguments)), [map, function(res) { return res.join(""); }]);
+      //return pipe(_.mr([ary].concat(_.rest(arguments))), map, function(res) { return res.join(""); });
+      return pipe(ary, map, function(res) { return res.join(""); });; //나머지 인자가 안감
     };
   }
   function remove_comment(source, var_names, args, self) {
@@ -777,7 +800,7 @@
       if (!is_paragraph) {
         ary[i] = line(ary[i], tag_stack);
         if (tmp.match(REG5)) is_paragraph = number_of_tab(RegExp.$1) + 1;
-        continue;
+        continue;s
       }
       ary[i] = ary[i].replace(REG6[is_paragraph] || (REG6[is_paragraph] = new RegExp("(" + TAB + "{" + is_paragraph + "})", "g")), "\n");
       if (ary[i] !== (ary[i] = ary[i].replace(REG7, "\n"))) ary = push_in(ary, i + 1, RegExp.$1);
@@ -785,7 +808,6 @@
 
     while (tag_stack.length) ary[ary.length - 1] += end_tag(tag_stack.pop()); // 마지막 태그
 
-    if (self.unescaped_exec.length) return _.mr(ary.join(""), var_names, args, self);
     return _.mr(self.convert_to_html = ary.join(""), var_names, args, self);
   }
   function line(source, tag_stack) {
@@ -820,7 +842,7 @@
     attrs = [''].concat(_.map(str.match(/#(\{\{\{.*?\}\}\}|\{\{.*?\}\}|[\w\-]+)/g),
         function(v) { return v.slice(1); })).join(' id=') + attrs;
 
-    return '<' + name + attrs + ' >'; // 띄어쓰기 <a href=www.marpple.com/> 를 위해
+    return '<' + name + attrs + ' >';
   }
   function end_tag(tag) { return '</' + tag + '>'; }
   function return_check(val) { return (val == null || val == void 0) ? '' : val; }
