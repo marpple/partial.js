@@ -10,122 +10,131 @@
 
 <script>
 
-
   var log = console.log;
+
   /*log(_.Pipe(
-   log,
-   _.noop,
-   log,
-   function() {
-   return 1;
-   },
-   function(a) {
-   log(this);
-   },
-   function() {
-   return _.mr(20, 5);
-   },
-   log,
-   function(a, b) {
-   return [1,2,3];
-   },
-   _.to_mr,
-   function(a, b, c) {
-   console.log(a, b, c);
-   }
-   )(10));
-   log('-----------------------------')
-   log(_.Indent(
-   log,
-   _.noop,
-   log,
-   function() {
-   return 1;
-   },
-   function(a) {
-   log(this);
-   },
-   function() {
-   return _.mr(20, 5);
-   },
-   log,
-   function(a, b) {
-   return [1,2,3];
-   },
-   _.to_mr,
-   function(a, b, c) {
-   console.log(a, b, c);
-   }
-   )(undefined));
-   log('-----------------------------')
-   log(_.pipe(10,
-   log,
-   _.noop,
-   log,
-   function() {
-   return 1;
-   },
-   function(a) {
-   log(this);
-   },
-   function() {
-   return _.mr(20, 5);
-   },
-   log,
-   function(a, b) {
-   return [1,2,3];
-   },
-   _.to_mr,
-   function(a, b, c) {
-   console.log(a, b, c);
-   }
-   ));
-   log('-----------------------------')
-   log(_.pipec({hi:'hi'}, 10,
-   log,
-   _.noop,
-   log,
-   function() {
-   return 1;
-   },
-   function(a) {
-   log(this);
-   },
-   function() {
-   return _.mr(20, 5);
-   },
-   log,
-   function(a, b) {
-   return [1,2,3];
-   },
-   _.to_mr,
-   function(a, b, c) {
-   console.log(a, b, c);
-   }
-   ));
-   log('-----------------------------')
-   log(_.pipea({hi:'hi'}, 10, [
-   log,
-   _.noop,
-   log,
-   function() {
-   return 1;
-   },
-   function(a) {
-   log(this);
-   },
-   function() {
-   return _.mr(20, 5);
-   },
-   log,
-   function(a, b) {
-   return [1,2,3];
-   },
-   _.to_mr,
-   function(a, b, c) {
-   console.log(a, b, c);
-   }
-   ]));*/
+    log,
+    _.noop,
+    log,
+    function() {
+      return 1;
+    },
+    function(a) {
+      log(this);
+    },
+    function() {
+      return _.mr(20, 5);
+    },
+    log,
+    function(a, b) {
+      return [1,2,3];
+    },
+    _.to_mr,
+    function(a, b, c) {
+      console.log(a, b, c);
+    }
+  )(10));
+
+  log('-----------------------------')
+
+  log(_.Indent(
+    log,
+    _.noop,
+    log,
+    function() {
+      return 1;
+    },
+    function(a) {
+      log(this);
+    },
+    function() {
+      return _.mr(20, 5);
+    },
+    log,
+    function(a, b) {
+      return [1,2,3];
+    },
+    _.to_mr,
+    function(a, b, c) {
+      console.log(a, b, c);
+    }
+  )(undefined));
+
+  log('-----------------------------')
+
+  log(_.pipe(10,
+    log,
+    _.noop,
+    log,
+    function() {
+      return 1;
+    },
+    function(a) {
+      log(this);
+    },
+    function() {
+      return _.mr(20, 5);
+    },
+    log,
+    function(a, b) {
+      return [1,2,3];
+    },
+    _.to_mr,
+    function(a, b, c) {
+      console.log(a, b, c);
+    }
+  ));
+
+  log('-----------------------------')
+
+  log(_.pipec({hi:'hi'}, 10,
+    log,
+    _.noop,
+    log,
+    function() {
+      return 1;
+    },
+    function(a) {
+      log(this);
+    },
+    function() {
+      return _.mr(20, 5);
+    },
+    log,
+    function(a, b) {
+      return [1,2,3];
+    },
+    _.to_mr,
+    function(a, b, c) {
+      console.log(a, b, c);
+    }
+  ));
+
+  log('-----------------------------')
+
+  log(_.pipea({hi:'hi'}, 10, [
+    log,
+    _.noop,
+    log,
+    function() {
+      return 1;
+    },
+    function(a) {
+      log(this);
+    },
+    function() {
+      return _.mr(20, 5);
+    },
+    log,
+    function(a, b) {
+      return [1,2,3];
+    },
+    _.to_mr,
+    function(a, b, c) {
+      console.log(a, b, c);
+    }
+  ]));*/
+
   log(_.async.Pipe(
     log,
     _.noop,
@@ -148,7 +157,9 @@
       console.log(a, b, c);
     }
   )(10));
+
   log('-----------------------------')
+
   log(_.async.Indent(
     log,
     _.noop,
@@ -171,7 +182,9 @@
       console.log(a, b, c);
     }
   )(undefined));
+
   log('-----------------------------')
+
   log(_.async.pipe(10,
     log,
     _.noop,
@@ -200,7 +213,9 @@
       console.log(a, b, c);
     }
   ));
+
   log('-----------------------------')
+
   log(_.async.pipec({hi:'hi'}, 10,
     log,
     _.noop,
@@ -223,7 +238,9 @@
       console.log(a, b, c);
     }
   ));
+
   log('-----------------------------')
+
   log(_.async.pipea({hi:'hi'}, 10, [
     log,
     _.noop,
@@ -246,6 +263,7 @@
       console.log(a, b, c);
     }
   ]));
+
 
 </script>
 

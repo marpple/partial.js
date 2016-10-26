@@ -139,7 +139,7 @@
   _.async.pipea2 = function(v, fs) {
     return async_pipe(void 0, v, fs, 0);
   };
-  _.async.callback = _.async.cb = function(f) {
+  _.cb = _.callback = _.async.callback = _.async.cb = function(f) {
     f._p_cb = true;
     return f;
   };
@@ -179,7 +179,9 @@
           _.Lambda(args[i++]).call(self, res, function() { res = to_mr(arguments); });
       } while (i == args_len || i < args_len && !args[i]._p_cb);
       if ((promise || (promise = cp())) && unpack_promise(res, c)) return promise;
-      is_mr(res) ? _.Lambda(args[i++]).apply(self, res[res.length++] = c && res) : _.Lambda(args[i++]).call(self, res, c);
+      is_mr(res) ?
+        _.Lambda(args[i++]).apply(self, res[res.length++] = function() { c(to_mr(arguments)); } && res) :
+        _.Lambda(args[i++]).call(self, res, function() { c(to_mr(arguments)); });
       return promise;
     })(v);
   }
