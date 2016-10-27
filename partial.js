@@ -483,6 +483,7 @@
 
   /* Collections */
   function Iter(iter, args, num) {
+    if (!_.isFunction(iter)) return Property(iter); // sort/groupBy 계열 함수에서 iter가 함수가 아닌 프로퍼티를 의미하는 문자열이 들어오는 경우도 있음
     if (args.length == num) return iter;
     var args2 = _.rest(args, num), args3;
     return function() {
@@ -599,63 +600,59 @@
     return false;
   };
 
-  _.contains = function(list, value, fromIndex) {
-    if (typeof fromIndex == 'number') list = _.rest(list, fromIndex);
-    if (_.isArrayLike(list)) return list.indexOf(value) !== -1;
-    else return _.isMatch(list, value);
+  _.contains = function(data, value, fromIndex) {
+    if (typeof fromIndex == 'number') data = _.rest(data, fromIndex);
+    if (_.isArrayLike(data)) return data.indexOf(value) !== -1;
+    else return _.isMatch(data, value);
   };
 
-  _.invoke = function(list, method) {
-    var args = _.rest(arguments, 2), isFunc = typeof method == 'function';
-    return _.map(list, function(value) {
+  _.invoke = function(data, method) {
+    var args = _.rest(arguments, 2), isFunc = _.isFunction(method);
+    return _.map(data, function(value) {
       var func = isFunc ? method : value[method];
       return func == null ? func : func.apply(value, args);
     });
   };
 
-  _.pluck = function(list, key) { return _.map(list, _.property(key)); };
+  _.pluck = function(data, key) { return _.map(data, _.Property(key)); };
 
-  _.max = function(list, iteratee) {
+  _.max = function(data, iteratee) {
     iteratee = Iter(iteratee, arguments, 2);
     var tmp, cmp, res;
-
-    if (_.isArrayLike(list)) {
-      if (isNaN(tmp = iteratee(list[0], 0, list))) return -Infinity;
-      for (var i = 1, l = list.length; i < l; i++) {
-        cmp = iteratee(list[i], i, list);
-        if (cmp > tmp) { tmp = cmp; res = list[i]; }
+    if (_.isArrayLike(data)) {
+      if (isNaN(tmp = iteratee(data[0], 0, data))) return -Infinity;
+      for (var i = 1, l = data.length; i < l; i++) {
+        cmp = iteratee(data[i], i, data);
+        if (cmp > tmp) { tmp = cmp; res = data[i]; }
       }
     } else {
-      var keys = _.keys(list);
-      if (isNaN(tmp = iteratee(list[keys[0]], keys[0], list))) return -Infinity;
+      var keys = _.keys(data);
+      if (isNaN(tmp = iteratee(data[keys[0]], keys[0], data))) return -Infinity;
       for (var i = 1, l = keys.length; i < l; i++) {
-        cmp = iteratee(list[keys[i]], keys[i], list);
-        if (cmp > tmp) { tmp = cmp; res = list[keys[i]]; }
+        cmp = iteratee(data[keys[i]], keys[i], data);
+        if (cmp > tmp) { tmp = cmp; res = data[keys[i]]; }
       }
     }
-
     return res;
   };
 
-  _.min = function(list, iteratee) {
+  _.min = function(data, iteratee) {
     iteratee = Iter(iteratee, arguments, 2);
     var tmp, cmp, res;
-
-    if (_.isArrayLike(list)) {
-      if (isNaN(tmp = iteratee(list[0], 0, list))) return -Infinity;
-      for (var i = 1, l = list.length; i < l; i++) {
-        cmp = iteratee(list[i], i, list);
-        if (cmp < tmp) { tmp = cmp; res = list[i]; }
+    if (_.isArrayLike(data)) {
+      if (isNaN(tmp = iteratee(data[0], 0, data))) return -Infinity;
+      for (var i = 1, l = data.length; i < l; i++) {
+        cmp = iteratee(data[i], i, data);
+        if (cmp < tmp) { tmp = cmp; res = data[i]; }
       }
     } else {
-      var keys = _.keys(list);
-      if (isNaN(tmp = iteratee(list[keys[0]], keys[0], list))) return -Infinity;
+      var keys = _.keys(data);
+      if (isNaN(tmp = iteratee(data[keys[0]], keys[0], data))) return -Infinity;
       for (var i = 1, l = keys.length; i < l; i++) {
-        cmp = iteratee(list[keys[i]], keys[i], list);
-        if (cmp < tmp) { tmp = cmp; res = list[keys[i]]; }
+        cmp = iteratee(data[keys[i]], keys[i], data);
+        if (cmp < tmp) { tmp = cmp; res = data[keys[i]]; }
       }
     }
-
     return res;
   };
 
@@ -675,49 +672,84 @@
   };
   // </respect _>
 
-  _.groupBy = _.group_by = function(list, iteratee) {
-    var res = {}, tmp = _.map(list, _.isFunction(iteratee) ? Iter(iteratee, arguments, 2) : function(v) { return v[iteratee] });
-    // for (var i = 0, key; (key = tmp[i]) || i < tmp.length ; i++) { _.has(res, key) ? res[key].push(list[i]) : (res[key] = [list[i]]) } // for version
-    _.each(tmp, function(key, idx) { _.has(res, key) ? res[key].push(list[idx]) : (res[key] = [list[idx]]) }); // _.each version
+  _.groupBy = _.group_by = function(data, iteratee) {
+    var res = {}, arr = _.map(data, Iter(iteratee, arguments, 2));
+    for (var i = 0, l = arr.length; i < l ; i++) { _.has(res, arr[i]) ? res[arr[i]].push(data[i]) : (res[arr[i]] = [data[i]]) }
     return res;
   };
 
-  _.indexBy = _.index_by = function(list, iteratee) {
-    var res = {}, tmp = _.map(list, _.isFunction(iteratee) ? Iter(iteratee, arguments, 2) : function(v) { return v[iteratee] });
-    // for (var i = 0, l = tmp.length; i < l; i++) { res[tmp[i]] = list[i]; }
-    _.each(tmp, function(key, idx) { res[key] = list[idx]; });
+  _.indexBy = _.index_by = function(data, iteratee) {
+    var res = {}, arr = _.map(data, Iter(iteratee, arguments, 2));
+    for (var i = 0, l = arr.length; i < l; i++) { res[arr[i]] = data[i]; }
     return res;
   };
 
-  _.countBy = _.count_by = function(list, iteratee) {
-    var res = {}, tmp = _.map(list, _.isFunction(iteratee) ? Iter(iteratee, arguments, 2) : function(v) { return v[iteratee] });
-    // for (var i = 0, key; (key = tmp[i]) || i < tmp.length ; i++) { res[key]++ || (res[key] = 1); }
-    _.each(tmp, function(key) { res[key]++ || (res[key] = 1); });
+  _.countBy = _.count_by = function(data, iteratee) {
+    var res = {}, arr = _.map(data, Iter(iteratee, arguments, 2));
+    for (var i = 0, l = arr.length; i < l; i++) { res[arr[i]]++ || (res[arr[i]] = 1); }
     return res;
   };
 
-  _.shuffle = function(list) {
-    var res = [], tmp = _.toArray(list); res[0] = tmp[0];
-    for (var i = 1, l = tmp.length, r; i < l; i++) { r = random(0, i); res[i] = res[r]; res[r] = tmp[i];  }
+  _.shuffle = function(data) {
+    var res = [], arr = _.toArray(data); res[0] = arr[0];
+    for (var i = 1, l = arr.length, r; i < l; i++) { r = random(0, i); res[i] = res[r]; res[r] = arr[i];  }
     return res;
   };
 
   function random(start, end) { return Math.floor(Math.random() * (start - end)) + end;  }
   _.random = random;
 
-  _.sample = function() {};
+  _.sample = function(data, num) { return num ? _.shuffle(data).slice(0, num) : _.shuffle(data)[0]; };
 
-  _.size = function() {};
+  _.size = function(data) { return _.isArrayLike(data) ? data.length : _.values(data).length;  };
 
-  _.partition = function() {};
-
+  _.partition = function(arr, predicate) {
+    predicate = Iter(predicate, arguments, 2);
+    var filter = [], reject = [];
+    _.each(arr, function(v, k, l) { (predicate(v, k, l) ? filter : reject).push(v); });
+    return [filter, reject];
+  };
 
   /* Arrays */
-   _.find_i = _.find_idx = _.findIndex = function(ary, predicate) {
-    predicate = Iter(predicate, arguments, 2);
-    for (var i = 0, l = ary.length; i < l; i++)
-      if (predicate(ary[i], i, ary)) return i;
-    return -1;
+  _.first = _.head = _.take = function(ary, n, guard) {
+    if (ary == null) return void 0;
+    if (n == null || guard) return ary[0];
+    return _.initial(ary, ary.length - n);
+  };
+
+  _.initial = function(ary, n, guard) { return slice.call(ary, 0, Math.max(0, ary.length - (n == null || guard ? 1 : n))); };
+
+  _.last = function(ary, n, guard) {
+    if (ary == null) return void 0;
+    if (n == null || guard) return ary[ary.length - 1];
+    return _.rest(ary, Math.max(0, ary.length - n));
+  };
+
+  _.compact = function(ary) { return _.filter(ary, _.identity); };
+  // _.flatten
+  _.without = function(ary) { return _.difference(ary, slice.call(arguments, 1)); };
+  _.union = function() { return _.uniq(flatten(arguments, true, true)); };
+
+
+  _.intersection = function(ary) {
+    var result = [];
+    var argsLength = arguments.length;
+    for (var i = 0, length = getLength(ary); i < length; i++) {
+      var item = ary[i];
+      if (_.contains(result, item)) continue;
+      for (var j = 1; j < argsLength; j++) {
+        if (!_.contains(arguments[j], item)) break;
+      }
+      if (j === argsLength) result.push(item);
+    }
+    return result;
+  };
+
+  _.difference = function(ary) {
+    var rest = flatten(arguments, true, true, 1);
+    return _.filter(ary, function (value) {
+      return !_.contains(rest, value);
+    });
   };
 
   _.uniq = function(arr, iteratee) {
@@ -727,12 +759,76 @@
     return res;
   };
 
-  /* Object */
-  _.property = function(key) {
-    return function(obj) {
-      return obj == null ? void 0 : obj[key];
+  _.zip = function() { return _.unzip(arguments); };
+
+  _.unzip = function(ary) {
+    var length = ary && _.max(ary, getLength).length || 0, result = Array(length);
+    for (var index = 0; index < length; index++) result[index] = _.pluck(ary, index);
+
+    return result;
+  };
+
+  var getLength = Property('length');
+
+  _.object = function(list, values) {
+    for (var i = 0, result = {}, length = getLength(list); i < length; i++)
+      values ? result[list[i]] = values[i] : result[list[i][0]] = list[i][1];
+
+    return result;
+  };
+
+  _.indexOf = function(ary, val) {
+    for (var i= 0, l = ary.length; i<l; i++) { if (ary[i] == val) return i; }
+    return -1;
+  };
+
+  _.lastIndexOf = function(ary, val) {
+    for (var i = ary.length; i >= 0; i--) { if (ary[i] == val) return i; }
+    return -1;
+  };
+
+  _.sortedIndex = function(ary, obj, iteratee) {
+    iteratee = Iter(iteratee, arguments, 3);
+
+    var value = iteratee(obj);
+    var low = 0, high = getLength(ary);
+    while (low < high) {
+      var mid = Math.floor((low + high) / 2);
+      if (iteratee(ary[mid]) < value) low = mid + 1; else high = mid;
+    }
+    return low;
+  };
+
+  _.find_i = _.find_idx = _.findIndex = function(ary, predicate) {
+    predicate = Iter(predicate, arguments, 2);
+    for (var i = 0, l = ary.length; i < l; i++)
+      if (predicate(ary[i], i, ary)) return i;
+    return -1;
+  };
+
+  _.findLastIndex = function(ary, predicate) {
+    predicate = Iter(predicate, arguments, 2);
+    for(var i = ary.length; i >= 0; i--) {
+      if (predicate(ary[i], i, ary)) return i;
     }
   };
+
+  _.range = function(start, stop, step) {
+    if (stop == null) { stop = start || 0; start = 0; }
+    step = step || 1;
+    var length = Math.max(Math.ceil((stop - start) / step), 0), range = Array(length);
+    for (var idx = 0; idx < length; idx++, start += step) range[idx] = start;
+
+    return range;
+  };
+
+  /* Object */
+  function Property(key) {
+    return function(obj) {
+      return obj == null ? void 0 : obj[key];
+    };
+  }
+  _.Property = Property;
 
   _.isMatch = _.is_match = function(obj, attrs) {
     var keys = _.keys(attrs);
