@@ -606,7 +606,7 @@
     else return _.isMatch(data, value);
   };
 
-  _.invoke = function(data, method) {
+  _.invoke = function(data, method) { // _.method 함수와 같은 일을 하는데...?
     var args = _.rest(arguments, 2), isFunc = _.isFunction(method);
     return _.map(data, function(value) {
       var func = isFunc ? method : value[method];
@@ -823,12 +823,95 @@
   };
 
   /* Object */
+
+  // _.keys
+  // _.values
+
+  _.mapObject = _.map_object = function(obj, iteratee) {
+    iteratee = Iter(iteratee, arguments, 2);
+    var res = {};
+    _.each(obj, function(v, k, l) { res[k] = iteratee(v, k, l) });
+    return res;
+  };
+
+  _.mapObject = _.map_object = function(obj, iteratee) {
+    iteratee = Iter(iteratee, arguments, 2);
+    var res = {};
+    for (var keys = _.keys(obj), i = 0, l = keys.length; i < l; i++) {
+      res[keys[i]] = iteratee(obj[keys[i]], keys[i], obj);
+    }
+    return res;
+  };
+
+  // 함수를 호출하는 조금 더 짦고 간결한 version
+  _.pairs = function(obj) {
+    return _.map(_.keys(obj), function(key) { return [key, obj[key]]; });
+  };
+
+  // 함수 호출 없이 조금 더 빠른 version
+  _.pairs = function(obj) {
+    var keys = _.keys(obj), l = keys.length, res = Array(l);
+    for (var i = 0; i < l; i++) res[i] = [keys[i], obj[keys[i]]];
+    return res;
+  };
+
+  _.invert = function(obj) {
+    var res = {};
+    _.each(obj, function(v, k) { res[v] = k; });
+    return res;
+  };
+
+  _.invert = function(obj) {
+    var keys = _.keys(obj), l = keys.length, res = {};
+    for (var i = 0; i < l; i++) res[obj[keys[i]]] = keys[i]
+    return res;
+  };
+
+  // _.create = function(prototype, props) {};
+
+  _.functions = function(obj) {};
+
+  _.find_k = _.find_key = _.findKey = function(obj, predicate) {
+    predicate = Iter(predicate, arguments, 2);
+    for (var keys = _.keys(obj), key, i = 0, l = keys.length; i < l; i++)
+      if (predicate(obj[key = keys[i]], key, obj)) return key;
+  };
+
+  // _.extend
+
+  _.pick = function(obj, iteratee) {
+    var res = {};
+
+    if (_.isFunction(iteratee) && (iteratee = Iter(iteratee, arguments, 2))) {
+      for (var keys = _.keys(obj), i = 0, l = keys.length; i < l; i++) {
+        if (iteratee(obj[keys[i]], keys[i], obj)) { res[keys[i]] = obj[keys[i]]; }
+      }
+    } else {
+      for (var keys = _.rest(arguments), i = 0, l = keys.length; i < l; i++) {
+        res[keys[i]] = obj[keys[i]];
+      }
+    }
+    
+    return res;
+  };
+
+  _.omit = function(obj, predicate) {};
+
+  // _.defaults
+  // _.clone
+  // _.tap
+  // _.has
+
+  _.Property = Property;
+
   function Property(key) {
     return function(obj) {
       return obj == null ? void 0 : obj[key];
     };
   }
-  _.Property = Property;
+
+  // is series... (isFunction, isNumber...)
+
 
   _.isMatch = _.is_match = function(obj, attrs) {
     var keys = _.keys(attrs);
@@ -838,11 +921,7 @@
     return true;
   };
 
-  _.find_k = _.find_key = _.findKey = function(obj, predicate) {
-    predicate = Iter(predicate, arguments, 2);
-    for (var keys = _.keys(obj), key, i = 0, l = keys.length; i < l; i++)
-      if (predicate(obj[key = keys[i]], key, obj)) return key;
-  };
+
 
 
   _.all = function(args) {
