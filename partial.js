@@ -321,7 +321,7 @@
     return new_arr;
   }
   _.flatten = function (arr, noDeep, start) { return flat([], arr, noDeep, start); };
-  _.method =function(obj, method) { return obj[method].apply(obj, _.rest(arguments, 2)); };
+  _.method = function(obj, method) { return obj[method].apply(obj, _.rest(arguments, 2)); };
 
   /* mutable */
   _.set = function(obj, key, valueOrFunc) {
@@ -559,13 +559,9 @@
     return res;
   };
 
-  _.where = function(list, attrs) {
-    return _.filter(list, _.matcher(attrs));
-  };
+  _.where = function(list, attrs) { return _.filter(list, function(obj) { return _.is_match(obj, attrs) })};
 
-  _.findWhere = _.find_where = function(list, attrs) {
-    return _.find(list, _.matcher(attrs));
-  };
+  _.findWhere = _.find_where = function(list, attrs) { return _.find(list, function(obj) { return _.is_match(obj, attrs) }); };
 
   _.reject = function(data, predicate) {
     var res = [], predicate = Iter(predicate, arguments, 2);
@@ -663,7 +659,7 @@
     return res;
   };
 
-  // respect Underscore
+  // <respect _>
   _.sortBy = _.sort_by = function(obj, iteratee) {
     iteratee = Iter(iteratee, arguments, 2);
     return _.pluck(_.map(obj, function(value, index, list) {
@@ -677,14 +673,37 @@
       return left.index - right.index;
     }), 'value');
   };
+  // </respect _>
 
-  _.groupBy = _.group_by = function() {};
+  _.groupBy = _.group_by = function(list, iteratee) {
+    var res = {}, tmp = _.map(list, _.isFunction(iteratee) ? Iter(iteratee, arguments, 2) : function(v) { return v[iteratee] });
+    // for (var i = 0, key; (key = tmp[i]) || i < tmp.length ; i++) { _.has(res, key) ? res[key].push(list[i]) : (res[key] = [list[i]]) } // for version
+    _.each(tmp, function(key, idx) { _.has(res, key) ? res[key].push(list[idx]) : (res[key] = [list[idx]]) }); // _.each version
+    return res;
+  };
 
-  _.indexBy = _.index_by = function() {};
+  _.indexBy = _.index_by = function(list, iteratee) {
+    var res = {}, tmp = _.map(list, _.isFunction(iteratee) ? Iter(iteratee, arguments, 2) : function(v) { return v[iteratee] });
+    // for (var i = 0, l = tmp.length; i < l; i++) { res[tmp[i]] = list[i]; }
+    _.each(tmp, function(key, idx) { res[key] = list[idx]; });
+    return res;
+  };
 
-  _.countBy = _.count_by = function() {};
+  _.countBy = _.count_by = function(list, iteratee) {
+    var res = {}, tmp = _.map(list, _.isFunction(iteratee) ? Iter(iteratee, arguments, 2) : function(v) { return v[iteratee] });
+    // for (var i = 0, key; (key = tmp[i]) || i < tmp.length ; i++) { res[key]++ || (res[key] = 1); }
+    _.each(tmp, function(key) { res[key]++ || (res[key] = 1); });
+    return res;
+  };
 
-  _.shuffle = function() {};
+  _.shuffle = function(list) {
+    var res = [], tmp = _.toArray(list); res[0] = tmp[0];
+    for (var i = 1, l = tmp.length, r; i < l; i++) { r = random(0, i); res[i] = res[r]; res[r] = tmp[i];  }
+    return res;
+  };
+
+  function random(start, end) { return Math.floor(Math.random() * (start - end)) + end;  }
+  _.random = random;
 
   _.sample = function() {};
 
@@ -715,17 +734,7 @@
     }
   };
 
-  // partial version
-  _.matcher = function(attrs) { return _(_.isMatch, _, attrs);  };
-
-  // normal version
-  _.matcher = function(attrs) {
-    return function(obj) {
-      return _.isMatch(obj, attrs);
-    }
-  };
-
-  _.isMatch = function(obj, attrs) {
+  _.isMatch = _.is_match = function(obj, attrs) {
     var keys = _.keys(attrs);
     for (var i = 0, l = keys.length, key; i < l && (key = keys[i]); i++) {
       if (obj[key] !== attrs[key]) return false;
