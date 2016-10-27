@@ -617,21 +617,66 @@
     });
   };
 
-  _.pluck = function(list, key) {
-    return _.map(list, _.property(key));
-  };
+  _.pluck = function(list, key) { return _.map(list, _.property(key)); };
 
-  _.property = function(key) {
-    return function(obj) {
-      return obj == null ? void 0 : obj[key];
+  _.max = function(list, iteratee) {
+    iteratee = Iter(iteratee, arguments, 2);
+    var tmp, cmp, res;
+
+    if (_.isArrayLike(list)) {
+      if (isNaN(tmp = iteratee(list[0], 0, list))) return -Infinity;
+      for (var i = 1, l = list.length; i < l; i++) {
+        cmp = iteratee(list[i], i, list);
+        if (cmp > tmp) { tmp = cmp; res = list[i]; }
+      }
+    } else {
+      var keys = _.keys(list);
+      if (isNaN(tmp = iteratee(list[keys[0]], keys[0], list))) return -Infinity;
+      for (var i = 1, l = keys.length; i < l; i++) {
+        cmp = iteratee(list[keys[i]], keys[i], list);
+        if (cmp > tmp) { tmp = cmp; res = list[keys[i]]; }
+      }
     }
+
+    return res;
   };
 
-  _.max = function() {};
+  _.min = function(list, iteratee) {
+    iteratee = Iter(iteratee, arguments, 2);
+    var tmp, cmp, res;
 
-  _.min = function() {};
+    if (_.isArrayLike(list)) {
+      if (isNaN(tmp = iteratee(list[0], 0, list))) return -Infinity;
+      for (var i = 1, l = list.length; i < l; i++) {
+        cmp = iteratee(list[i], i, list);
+        if (cmp < tmp) { tmp = cmp; res = list[i]; }
+      }
+    } else {
+      var keys = _.keys(list);
+      if (isNaN(tmp = iteratee(list[keys[0]], keys[0], list))) return -Infinity;
+      for (var i = 1, l = keys.length; i < l; i++) {
+        cmp = iteratee(list[keys[i]], keys[i], list);
+        if (cmp < tmp) { tmp = cmp; res = list[keys[i]]; }
+      }
+    }
 
-  _.sortBy = _.sort_by = function() {};
+    return res;
+  };
+
+  // respect Underscore
+  _.sortBy = _.sort_by = function(obj, iteratee) {
+    iteratee = Iter(iteratee, arguments, 2);
+    return _.pluck(_.map(obj, function(value, index, list) {
+      return { value: value, index: index, criteria: iteratee(value, index, list) };
+    }).sort(function(left, right) {
+      var a = left.criteria, b = right.criteria;
+      if (a !== b) {
+        if (a > b || a === void 0) return 1;
+        if (a < b || b === void 0) return -1;
+      }
+      return left.index - right.index;
+    }), 'value');
+  };
 
   _.groupBy = _.group_by = function() {};
 
@@ -664,6 +709,12 @@
   };
 
   /* Object */
+  _.property = function(key) {
+    return function(obj) {
+      return obj == null ? void 0 : obj[key];
+    }
+  };
+
   // partial version
   _.matcher = function(attrs) { return _(_.isMatch, _, attrs);  };
 
