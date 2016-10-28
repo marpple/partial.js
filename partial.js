@@ -270,9 +270,7 @@
     var id = ++idCounter + '';
     return prefix ? prefix + id : id;
   };
-  _.clone = function(obj) {
-    return !_.isObject(obj) ? obj : _.isArray(obj) ? obj.slice() : _.extend({}, obj);
-  };
+  _.clone = function(obj) { return !_.isObject(obj) ? obj : _.isArray(obj) ? obj.slice() : _.extend({}, obj); };
   // </respect _>
 
   function each(list, iter, start) {
@@ -288,8 +286,40 @@
   //function times(len, func) { for (var i = 0; i < len; i++) func(i); }
   function times2(len, func) { for (var i = 1; i <= len; i++) func(i); }
 
-  _.keys = function(obj) { return _.isObject(obj) ? Object.keys(obj) : []; };
+  /* is Series */
   _.is_array = _.isArray = Array.isArray;
+  _.is_match = _.isMatch = function(obj, attrs) {
+    var keys = _.keys(attrs);
+    for (var i = 0, l = keys.length, key; i < l && (key = keys[i]); i++) {
+      if (obj[key] !== attrs[key]) return false;
+    }
+    return true;
+  };
+  _.is_string = _.isString = function(obj) { return typeof obj === 'string' };
+  _.is_number = _.isNumber = function(obj) { return typeof obj === 'number' };
+  _.is_boolean = _.isBoolean = function(obj) { return typeof obj === 'boolean' };
+  _.is_empty = _.isEmpty = function(obj) { return !(obj && obj.length) };
+  _.is_arguments = _.isArguments = function(obj) { return !!(obj && obj.callee) };
+  _.is_element = _.isElement = function(obj) { return !!(obj && obj.nodeType === 1) };
+  _.is_equal = _.isEqual = function(a, b) {
+    if (a.length !== b.length || a.constructor !== b.constructor) return false; // typeof 대신 constructor를 사용하는 이유는 arguments와 array를 구분하기 위함
+
+    if (_.isArray(a) || _.isArguments(a)) { // _.isArrayLike는 함수도 true를 반환
+      for (var i = 0, l = a.length; i < l; i++) { if (a[i] !== b[i]) return false; }
+      return true;
+    }
+
+    if (typeof a === 'object') { // _.isObject() 보다 더 빠르고 함수를 걸러내기 위함
+      return !_.find(a, function(value, key) {
+        if (_.isArrayLike(value) || _.isObject(value)) { return !_.isEqual(value, b[key]); }
+        return value !== b[key];
+      });
+    }
+
+    return a === b; // 함수, 문자열, 숫자, 불리언, 정규표현식
+  };
+
+  _.keys = function(obj) { return _.isObject(obj) ? Object.keys(obj) : []; };
   _.wrapArray = _.wrap_arr = function(v) { return _.isArray(v) ? v : [v]; };
   _.parseInt = _.parse_int = function(v) { return parseInt(v, 10); };
   try { var has_lambda = true; eval('a=>a'); } catch (err) { var has_lambda = false; }
@@ -483,7 +513,7 @@
 
   /* Collections */
   function Iter(iter, args, num) {
-    if (!_.isFunction(iter)) return Property(iter); // sort/groupBy 계열 함수에서 iter가 함수가 아닌 프로퍼티를 의미하는 문자열이 들어오는 경우도 있음
+    if (!_.isFunction(iter)) return _(_.val, _, iter);
     if (args.length == num) return iter;
     var args2 = _.rest(args, num), args3;
     return function() {
@@ -606,15 +636,15 @@
     else return _.isMatch(data, value);
   };
 
-  _.invoke = function(data, method) { // _.method 함수와 같은 일을 하는데...?
+  _.invoke = function(data, method) {
     var args = _.rest(arguments, 2), isFunc = _.isFunction(method);
     return _.map(data, function(value) {
       var func = isFunc ? method : value[method];
-      return func == null ? func : func.apply(value, args);
+      return func && func.apply(value, args);
     });
   };
 
-  _.pluck = function(data, key) { return _.map(data, _.Property(key)); };
+  _.pluck = function(data, key) { return _.map(data, _(_.val, _,key))};
 
   _.max = function(data, iteratee) {
     iteratee = Iter(iteratee, arguments, 2);
@@ -768,7 +798,7 @@
     return result;
   };
 
-  var getLength = Property('length');
+  var getLength = _(_.val, _, 'length');
 
   _.object = function(list, values) {
     for (var i = 0, result = {}, length = getLength(list); i < length; i++)
@@ -823,9 +853,8 @@
   };
 
   /* Object */
-
-  // _.keys
-  // _.values
+  // _.keys (clear)
+  // _.values (clear)
 
   _.mapObject = _.map_object = function(obj, iteratee) {
     iteratee = Iter(iteratee, arguments, 2);
@@ -843,21 +872,9 @@
     return res;
   };
 
-  // 함수를 호출하는 조금 더 짦고 간결한 version
-  _.pairs = function(obj) {
-    return _.map(_.keys(obj), function(key) { return [key, obj[key]]; });
-  };
-
-  // 함수 호출 없이 조금 더 빠른 version
   _.pairs = function(obj) {
     var keys = _.keys(obj), l = keys.length, res = Array(l);
     for (var i = 0; i < l; i++) res[i] = [keys[i], obj[keys[i]]];
-    return res;
-  };
-
-  _.invert = function(obj) {
-    var res = {};
-    _.each(obj, function(v, k) { res[v] = k; });
     return res;
   };
 
@@ -867,9 +884,11 @@
     return res;
   };
 
-  // _.create = function(prototype, props) {};
-
-  _.functions = function(obj) {};
+  _.functions = function(obj) {
+    var keys = _.keys(obj), res = [];
+    for (var i = 0, l = keys.length; i < l; i++) { if (_.isFunction(obj[keys[i]])) res.push(keys[i]); }
+    return res;
+  };
 
   _.find_k = _.find_key = _.findKey = function(obj, predicate) {
     predicate = Iter(predicate, arguments, 2);
@@ -877,52 +896,43 @@
       if (predicate(obj[key = keys[i]], key, obj)) return key;
   };
 
-  // _.extend
+  // _.extend (clear)
+  // _.defaults (clear)
 
   _.pick = function(obj, iteratee) {
     var res = {};
 
-    if (_.isFunction(iteratee) && (iteratee = Iter(iteratee, arguments, 2))) {
-      for (var keys = _.keys(obj), i = 0, l = keys.length; i < l; i++) {
-        if (iteratee(obj[keys[i]], keys[i], obj)) { res[keys[i]] = obj[keys[i]]; }
-      }
-    } else {
-      for (var keys = _.rest(arguments), i = 0, l = keys.length; i < l; i++) {
+    if (_.isString(iteratee)) {
+      for (var keys = _.rest(arguments), i = 0, l = keys.length; i < l; i++)
         res[keys[i]] = obj[keys[i]];
-      }
+    } else {
+      iteratee = Iter(iteratee, arguments, 2);
+      for (var keys = _.keys(obj), i = 0, l = keys.length; i < l; i++)
+        if (iteratee(obj[keys[i]], keys[i], obj)) res[keys[i]] = obj[keys[i]];
     }
-    
+
     return res;
   };
 
-  _.omit = function(obj, predicate) {};
+  _.omit = function(obj, iteratee) {
+    var res = {};
 
-  // _.defaults
-  // _.clone
-  // _.tap
-  // _.has
-
-  _.Property = Property;
-
-  function Property(key) {
-    return function(obj) {
-      return obj == null ? void 0 : obj[key];
-    };
-  }
-
-  // is series... (isFunction, isNumber...)
-
-
-  _.isMatch = _.is_match = function(obj, attrs) {
-    var keys = _.keys(attrs);
-    for (var i = 0, l = keys.length, key; i < l && (key = keys[i]); i++) {
-      if (obj[key] !== attrs[key]) return false;
+    if (_.isString(iteratee)) {
+      var oKeys = _.keys(obj), keys = _.rest(arguments);
+      for (var i = 0, l = oKeys.length; i < l; i++)
+        if (keys.indexOf(oKeys[i]) == -1) res[oKeys[i]] = obj[oKeys[i]];
+    } else {
+      iteratee = Iter(iteratee, arguments, 2);
+      for (var keys = _.keys(obj), i = 0, l = keys.length; i < l; i++)
+        if (!iteratee(obj[keys[i]], keys[i], obj)) res[keys[i]] = obj[keys[i]];
     }
-    return true;
+
+    return res;
   };
 
-
-
+  // _.clone (clear)
+  // _.tap (not yet)
+  // _.has (clear)
 
   _.all = function(args) {
     var res = [], tmp;
