@@ -807,17 +807,17 @@
     return result;
   };
 
-  _.indexOf = function(ary, val) {
+  _.indexOf = _.index_of = function(ary, val) {
     for (var i= 0, l = ary.length; i<l; i++) { if (ary[i] == val) return i; }
     return -1;
   };
 
-  _.lastIndexOf = function(ary, val) {
+  _.lastIndexOf = _.last_index_of = function(ary, val) {
     for (var i = ary.length; i >= 0; i--) { if (ary[i] == val) return i; }
     return -1;
   };
 
-  _.sortedIndex = function(ary, obj, iteratee) {
+  _.sortedIndex = _.sorted_idx = _.sorted_i = function(ary, obj, iteratee) {
     iteratee = Iter(iteratee, arguments, 3);
 
     var value = iteratee(obj);
@@ -836,7 +836,7 @@
     return -1;
   };
 
-  _.findLastIndex = function(ary, predicate) {
+  _.findLastIndex = _.find_last_idx = _.find_last_i = function(ary, predicate) {
     predicate = Iter(predicate, arguments, 2);
     for(var i = ary.length; i >= 0; i--) {
       if (predicate(ary[i], i, ary)) return i;
@@ -852,16 +852,10 @@
     return range;
   };
 
+
   /* Object */
   // _.keys (clear)
   // _.values (clear)
-
-  _.mapObject = _.map_object = function(obj, iteratee) {
-    iteratee = Iter(iteratee, arguments, 2);
-    var res = {};
-    _.each(obj, function(v, k, l) { res[k] = iteratee(v, k, l) });
-    return res;
-  };
 
   _.mapObject = _.map_object = function(obj, iteratee) {
     iteratee = Iter(iteratee, arguments, 2);
@@ -901,7 +895,6 @@
 
   _.pick = function(obj, iteratee) {
     var res = {};
-
     if (_.isString(iteratee)) {
       for (var keys = _.rest(arguments), i = 0, l = keys.length; i < l; i++)
         res[keys[i]] = obj[keys[i]];
@@ -910,13 +903,11 @@
       for (var keys = _.keys(obj), i = 0, l = keys.length; i < l; i++)
         if (iteratee(obj[keys[i]], keys[i], obj)) res[keys[i]] = obj[keys[i]];
     }
-
     return res;
   };
 
   _.omit = function(obj, iteratee) {
     var res = {};
-
     if (_.isString(iteratee)) {
       var oKeys = _.keys(obj), keys = _.rest(arguments);
       for (var i = 0, l = oKeys.length; i < l; i++)
@@ -926,13 +917,15 @@
       for (var keys = _.keys(obj), i = 0, l = keys.length; i < l; i++)
         if (!iteratee(obj[keys[i]], keys[i], obj)) res[keys[i]] = obj[keys[i]];
     }
-
     return res;
   };
 
   // _.clone (clear)
-  // _.tap (not yet)
   // _.has (clear)
+
+  _.tap = function(args) {
+
+  };
 
   _.all = function(args) {
     var res = [], tmp;
