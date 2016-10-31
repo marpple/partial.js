@@ -273,9 +273,7 @@
     var id = ++idCounter + '';
     return prefix ? prefix + id : id;
   };
-  _.clone = function(obj) {
-    return !_.isObject(obj) ? obj : _.isArray(obj) ? obj.slice() : _.extend({}, obj);
-  };
+  _.clone = function(obj) { return !_.isObject(obj) ? obj : _.isArray(obj) ? obj.slice() : _.extend({}, obj); };
   // </respect _>
 
   function each(list, iter, start) {
@@ -291,8 +289,40 @@
   //function times(len, func) { for (var i = 0; i < len; i++) func(i); }
   function times2(len, func) { for (var i = 1; i <= len; i++) func(i); }
 
-  _.keys = function(obj) { return _.isObject(obj) ? Object.keys(obj) : []; };
+  /* is Series */
   _.is_array = _.isArray = Array.isArray;
+  _.is_match = _.isMatch = function(obj, attrs) {
+    var keys = _.keys(attrs);
+    for (var i = 0, l = keys.length, key; i < l && (key = keys[i]); i++) {
+      if (obj[key] !== attrs[key]) return false;
+    }
+    return true;
+  };
+  _.is_string = _.isString = function(obj) { return typeof obj === 'string' };
+  _.is_number = _.isNumber = function(obj) { return typeof obj === 'number' };
+  _.is_boolean = _.isBoolean = function(obj) { return typeof obj === 'boolean' };
+  _.is_empty = _.isEmpty = function(obj) { return !(obj && obj.length) };
+  _.is_arguments = _.isArguments = function(obj) { return !!(obj && obj.callee) };
+  _.is_element = _.isElement = function(obj) { return !!(obj && obj.nodeType === 1) };
+  _.is_equal = _.isEqual = function(a, b) {
+    if (a.length !== b.length || a.constructor !== b.constructor) return false; // typeof 대신 constructor를 사용하는 이유는 arguments와 array를 구분하기 위함
+
+    if (_.isArray(a) || _.isArguments(a)) { // _.isArrayLike는 함수도 true를 반환
+      for (var i = 0, l = a.length; i < l; i++) { if (a[i] !== b[i]) return false; }
+      return true;
+    }
+
+    if (typeof a === 'object') { // _.isObject() 보다 더 빠르고 함수를 걸러내기 위함
+      return !_.find(a, function(value, key) {
+        if (_.isArrayLike(value) || _.isObject(value)) { return !_.isEqual(value, b[key]); }
+        return value !== b[key];
+      });
+    }
+
+    return a === b; // 함수, 문자열, 숫자, 불리언, 정규표현식
+  };
+
+  _.keys = function(obj) { return _.isObject(obj) ? Object.keys(obj) : []; };
   _.wrapArray = _.wrap_arr = function(v) { return _.isArray(v) ? v : [v]; };
   _.parseInt = _.parse_int = function(v) { return parseInt(v, 10); };
   try { var has_lambda = true; eval('a=>a'); } catch (err) { var has_lambda = false; }
@@ -324,7 +354,7 @@
     return new_arr;
   }
   _.flatten = function (arr, noDeep, start) { return flat([], arr, noDeep, start); };
-  _.method =function(obj, method) { return obj[method].apply(obj, _.rest(arguments, 2)); };
+  _.method = function(obj, method) { return obj[method].apply(obj, _.rest(arguments, 2)); };
 
   /* mutable */
   _.set = function(obj, key, valueOrFunc) {
@@ -486,6 +516,7 @@
 
   /* Collections */
   function Iter(iter, args, num) {
+    if (!_.isFunction(iter)) return _(_.val, _, iter);
     if (args.length == num) return iter;
     var args2 = _.rest(args, num), args3;
     return function() {
@@ -562,13 +593,9 @@
     return res;
   };
 
-  _.where = function(list, attrs) {
-    return _.filter(list, _.matcher(attrs));
-  };
+  _.where = function(list, attrs) { return _.filter(list, function(obj) { return _.is_match(obj, attrs) })};
 
-  _.findWhere = _.find_where = function(list, attrs) {
-    return _.find(list, _.matcher(attrs));
-  };
+  _.findWhere = _.find_where = function(list, attrs) { return _.find(list, function(obj) { return _.is_match(obj, attrs) }); };
 
   _.reject = function(data, predicate) {
     var res = [], predicate = Iter(predicate, arguments, 2);
@@ -606,67 +633,63 @@
     return false;
   };
 
-  _.contains = function(list, value, fromIndex) {
-    if (typeof fromIndex == 'number') list = _.rest(list, fromIndex);
-    if (_.isArrayLike(list)) return list.indexOf(value) !== -1;
-    else return _.isMatch(list, value);
+  _.contains = function(data, value, fromIndex) {
+    if (typeof fromIndex == 'number') data = _.rest(data, fromIndex);
+    if (_.isArrayLike(data)) return data.indexOf(value) !== -1;
+    else return _.isMatch(data, value);
   };
 
-  _.invoke = function(list, method) {
-    var args = _.rest(arguments, 2), isFunc = typeof method == 'function';
-    return _.map(list, function(value) {
+  _.invoke = function(data, method) {
+    var args = _.rest(arguments, 2), isFunc = _.isFunction(method);
+    return _.map(data, function(value) {
       var func = isFunc ? method : value[method];
-      return func == null ? func : func.apply(value, args);
+      return func && func.apply(value, args);
     });
   };
 
-  _.pluck = function(list, key) { return _.map(list, _.property(key)); };
+  _.pluck = function(data, key) { return _.map(data, _(_.val, _,key))};
 
-  _.max = function(list, iteratee) {
+  _.max = function(data, iteratee) {
     iteratee = Iter(iteratee, arguments, 2);
     var tmp, cmp, res;
-
-    if (_.isArrayLike(list)) {
-      if (isNaN(tmp = iteratee(list[0], 0, list))) return -Infinity;
-      for (var i = 1, l = list.length; i < l; i++) {
-        cmp = iteratee(list[i], i, list);
-        if (cmp > tmp) { tmp = cmp; res = list[i]; }
+    if (_.isArrayLike(data)) {
+      if (isNaN(tmp = iteratee(data[0], 0, data))) return -Infinity;
+      for (var i = 1, l = data.length; i < l; i++) {
+        cmp = iteratee(data[i], i, data);
+        if (cmp > tmp) { tmp = cmp; res = data[i]; }
       }
     } else {
-      var keys = _.keys(list);
-      if (isNaN(tmp = iteratee(list[keys[0]], keys[0], list))) return -Infinity;
+      var keys = _.keys(data);
+      if (isNaN(tmp = iteratee(data[keys[0]], keys[0], data))) return -Infinity;
       for (var i = 1, l = keys.length; i < l; i++) {
-        cmp = iteratee(list[keys[i]], keys[i], list);
-        if (cmp > tmp) { tmp = cmp; res = list[keys[i]]; }
+        cmp = iteratee(data[keys[i]], keys[i], data);
+        if (cmp > tmp) { tmp = cmp; res = data[keys[i]]; }
       }
     }
-
     return res;
   };
 
-  _.min = function(list, iteratee) {
+  _.min = function(data, iteratee) {
     iteratee = Iter(iteratee, arguments, 2);
     var tmp, cmp, res;
-
-    if (_.isArrayLike(list)) {
-      if (isNaN(tmp = iteratee(list[0], 0, list))) return -Infinity;
-      for (var i = 1, l = list.length; i < l; i++) {
-        cmp = iteratee(list[i], i, list);
-        if (cmp < tmp) { tmp = cmp; res = list[i]; }
+    if (_.isArrayLike(data)) {
+      if (isNaN(tmp = iteratee(data[0], 0, data))) return -Infinity;
+      for (var i = 1, l = data.length; i < l; i++) {
+        cmp = iteratee(data[i], i, data);
+        if (cmp < tmp) { tmp = cmp; res = data[i]; }
       }
     } else {
-      var keys = _.keys(list);
-      if (isNaN(tmp = iteratee(list[keys[0]], keys[0], list))) return -Infinity;
+      var keys = _.keys(data);
+      if (isNaN(tmp = iteratee(data[keys[0]], keys[0], data))) return -Infinity;
       for (var i = 1, l = keys.length; i < l; i++) {
-        cmp = iteratee(list[keys[i]], keys[i], list);
-        if (cmp < tmp) { tmp = cmp; res = list[keys[i]]; }
+        cmp = iteratee(data[keys[i]], keys[i], data);
+        if (cmp < tmp) { tmp = cmp; res = data[keys[i]]; }
       }
     }
-
     return res;
   };
 
-  // respect Underscore
+  // <respect _>
   _.sortBy = _.sort_by = function(obj, iteratee) {
     iteratee = Iter(iteratee, arguments, 2);
     return _.pluck(_.map(obj, function(value, index, list) {
@@ -680,28 +703,86 @@
       return left.index - right.index;
     }), 'value');
   };
+  // </respect _>
 
-  _.groupBy = _.group_by = function() {};
+  _.groupBy = _.group_by = function(data, iteratee) {
+    var res = {}, arr = _.map(data, Iter(iteratee, arguments, 2));
+    for (var i = 0, l = arr.length; i < l ; i++) { _.has(res, arr[i]) ? res[arr[i]].push(data[i]) : (res[arr[i]] = [data[i]]) }
+    return res;
+  };
 
-  _.indexBy = _.index_by = function() {};
+  _.indexBy = _.index_by = function(data, iteratee) {
+    var res = {}, arr = _.map(data, Iter(iteratee, arguments, 2));
+    for (var i = 0, l = arr.length; i < l; i++) { res[arr[i]] = data[i]; }
+    return res;
+  };
 
-  _.countBy = _.count_by = function() {};
+  _.countBy = _.count_by = function(data, iteratee) {
+    var res = {}, arr = _.map(data, Iter(iteratee, arguments, 2));
+    for (var i = 0, l = arr.length; i < l; i++) { res[arr[i]]++ || (res[arr[i]] = 1); }
+    return res;
+  };
 
-  _.shuffle = function() {};
+  _.shuffle = function(data) {
+    var res = [], arr = _.toArray(data); res[0] = arr[0];
+    for (var i = 1, l = arr.length, r; i < l; i++) { r = random(0, i); res[i] = res[r]; res[r] = arr[i];  }
+    return res;
+  };
 
-  _.sample = function() {};
+  function random(start, end) { return Math.floor(Math.random() * (start - end)) + end;  }
+  _.random = random;
 
-  _.size = function() {};
+  _.sample = function(data, num) { return num ? _.shuffle(data).slice(0, num) : _.shuffle(data)[0]; };
 
-  _.partition = function() {};
+  _.size = function(data) { return _.isArrayLike(data) ? data.length : _.values(data).length;  };
 
+  _.partition = function(arr, predicate) {
+    predicate = Iter(predicate, arguments, 2);
+    var filter = [], reject = [];
+    _.each(arr, function(v, k, l) { (predicate(v, k, l) ? filter : reject).push(v); });
+    return [filter, reject];
+  };
 
   /* Arrays */
-   _.find_i = _.find_idx = _.findIndex = function(ary, predicate) {
-    predicate = Iter(predicate, arguments, 2);
-    for (var i = 0, l = ary.length; i < l; i++)
-      if (predicate(ary[i], i, ary)) return i;
-    return -1;
+  _.first = _.head = _.take = function(ary, n, guard) {
+    if (ary == null) return void 0;
+    if (n == null || guard) return ary[0];
+    return _.initial(ary, ary.length - n);
+  };
+
+  _.initial = function(ary, n, guard) { return slice.call(ary, 0, Math.max(0, ary.length - (n == null || guard ? 1 : n))); };
+
+  _.last = function(ary, n, guard) {
+    if (ary == null) return void 0;
+    if (n == null || guard) return ary[ary.length - 1];
+    return _.rest(ary, Math.max(0, ary.length - n));
+  };
+
+  _.compact = function(ary) { return _.filter(ary, _.identity); };
+  // _.flatten
+  _.without = function(ary) { return _.difference(ary, slice.call(arguments, 1)); };
+  _.union = function() { return _.uniq(flatten(arguments, true, true)); };
+
+
+  _.intersection = function(ary) {
+    var result = [];
+    var argsLength = arguments.length;
+    for (var i = 0, length = getLength(ary); i < length; i++) {
+      var item = ary[i];
+      if (_.contains(result, item)) continue;
+      for (var j = 1; j < argsLength; j++) {
+        if (!_.contains(arguments[j], item)) break;
+      }
+      if (j === argsLength) result.push(item);
+    }
+    return result;
+  };
+
+  _.difference = function(ary) {
+    var rest = flatten(arguments, true, true, 1);
+    return _.filter(ary, function (value) {
+      return !_.contains(rest, value);
+    });
   };
 
   _.uniq = function(arr, iteratee) {
@@ -711,29 +792,105 @@
     return res;
   };
 
+  _.zip = function() { return _.unzip(arguments); };
+
+  _.unzip = function(ary) {
+    var length = ary && _.max(ary, getLength).length || 0, result = Array(length);
+    for (var index = 0; index < length; index++) result[index] = _.pluck(ary, index);
+
+    return result;
+  };
+
+  var getLength = _(_.val, _, 'length');
+
+  _.object = function(list, values) {
+    for (var i = 0, result = {}, length = getLength(list); i < length; i++)
+      values ? result[list[i]] = values[i] : result[list[i][0]] = list[i][1];
+
+    return result;
+  };
+
+  _.indexOf = function(ary, val) {
+    for (var i= 0, l = ary.length; i<l; i++) { if (ary[i] == val) return i; }
+    return -1;
+  };
+
+  _.lastIndexOf = function(ary, val) {
+    for (var i = ary.length; i >= 0; i--) { if (ary[i] == val) return i; }
+    return -1;
+  };
+
+  _.sortedIndex = function(ary, obj, iteratee) {
+    iteratee = Iter(iteratee, arguments, 3);
+
+    var value = iteratee(obj);
+    var low = 0, high = getLength(ary);
+    while (low < high) {
+      var mid = Math.floor((low + high) / 2);
+      if (iteratee(ary[mid]) < value) low = mid + 1; else high = mid;
+    }
+    return low;
+  };
+
+  _.find_i = _.find_idx = _.findIndex = function(ary, predicate) {
+    predicate = Iter(predicate, arguments, 2);
+    for (var i = 0, l = ary.length; i < l; i++)
+      if (predicate(ary[i], i, ary)) return i;
+    return -1;
+  };
+
+  _.findLastIndex = function(ary, predicate) {
+    predicate = Iter(predicate, arguments, 2);
+    for(var i = ary.length; i >= 0; i--) {
+      if (predicate(ary[i], i, ary)) return i;
+    }
+  };
+
+  _.range = function(start, stop, step) {
+    if (stop == null) { stop = start || 0; start = 0; }
+    step = step || 1;
+    var length = Math.max(Math.ceil((stop - start) / step), 0), range = Array(length);
+    for (var idx = 0; idx < length; idx++, start += step) range[idx] = start;
+
+    return range;
+  };
+
   /* Object */
-  _.property = function(key) {
-    return function(obj) {
-      return obj == null ? void 0 : obj[key];
-    }
+  // _.keys (clear)
+  // _.values (clear)
+
+  _.mapObject = _.map_object = function(obj, iteratee) {
+    iteratee = Iter(iteratee, arguments, 2);
+    var res = {};
+    _.each(obj, function(v, k, l) { res[k] = iteratee(v, k, l) });
+    return res;
   };
 
-  // partial version
-  _.matcher = function(attrs) { return _(_.isMatch, _, attrs);  };
-
-  // normal version
-  _.matcher = function(attrs) {
-    return function(obj) {
-      return _.isMatch(obj, attrs);
+  _.mapObject = _.map_object = function(obj, iteratee) {
+    iteratee = Iter(iteratee, arguments, 2);
+    var res = {};
+    for (var keys = _.keys(obj), i = 0, l = keys.length; i < l; i++) {
+      res[keys[i]] = iteratee(obj[keys[i]], keys[i], obj);
     }
+    return res;
   };
 
-  _.isMatch = function(obj, attrs) {
-    var keys = _.keys(attrs);
-    for (var i = 0, l = keys.length, key; i < l && (key = keys[i]); i++) {
-      if (obj[key] !== attrs[key]) return false;
-    }
-    return true;
+  _.pairs = function(obj) {
+    var keys = _.keys(obj), l = keys.length, res = Array(l);
+    for (var i = 0; i < l; i++) res[i] = [keys[i], obj[keys[i]]];
+    return res;
+  };
+
+  _.invert = function(obj) {
+    var keys = _.keys(obj), l = keys.length, res = {};
+    for (var i = 0; i < l; i++) res[obj[keys[i]]] = keys[i]
+    return res;
+  };
+
+  _.functions = function(obj) {
+    var keys = _.keys(obj), res = [];
+    for (var i = 0, l = keys.length; i < l; i++) { if (_.isFunction(obj[keys[i]])) res.push(keys[i]); }
+    return res;
   };
 
   _.find_k = _.find_key = _.findKey = function(obj, predicate) {
@@ -742,6 +899,43 @@
       if (predicate(obj[key = keys[i]], key, obj)) return key;
   };
 
+  // _.extend (clear)
+  // _.defaults (clear)
+
+  _.pick = function(obj, iteratee) {
+    var res = {};
+
+    if (_.isString(iteratee)) {
+      for (var keys = _.rest(arguments), i = 0, l = keys.length; i < l; i++)
+        res[keys[i]] = obj[keys[i]];
+    } else {
+      iteratee = Iter(iteratee, arguments, 2);
+      for (var keys = _.keys(obj), i = 0, l = keys.length; i < l; i++)
+        if (iteratee(obj[keys[i]], keys[i], obj)) res[keys[i]] = obj[keys[i]];
+    }
+
+    return res;
+  };
+
+  _.omit = function(obj, iteratee) {
+    var res = {};
+
+    if (_.isString(iteratee)) {
+      var oKeys = _.keys(obj), keys = _.rest(arguments);
+      for (var i = 0, l = oKeys.length; i < l; i++)
+        if (keys.indexOf(oKeys[i]) == -1) res[oKeys[i]] = obj[oKeys[i]];
+    } else {
+      iteratee = Iter(iteratee, arguments, 2);
+      for (var keys = _.keys(obj), i = 0, l = keys.length; i < l; i++)
+        if (!iteratee(obj[keys[i]], keys[i], obj)) res[keys[i]] = obj[keys[i]];
+    }
+
+    return res;
+  };
+
+  // _.clone (clear)
+  // _.tap (not yet)
+  // _.has (clear)
 
   _.all = function(args) {
     var res = [], tmp;
