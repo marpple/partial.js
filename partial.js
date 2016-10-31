@@ -68,8 +68,11 @@
     return v;
   }
   function mr() {
-    arguments._mr = true;
-    return arguments;
+    //arguments._mr = true;
+    //return arguments;
+    var args = _.toArray(arguments);
+    args._mr = true;
+    return args;
   }
   function to_mr(args) {
     if (args.length < 2) return args;
@@ -951,6 +954,53 @@
     return _.to_mr(res);
   };
 
+
+  /* Functions */
+  _.memoize = function (func, hasher) {
+    var memoize = function (key) {
+      var cache = memoize.cache, address = '' + (hasher ? hasher.apply(this, arguments) : key);
+      if (!_.has(cache, address)) cache[address] = func.apply(this, arguments);
+      return cache[address];
+    };
+    return memoize.cache = {} && memoize;
+  };
+
+  _.delay = function (func, wait) {
+    var args = slice.call(arguments, 2);
+    return setTimeout(function () {
+      return func.apply(null, args);
+    }, wait);
+  };
+
+  _.defer = _.partial(_.delay, _, 1);
+
+  //_.throttle
+  //_.debounce
+  _.negate = function (predicate) {
+    return function () {
+      return !predicate.apply(this, arguments);
+    };
+  };
+
+  _.after = function (times, func) {
+    return function () {
+      if (--times < 1) return func.apply(this, arguments);
+    };
+  };
+
+  _.before = function (times, func) {
+    var memo;
+    return function () {
+      if (--times > 0) memo = func.apply(this, arguments);
+      if (times <= 1) func = null;
+      return memo;
+    };
+  };
+
+  _.once = _.partial(_.before, 2);
+
+
+
   // async each - reduce
   // function base_loop_fn(body, end_q, end, complete, iter_or_predi, params) {
   //   var context = this;
@@ -1022,7 +1072,7 @@
   function s_matcher(length, key, re, source, var_names, self) {
 
     // test
-    if (self) console.log("self 캐쉬 사용!!!!!!!!!!!!");
+    if (self && self[key]) console.log("self 캐쉬 사용!!!!!!!!!!!!");
 
     if (self && self[key]) return self[key];
     var res = map(source.match(re), function(matched) {
@@ -1057,69 +1107,224 @@
     return space_length / TAB_SIZE + tab_length;
   }
 
-  // _.T, _.t, _.S, _.s 함수 하나로 합칠 수 있을 듯.
-  _.Template = _.T = function() { return s.apply(null, [_.T, '_.T', convert_to_html].concat(_.toArray(arguments))); };
-  _.Template$ = _.T$ = function() { return s.apply(null, [_.T$, '_.T$', convert_to_html].concat('$').concat(_.toArray(arguments))); };
-  _.Template.each = _.T.each = function() { return s_each.apply(null, [_.T].concat(_.toArray(arguments))); };
-  _.template = _.t = function(args) {
-    var f = s.apply(null, [_.t, '_.t', convert_to_html].concat(_.rest(arguments)));
-    return _.is_mr(args) ? f.apply(null, args) : f(args);
+
+
+
+  // basic_t랑 basic_t_e, basic_T랑 basic_T_e도 합칠 수 있을 듯!
+  function basic_T(func, func_name, convert, pipe) {
+    return function() {
+      return s.apply(null, [func, func_name, convert, pipe, {}].concat(_.toArray(arguments))); // 캐쉬 여기서.
+    }
+  }
+
+  function basic_t(func, func_name, convert, pipe) {
+    return function(args) {
+      var f = s.apply(null, [func, func_name, convert, pipe, null].concat(_.rest(arguments)));
+      return _.is_mr(args) ? f.apply(null, args) : f(args);
+    }
+  }
+
+  function basic_T_e(func) {
+    return function() {
+
+      return s_each.apply(null, [func].concat(_.toArray(arguments)));
+    }
+  }
+  function basic_t_e(func) {
+    return function(args) {
+
+      var f = s_each.apply(null, [func].concat(_.rest(arguments)));
+      console.log(_.rest(arguments));
+      return _.is_mr(args) ? f.apply(null, args) : f(args);
+    }
+  }
+
+  // template
+  _.Template = _.T = basic_T(_.T, '_.T', convert_to_html, pipe);
+  _.template = _.t = basic_t(_.t, '_.t', convert_to_html, pipe);
+  _.async.Template = _.async.T = basic_T(_.async.T, '_.async.T', convert_to_html, _.async.pipe);
+  _.async.template = _.async.t = basic_t(_.async.t, '_.async.t', convert_to_html, _.async.pipe);
+
+  // template.each
+  _.Template.each = _.T.each = basic_T_e(_.T);
+  _.template.each = _.t.each = basic_t_e(_.T);
+  _.async.Template.each = _.async.T.each = basic_T_e(_.T);
+  _.async.template.each = _.async.t.each = basic_t_e(_.t);
+
+  // template$
+
+  _.Template$ = _.T$ = function() {
+    arguments[0] = '$';
+
+    console.log(arguments, arguments[0]);
+    console.log(_.rest(arguments), arguments[0]);
+    return s.apply(null, [_.T$, '_.T$', convert_to_html, pipe].concat(_.toArray(arguments)));
+    //return s.apply(null, [_.T$, '_.T$', convert_to_html, pipe, '$'].concat(_.rest(arguments)));
+    //return s.apply(null, [_.T$, '_.T$', convert_to_html, pipe].concat(['$'].concat(_.rest(arguments))));
   };
-  _.template$ = _.t$ = function(args) {
-    var f = s.apply(null, [_.t$, '_.t$', convert_to_html].concat('$').concat(_.rest(arguments)));
-    return _.is_mr(args) ? f.apply(null, args) : f(args);
-  };
-  _.template.each = _.t.each = function(args) {
-    var f = s_each.apply(null, [_.t].concat(_.toArray(arguments)));
-    return _.is_mr(args) ? f.apply(null, args) : f(args);
-  };
+
   _.t.func_storage = {};
 
-  _.String = _.S = function() { return s.apply(null, [_.S, '_.S', _.mr].concat(_.toArray(arguments))); };
-  _.String$ = _.S$ = function() { return s.apply(null, [_.S$, '_.S$', _.mr].concat('$').concat(_.toArray(arguments))); };
-  _.String.each = _.S.each = function() { return s_each.apply(null, [_.S].concat(_.toArray(arguments))); };
-  _.string = _.s = function(args) {
-    var f = s.apply(null, [_.s, '_.s', _.mr].concat(_.toArray(arguments)));
-    return _.is_mr(args) ? f.apply(null, args) : f(args);
-  };
-  _.string$ = _.s$ = function(args) {
-    var f = s.apply(null, [_.s$, '_.s$', _.mr].concat('$').concat(_.toArray(arguments)));
-    return _.is_mr(args) ? f.apply(null, args) : f(args);
-  };
-  _.string.each = _.s.each = function(args) {
-    var f = s_each.apply(null, [_.s].concat(_.toArray(arguments)));
-    return _.is_mr(args) ? f.apply(null, args) : f(args);
-  };
-  _.s.func_storage = {};
 
-  function s(func, obj_name, option, var_names/*, source...*/) {      // used by H and S
+  // string
+  //string.each
+
+
+  //
+  //
+  //_.Template = _.T =           function() { return      s.apply(null, [_.T, '_.T', convert_to_html]   .concat(_.toArray(arguments))); };
+  //_.Template$ = _.T$ =         function() { return      s.apply(null, [_.T$, '_.T$', convert_to_html] .concat('$').concat(_.toArray(arguments))); }; //.concat
+  //_.Template$ = _.T$ =         function() { return      s.apply(null, [_.T$, '_.T$', convert_to_html] .concat(['$'].concat(_.toArray(arguments)))); }; //.concat
+  //_.Template.each = _.T.each = function() { return s_each.apply(null, [_.T]                           .concat(_.toArray(arguments))); };
+
+
+  //
+  //_.Template = _.T = function() { return s.apply(null, [_.T, '_.T', convert_to_html].concat(_.toArray(arguments))); };
+  //_.Template$ = _.T$ = function() { return s.apply(null, [_.T$, '_.T$', convert_to_html].concat('$').concat(_.toArray(arguments))); };
+  //_.Template.each = _.T.each = function() { return s_each.apply(null, [_.T].concat(_.toArray(arguments))); };
+  //
+  //_.template = _.t = function(args) {
+  //  var f = s.apply(null, [_.t, '_.t', convert_to_html].concat(_.rest(arguments)));
+  //  return _.is_mr(args) ? f.apply(null, args) : f(args);
+  //};
+  //_.template$ = _.t$ = function(args) {
+  //  var f = s.apply(null, [_.t$, '_.t$', convert_to_html].concat('$').concat(_.rest(arguments)));
+  //  return _.is_mr(args) ? f.apply(null, args) : f(args);
+  //};
+  //_.template.each = _.t.each = function(args) {
+  //  var f = s_each.apply(null, [_.T].concat(_.rest(arguments)));
+  //  return _.is_mr(args) ? f.apply(null, args) : f(args);
+  //};
+  //_.t.func_storage = {};
+  //
+  //
+  //_.String = _.S = function() { return s.apply(null, [_.S, '_.S', _.mr].concat(_.toArray(arguments))); };
+  //_.String$ = _.S$ = function() { return s.apply(null, [_.S$, '_.S$', _.mr].concat('$').concat(_.toArray(arguments))); };
+  //_.String.each = _.S.each = function() { // 'var names', '소스'
+  //  return s_each.apply(null, [_.S].concat(_.toArray(arguments)));
+  //};
+  //_.string = _.s = function(args) {
+  //  var f = s.apply(null, [_.s, '_.s', _.mr].concat(_.toArray(arguments)));
+  //  return _.is_mr(args) ? f.apply(null, args) : f(args);
+  //};
+  //_.string$ = _.s$ = function(args) {
+  //  var f = s.apply(null, [_.s$, '_.s$', _.mr].concat('$').concat(_.toArray(arguments)));
+  //  return _.is_mr(args) ? f.apply(null, args) : f(args);
+  //};
+  //_.string.each = _.s.each = function(args) { // mr(datas)| |data, 'var names', '소스'
+  //  var f = s_each.apply(null, [_.S].concat(_.rest(arguments)));
+  //  return _.is_mr(args) ? f.apply(null, args) : f(args);
+  //};
+  //_.s.func_storage = {};
+  //
+  //
+
+
+  function s(func, func_name, convert, pipe, self, var_names/*, source...*/) {      // used by H and S
     var args = _.toArray(arguments);
-    var source = _.map(_.rest(args, 4), function(str_or_func) {
+    var source = _.map(_.rest(args, 6), function(str_or_func) {
       if (_.isString(str_or_func)) return str_or_func;
 
       var key = _.uniqueId("func_storage");
       func._ABC_func_storage[key] = str_or_func;
-      return obj_name + ".func_storage." + key;
+      return func_name + ".func_storage." + key;
     }).join("");
 
     //var self = {};
-    var self = (obj_name.match(/[A-Z]/)) ? {} : null;
-
     return function() {
-      var f = obj_name.match('_.async') ? _.async.pipe : _.pipe;
-      return f(_.mr(source, var_names, arguments, self), remove_comment, option, insert_datas1, insert_datas2, _.i);
-      //return (obj_name.match('_.async') ? _.async.pipe : _.pipe)(_.mr(source, var_names, arguments, self), remove_comment, option, insert_datas1, insert_datas2, _.i);
+      //var f = func_name.match('_.async') ? _.async.pipe : _.pipe;
+      return pipe(_.mr(source, var_names, arguments, self), remove_comment, convert, insert_datas1, insert_datas2, _.i);
     }
   }
+
   function s_each(func, var_names/*, source...*/) {     // used by H.each and S.each
-    //var map = B.map(func.apply(null, C.rest(arguments)));
     var map = _.partial(_.map, _, func.apply(null, _.rest(arguments)));
-    //var map = _.partial(_.map, _.rest(arguments), func);
     return function(ary /*, args...*/) {
-      //return A([ary].concat(C.rest(arguments)), [map, function(res) { return res.join(""); }]);
-      return pipe(ary, map, function(res) { return res.join(""); }); //나머지 인자가 안감
+      return pipe(ary, _.partial.apply(null, [map, _].concat(_.rest(arguments))), function(res) { return res.join(""); });
     };
   }
+
+
+
+
+
+// test
+
+  _.T = function() { // var names, source...
+    return s.apply(null, [_.T, '_.T', convert_to_html, _.pipe, {}].concat(_.toArray(arguments)));
+  };
+  _.T$ = function() { // source...
+    return s.apply(null, [_.T$, '_.T$', convert_to_html, _.pipe, {}, '$'].concat(_.toArray(arguments)));
+  };
+
+  _.t = function(args) { // _.mr(인자들), var names, source...
+    var f = s.apply(null, [_.t, '_.t', convert_to_html, _.pipe, null].concat(_.rest(arguments)));
+    return _.is_mr(args) ? f.apply(null, args) : f(args);
+  };
+  _.t$ = function(args) { // _.mr(인자들), source...
+    var f = s.apply(null, [_.t$, '_.t$', convert_to_html, _.pipe, null, '$'].concat(_.rest(arguments)));
+    return _.is_mr(args) ? f.apply(null, args) : f(args);
+  };
+
+  _.t.func_storage = {};
+
+
+  _.S = function() { // var names, source...
+    return s.apply(null, [_.S, '_.S', _.mr, _.pipe, {}].concat(_.toArray(arguments)));
+  };
+  _.S$ = function() { // source...
+    return s.apply(null, [_.S$, '_.S$', _.mr, _.pipe, {}].concat('$').concat(_.toArray(arguments)));
+  };
+  _.s = function(args) { // _.mr(인자들), var names, source...
+    var f = s.apply(null, [_.s, '_.s', _.mr, _.pipe, null].concat(_.rest(arguments)));
+    return _.is_mr(args) ? f.apply(null, args) : f(args);
+  };
+  _.s$ = function(args) { // _.mr(인자들), source...
+    var f = s.apply(null, [_.s$, '_.s$', _.mr, _.pipe, null].concat('$').concat(_.rest(arguments)));
+    return _.is_mr(args) ? f.apply(null, args) : f(args);
+  };
+
+  _.s.func_storage = {};
+
+
+  // each
+  function s_each(func, pipe/*, var_names, source...*/) {     // used by H.each and S.each
+    var map = _.partial(_.map, _, func.apply(null, _.rest(arguments, 2)));
+    return function(ary /*, args...*/) {
+      return pipe(ary, _.partial.apply(null, [map, _].concat(_.rest(arguments))), function(res) { return res.join(""); });
+    };
+  }
+
+  _.Template.each = _.T.each = function() { // var_names, source...
+    return s_each.apply(null, [_.T, _.pipe].concat(_.toArray(arguments)));
+  };
+
+// 여기
+//  _.template.each = _.t.each = function(args) { // _.mr(datas..), var_names, source...
+//    var ary;
+//    if (_.is_mr(args)) ary = _.toArray(args).shift(); //args는 arguments 객체
+//    else { ary = args; args = []; }
+//    return _.pipe(ary, _.partial(_.map, _, _.partial.apply([_.t, _, _, _].concat(args))), function(res) { console.log(res); return res.join(""); });
+//
+//  };
+
+  _.template.each = _.t.each = function(args) { // _.mr(datas..), var_names, source..
+
+    var ary;
+    if (_.is_mr(args)) ary = args.shift();
+    else { ary = args; args = []; }
+    var rest_args = _.rest(arguments);
+
+    //return _.map(ary, function(v) { return _.t(_.to_mr([v].concat(args)), rest_args); }).join("");
+    return _.map(ary, function(v, k, l) {
+      return _.t.apply(null, [_.to_mr([v, k, l].concat(args))].concat(rest_args));
+    }).join("");
+
+  };
+
+  //test
+
+
   function remove_comment(source, var_names, args, self) {
     return _.mr(source.replace(/\/\*(.*?)\*\//g, "").replace(REG2, ""), var_names, args, self);
   }
