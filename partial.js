@@ -94,7 +94,7 @@
   };
   function ithis(self, args) { return { parent: self, args: args }; }
 
-  _.Tap = _.tap = function() {
+  _.Tap = function() {
     // var fns = C.toArray(arguments);
     // return function() { return A(arguments, fns.concat([J(arguments), to_mr]), this); };
   };
@@ -199,7 +199,7 @@
   _.args3 = function() { return arguments[3]; };
   _.args4 = function() { return arguments[4]; };
   _.args5 = function() { return arguments[5]; };
-  _.Always = _.always = function(v) { return function() { return v; }; };
+  _.Always = _.always = _.constant = function(v) { return function() { return v; }; };
   _.true = _.Always(true);
   _.false = _.Always(false);
   _.null = _.Always(null);
@@ -304,22 +304,23 @@
   _.is_empty = _.isEmpty = function(obj) { return !(obj && obj.length) };
   _.is_arguments = _.isArguments = function(obj) { return !!(obj && obj.callee) };
   _.is_element = _.isElement = function(obj) { return !!(obj && obj.nodeType === 1) };
+  _.is_date = _.isDate = function(obj) { return toString.call(obj) === '[object Date]' };
+  _.is_error = _.isError = function(obj) { return toString.call(obj) === '[object Error]' };
+  _.is_reg_exp = _.is_reg = _.isRegExp = function(obj) { return toString.call(obj) === '[object RegExp]' };
+  _.isNaN = isNaN;
   _.is_equal = _.isEqual = function(a, b) {
-    if (a.length !== b.length || a.constructor !== b.constructor) return false; // typeof 대신 constructor를 사용하는 이유는 arguments와 array를 구분하기 위함
-
-    if (_.isArray(a) || _.isArguments(a)) { // _.isArrayLike는 함수도 true를 반환
+    if (a.length !== b.length || a.constructor !== b.constructor) return false;
+    if (_.isArray(a) || _.isArguments(a)) {
       for (var i = 0, l = a.length; i < l; i++) { if (a[i] !== b[i]) return false; }
       return true;
     }
-
-    if (typeof a === 'object') { // _.isObject() 보다 더 빠르고 함수를 걸러내기 위함
+    if (typeof a === 'object') {
       return !_.find(a, function(value, key) {
         if (_.isArrayLike(value) || _.isObject(value)) { return !_.isEqual(value, b[key]); }
         return value !== b[key];
       });
     }
-
-    return a === b; // 함수, 문자열, 숫자, 불리언, 정규표현식
+    return a === b;
   };
 
   _.keys = function(obj) { return _.isObject(obj) ? Object.keys(obj) : []; };
@@ -926,8 +927,22 @@
   // _.clone (clear)
   // _.has (clear)
 
-  _.tap = function(args) {
+  _.Tap = function(func) {
+    return function(arg) {
+      arguments.length > 1 ? func.apply(null, _.to_mr(arguments)) : func(arg);
+      return arguments.length > 1 ? _.to_mr(arguments) : arg;
+    }
+  };
 
+  _.Tap = function(func) {
+    return function(arg) {
+      if (arguments.length > 1) {
+        func.apply(null, _.to_mr(arguments));
+        return _.to_mr(arguments);
+      }
+      func(arg);
+      return arg;
+    }
   };
 
   _.all = function(args) {
