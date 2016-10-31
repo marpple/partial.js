@@ -961,6 +961,53 @@
     return _.to_mr(res);
   };
 
+
+  /* Functions */
+  _.memoize = function (func, hasher) {
+    var memoize = function (key) {
+      var cache = memoize.cache, address = '' + (hasher ? hasher.apply(this, arguments) : key);
+      if (!_.has(cache, address)) cache[address] = func.apply(this, arguments);
+      return cache[address];
+    };
+    return memoize.cache = {} && memoize;
+  };
+
+  _.delay = function (func, wait) {
+    var args = slice.call(arguments, 2);
+    return setTimeout(function () {
+      return func.apply(null, args);
+    }, wait);
+  };
+
+  _.defer = _.partial(_.delay, _, 1);
+
+  //_.throttle
+  //_.debounce
+  _.negate = function (predicate) {
+    return function () {
+      return !predicate.apply(this, arguments);
+    };
+  };
+
+  _.after = function (times, func) {
+    return function () {
+      if (--times < 1) return func.apply(this, arguments);
+    };
+  };
+
+  _.before = function (times, func) {
+    var memo;
+    return function () {
+      if (--times > 0) memo = func.apply(this, arguments);
+      if (times <= 1) func = null;
+      return memo;
+    };
+  };
+
+  _.once = _.partial(_.before, 2);
+
+
+
   // async each - reduce
   // function base_loop_fn(body, end_q, end, complete, iter_or_predi, params) {
   //   var context = this;
