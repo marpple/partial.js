@@ -595,16 +595,13 @@
   //};
 
   _.reduce = function(data, iteratee, memo, limiter) {
-    if (_.is_mr(data)) {
-      iteratee = Iter(iteratee, data, 1);
-      data = data[0];
-    }
+    if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 1); data = data[0]; }
 
     if (_.isArrayLike(data))
-      for (var i = 0, res = (memo==undefined ? data[i++] : memo), l = limiter||data.length; i < l; i++) // memo 0일 때? 적용 안되는 값으로 써도 되고... undefined 조사 해야하나
+      for (var i = 0, res = (memo == undefined ? data[i++] : memo), l = limiter || data.length; i < l; i++) // memo 0일 때? 적용 안되는 값으로 써도 되고... undefined 조사 해야하나
         res = iteratee(res, data[i], i, data);
     else
-      for (var i = 0, keys = _.keys(data), res = (memo==undefined ? data[keys[i++]] : memo), l = limiter||keys.length; i < l; i++)
+      for (var i = 0, keys = _.keys(data), res = (memo == undefined ? data[keys[i++]] : memo), l = limiter || keys.length; i < l; i++)
         res = iteratee(res, data[keys[i]], i, data);
     return res;
   };
@@ -612,19 +609,15 @@
   _.reduce2 = function(data, iteratee, memo, limiter) {
     if (limiter === 0) return [];
     if (_.isNumber(limiter)) return _.map(data, iteratee, limiter);
-
-    if (_.is_mr(data)) {
-      iteratee = Iter(iteratee, data, 1);
-      data = data[0];
-    }
+    if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 1); data = data[0]; }
 
     if (_.isArrayLike(data))
-      for (var i = 0, res = (memo==undefined ? data[i++] : memo), l = data.length; i < l; i++) {
+      for (var i = 0, res = (memo == undefined ? data[i++] : memo), l = data.length; i < l; i++) {
         res = iteratee(res, data[i], i, data);
         if (limiter(data[i], i, data)) break;
       }
     else
-      for (var i = 0, keys = _.keys(data), res = (memo==undefined ? data[keys[i++]] : memo), l = keys.length; i < l; i++) {
+      for (var i = 0, keys = _.keys(data), res = (memo == undefined ? data[keys[i++]] : memo), l = keys.length; i < l; i++) {
         res = iteratee(res, data[keys[i]], i, data);
         if (limiter(data[keys[i]], keys[i], data)) break;
       }
@@ -644,10 +637,7 @@
   //};
 
   _.reduceRight = _.reduce_right = function(data, iteratee, memo, limiter) {
-    if (_.is_mr(data)) {
-      iteratee = Iter(iteratee, data, 1);
-      data = data[0];
-    }
+    if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 1); data = data[0]; }
 
     if (_.isArrayLike(data))
       for (var i = data.length - 1, res = (memo==undefined ? data[i--] : memo), end = limiter || 0; i >= end; i--)
@@ -661,11 +651,7 @@
   _.reduceRight2 = function(data, iteratee, memo, limiter) {
     if (limiter === 0) return [];
     if (_.isNumber(limiter)) return _.map(data, iteratee, limiter);
-
-    if (_.is_mr(data)) {
-      iteratee = Iter(iteratee, data, 1);
-      data = data[0];
-    }
+    if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 1); data = data[0]; }
 
     if (_.isArrayLike(data))
       for (var i = data.length - 1, res = (memo==undefined ? data[i--] : memo); i >= 0; i--) {
