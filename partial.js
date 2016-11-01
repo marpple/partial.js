@@ -298,16 +298,10 @@
     }
     return true;
   };
-  _.is_string = _.isString = function(obj) { return typeof obj === 'string' };
-  _.is_number = _.isNumber = function(obj) { return typeof obj === 'number' };
-  _.is_boolean = _.isBoolean = function(obj) { return typeof obj === 'boolean' };
+
   _.is_empty = _.isEmpty = function(obj) { return !(obj && obj.length) };
   _.is_arguments = _.isArguments = function(obj) { return !!(obj && obj.callee) };
   _.is_element = _.isElement = function(obj) { return !!(obj && obj.nodeType === 1) };
-  _.is_date = _.isDate = function(obj) { return toString.call(obj) === '[object Date]' };
-  _.is_error = _.isError = function(obj) { return toString.call(obj) === '[object Error]' };
-  _.is_reg_exp = _.is_reg = _.isRegExp = function(obj) { return toString.call(obj) === '[object RegExp]' };
-  _.isNaN = isNaN;
   _.is_equal = _.isEqual = function(a, b) {
     if (a.length !== b.length || a.constructor !== b.constructor) return false;
     if (_.isArray(a) || _.isArguments(a)) {
@@ -527,39 +521,44 @@
     }
   }
 
-  _.each = function(data, iteratee) {
-    iteratee = Iter(iteratee, arguments, 2);
+  _.each = function(data, iteratee, limiter) {
+    if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 1); data = data[0]; }
+
     if (_.isArrayLike(data))
-      for (var i = 0, l = data.length; i < l; i++)
+      for (var i = 0, l = limiter || data.length; i < l; i++)
         iteratee(data[i], i, data);
     else
-      for (var keys = _.keys(data), i = 0, l = keys.length; i < l; i++)
+      for (var keys = _.keys(data), i = 0, l = limiter || keys.length; i < l; i++)
         iteratee(data[keys[i]], keys[i], data);
     return data;
   };
 
-  //_.map = function(data, iteratee) {
-  //  iteratee = Iter(iteratee, arguments, 2);
-  //  if (_.isArrayLike(data))
-  //    for (var i = 0, l = data.length, res = Array(l); i < l; i++)
-  //      res[i] = iteratee(data[i], i, data);
-  //  else
-  //    for (var keys = _.keys(data), i = 0, l = keys.length, res = Array(l); i < l; i++)
-  //      res[i] = iteratee(data[keys[i]], keys[i], data);
-  //  return res;
-  //};
+  _.each2 = function(data, iteratee, limiter) {
+    if (limiter === 0) return [];
+    if (_.isNumber(limiter)) return _.each(data, iteratee, limiter);
+    if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 1); data = data[0]; }
+
+    if (_.isArrayLike(data))
+      for (var i = 0, l = data.length; i < l; i++) {
+        iteratee(data[i], i, data);
+        if (limiter(data[i], i, data)) break;
+      }
+    else
+      for (var keys = _.keys(data), i = 0, l = keys.length; i < l; i++) {
+        iteratee(data[keys[i]], keys[i], data);
+        if (limiter(data[keys[i]], keys[i], data)) break;
+      }
+    return data;
+  };
 
   _.map = function(data, iteratee, limiter) {
-    if (_.is_mr(data)) {
-      iteratee = Iter(iteratee, data, 1);
-      data = data[0];
-    }
+    if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 1); data = data[0]; }
 
     if (_.isArrayLike(data)) {
-      for (var i = 0, l = limiter||data.length, res = Array(l); i < l; i++)
+      for (var i = 0, l = limiter || data.length, res = Array(l); i < l; i++)
         res[i] = iteratee(data[i], i, data);
     } else {
-      for (var i = 0, keys = _.keys(data), l = limiter||keys.length, res = Array(l); i < l; i++)
+      for (var i = 0, keys = _.keys(data), l = limiter || keys.length, res = Array(l); i < l; i++)
         res[i] = iteratee(data[keys[i]], keys[i], data);
     }
     return res;
@@ -568,27 +567,21 @@
   _.map2 = function(data, iteratee, limiter) {
     if (limiter === 0) return [];
     if (_.isNumber(limiter)) return _.map(data, iteratee, limiter);
-
-    if (_.is_mr(data)) {
-      iteratee = Iter(iteratee, data, 1);
-      data = data[0];
-    }
+    if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 1); data = data[0]; }
 
     if (_.isArrayLike(data)) {
       for (var i = 0, res = [], l = data.length; i < l; i++) {
         res.push(iteratee(data[i], i, data));
-        if(limiter(data[i], i, data)) break;
+        if (limiter(data[i], i, data)) break;
       }
     } else {
       for (var i = 0, res = [], keys = _.keys(data), l = keys.length; i < l; i++) {
         res.push(iteratee(data[keys[i]], keys[i], data));
-        if(limiter(data[keys[i]], keys[i], data)) break;
+        if (limiter(data[keys[i]], keys[i], data)) break;
       }
     }
     return res;
   };
-
-
 
   _.reduce = function(data, predicate, memo) {
     predicate = Iter(predicate, arguments, 3);
@@ -613,7 +606,8 @@
   };
 
   _.find = function(data, predicate) {
-    predicate = Iter(predicate, arguments, 2);
+    if (_.is_mr(data)) { predicate = Iter(predicate, data, 1); data = data[0]; }
+
     if (_.isArrayLike(data)) {
       for (var i = 0, l = data.length; i < l; i++)
         if (predicate(data[i], i, data)) return data[i];
@@ -624,7 +618,8 @@
   };
 
   _.filter = function(data, predicate) {
-    var res = [], predicate = Iter(predicate, arguments, 2);
+    var res = [];
+    if (_.is_mr(data)) { predicate = Iter(predicate, data, 1); data = data[0]; }
     if (_.isArrayLike(data)) {
       for (var i = 0, l = data.length; i < l; i++)
         if (predicate(data[i], i, data)) res.push(data[i]);
@@ -640,7 +635,8 @@
   _.findWhere = _.find_where = function(list, attrs) { return _.find(list, function(obj) { return _.is_match(obj, attrs) }); };
 
   _.reject = function(data, predicate) {
-    var res = [], predicate = Iter(predicate, arguments, 2);
+    var res = [];
+    if (_.is_mr(data)) { predicate = Iter(predicate, data, 1); data = data[0]; }
     if (_.isArrayLike(data)) {
       for (var i = 0, l = data.length; i < l; i++)
         if (!predicate(data[i], i, data)) res.push(data[i]);
@@ -652,7 +648,7 @@
   };
 
   _.every = function(data, predicate) {
-    predicate = Iter(predicate, arguments, 2);
+    if (_.is_mr(data)) { predicate = Iter(predicate, data, 1); data = data[0]; }
     if (_.isArrayLike(data)) {
       for (var i = 0, l = data.length; i < l; i++)
         if (!predicate(data[i], i, data)) return false;
@@ -664,7 +660,7 @@
   };
 
   _.some = function(data, predicate) {
-    predicate = Iter(predicate, arguments, 2);
+    if (_.is_mr(data)) { predicate = Iter(predicate, data, 1); data = data[0]; }
     if (_.isArrayLike(data)) {
       for (var i = 0, l = data.length; i < l; i++)
         if (predicate(data[i], i, data)) return true;
@@ -692,7 +688,7 @@
   _.pluck = function(data, key) { return _.map(data, _(_.val, _,key))};
 
   _.max = function(data, iteratee) {
-    iteratee = Iter(iteratee, arguments, 2);
+    if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 1); data = data[0]; }
     var tmp, cmp, res;
     if (_.isArrayLike(data)) {
       if (isNaN(tmp = iteratee(data[0], 0, data))) return -Infinity;
@@ -712,7 +708,7 @@
   };
 
   _.min = function(data, iteratee) {
-    iteratee = Iter(iteratee, arguments, 2);
+    if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 1); data = data[0]; }
     var tmp, cmp, res;
     if (_.isArrayLike(data)) {
       if (isNaN(tmp = iteratee(data[0], 0, data))) return -Infinity;
@@ -733,7 +729,7 @@
 
   // <respect _>
   _.sortBy = _.sort_by = function(obj, iteratee) {
-    iteratee = Iter(iteratee, arguments, 2);
+    if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 1); data = data[0]; }
     return _.pluck(_.map(obj, function(value, index, list) {
       return { value: value, index: index, criteria: iteratee(value, index, list) };
     }).sort(function(left, right) {
@@ -748,19 +744,19 @@
   // </respect _>
 
   _.groupBy = _.group_by = function(data, iteratee) {
-    var res = {}, arr = _.map(data, Iter(iteratee, arguments, 2));
+    var res = {}, arr = _.map(data, itreatee);
     for (var i = 0, l = arr.length; i < l ; i++) { _.has(res, arr[i]) ? res[arr[i]].push(data[i]) : (res[arr[i]] = [data[i]]) }
     return res;
   };
 
   _.indexBy = _.index_by = function(data, iteratee) {
-    var res = {}, arr = _.map(data, Iter(iteratee, arguments, 2));
+    var res = {}, arr = _.map(data, iteratee);
     for (var i = 0, l = arr.length; i < l; i++) { res[arr[i]] = data[i]; }
     return res;
   };
 
   _.countBy = _.count_by = function(data, iteratee) {
-    var res = {}, arr = _.map(data, Iter(iteratee, arguments, 2));
+    var res = {}, arr = _.map(data, iteratee);
     for (var i = 0, l = arr.length; i < l; i++) { res[arr[i]]++ || (res[arr[i]] = 1); }
     return res;
   };
@@ -779,7 +775,7 @@
   _.size = function(data) { return _.isArrayLike(data) ? data.length : _.values(data).length;  };
 
   _.partition = function(arr, predicate) {
-    predicate = Iter(predicate, arguments, 2);
+    if (_.is_mr(arr)) { predicate = Iter(predicate, arr, 1); arr = arr[0]; }
     var filter = [], reject = [];
     _.each(arr, function(v, k, l) { (predicate(v, k, l) ? filter : reject).push(v); });
     return [filter, reject];
@@ -828,7 +824,7 @@
   };
 
   _.uniq = function(arr, iteratee) {
-    var res = [], tmp = [], cmp = iteratee ? _.map(arr, Iter(iteratee, arguments, 2)) : arr;
+    var res = [], tmp = [], cmp = iteratee ? _.map(arr, iteratee) : arr;
     for (var i = 0, l = arr.length; i < l; i++)
       if (tmp.indexOf(cmp[i]) == -1) { tmp.push(cmp[i]); res.push(arr[i]); }
     return res;
@@ -875,14 +871,14 @@
   };
 
   _.find_i = _.find_idx = _.findIndex = function(ary, predicate) {
-    predicate = Iter(predicate, arguments, 2);
+    if (_.is_mr(ary)) { predicate = Iter(predicate, ary, 1); ary = ary[0]; }
     for (var i = 0, l = ary.length; i < l; i++)
       if (predicate(ary[i], i, ary)) return i;
     return -1;
   };
 
   _.findLastIndex = _.find_last_idx = _.find_last_i = function(ary, predicate) {
-    predicate = Iter(predicate, arguments, 2);
+    if (_.is_mr(ary)) { predicate = Iter(predicate, ary, 1); ary = ary[0]; }
     for(var i = ary.length; i >= 0; i--) {
       if (predicate(ary[i], i, ary)) return i;
     }
@@ -903,7 +899,7 @@
   // _.values (clear)
 
   _.mapObject = _.map_object = function(obj, iteratee) {
-    iteratee = Iter(iteratee, arguments, 2);
+    if (_.is_mr(obj)) { iteratee = Iter(iteratee, obj, 1); obj = obj[0]; }
     var res = {};
     for (var keys = _.keys(obj), i = 0, l = keys.length; i < l; i++) {
       res[keys[i]] = iteratee(obj[keys[i]], keys[i], obj);
@@ -930,7 +926,7 @@
   };
 
   _.find_k = _.find_key = _.findKey = function(obj, predicate) {
-    predicate = Iter(predicate, arguments, 2);
+    if (_.is_mr(obj)) { predicate = Iter(predicate, obj, 1); obj = obj[0]; }
     for (var keys = _.keys(obj), key, i = 0, l = keys.length; i < l; i++)
       if (predicate(obj[key = keys[i]], key, obj)) return key;
   };
@@ -944,7 +940,7 @@
       for (var keys = _.rest(arguments), i = 0, l = keys.length; i < l; i++)
         res[keys[i]] = obj[keys[i]];
     } else {
-      iteratee = Iter(iteratee, arguments, 2);
+      if (_.is_mr(obj)) { iteratee = Iter(iteratee, obj, 1); obj = obj[0]; }
       for (var keys = _.keys(obj), i = 0, l = keys.length; i < l; i++)
         if (iteratee(obj[keys[i]], keys[i], obj)) res[keys[i]] = obj[keys[i]];
     }
@@ -958,7 +954,7 @@
       for (var i = 0, l = oKeys.length; i < l; i++)
         if (keys.indexOf(oKeys[i]) == -1) res[oKeys[i]] = obj[oKeys[i]];
     } else {
-      iteratee = Iter(iteratee, arguments, 2);
+      if (_.is_mr(obj)) { iteratee = Iter(iteratee, obj, 1); obj = obj[0]; }
       for (var keys = _.keys(obj), i = 0, l = keys.length; i < l; i++)
         if (!iteratee(obj[keys[i]], keys[i], obj)) res[keys[i]] = obj[keys[i]];
     }
