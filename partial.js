@@ -510,8 +510,6 @@
   }(_, {});
 
 
-  //_.each(_.mr([1,2,3],1,2))
-
   /* Collections */
   function Iter(iter, args, rnum) {
     for (var args2 = [], i = 0, l = args.length; i < l; i++) args2[i+rnum] = args[i];
@@ -585,17 +583,6 @@
     return res;
   };
 
-  //_.reduce = function(data, predicate, memo) {
-  //  predicate = Iter(predicate, arguments, 3);
-  //  if (_.isArrayLike(data))
-  //    for (var i = 0, res = memo || data[i++], l = data.length; i < l; i++)
-  //      res = predicate(res, data[i], i, data);
-  //  else
-  //    for (var i = 0, keys = _.keys(data), res = memo || data[keys[i++]], l = keys.length; i < l; i++)
-  //      res = predicate(res, data[keys[i]], i, data);
-  //  return res;
-  //};
-
   _.reduce = function(data, iteratee, memo, limiter) {
     if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 3); data = data[0]; }
 
@@ -625,18 +612,6 @@
       }
     return res;
   };
-
-  // reduceRight
-  //_.reduceRight = _.reduce_right = function(data, predicate, memo) {
-  //  predicate = Iter(predicate, arguments, 3);
-  //  if (_.isArrayLike(data))
-  //    for (var i = data.length - 1, res = memo || data[i--]; i > -1; i--)
-  //      res = predicate(res, data[i], i, data);
-  //  else
-  //    for (var keys = _.keys(data), i = keys.length - 1, res = memo || data[keys[i--]]; i > -1; i--)
-  //      res = predicate(res, data[keys[i]], i, data);
-  //  return res;
-  //};
 
   _.reduceRight = _.reduce_right = function(data, iteratee, memo, limiter) {
     if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 3); data = data[0]; }
@@ -680,19 +655,6 @@
     }
   };
 
-  //_.filter = function(data, predicate) {
-  //  var res = [];
-  //  if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
-  //  if (_.isArrayLike(data)) {
-  //    for (var i = 0, l = data.length; i < l; i++)
-  //      if (predicate(data[i], i, data)) res.push(data[i]);
-  //  } else {
-  //    for (var keys = _.keys(data), i = 0, l = keys.length; i < l; i++)
-  //      if (predicate(data[keys[i]], keys[i], data)) res.push(data[keys[i]]);
-  //  }
-  //  return res;
-  //};
-
   _.filter = function(data, predicate, limiter) {
     if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
 
@@ -729,19 +691,6 @@
 
   _.findWhere = _.find_where = function(list, attrs) { return _.find(list, function(obj) { return _.is_match(obj, attrs) }); };
 
-  //_.reject = function(data, predicate) {
-  //  var res = [];
-  //  if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
-  //  if (_.isArrayLike(data)) {
-  //    for (var i = 0, l = data.length; i < l; i++)
-  //      if (!predicate(data[i], i, data)) res.push(data[i]);
-  //  } else {
-  //    for (var keys = _.keys(data), i = 0, l = keys.length; i < l; i++)
-  //      if (!predicate(data[keys[i]], keys[i], data)) res.push(data[keys[i]]);
-  //  }
-  //  return res;
-  //};
-
   _.reject = function(data, predicate, limiter) {
     if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
 
@@ -773,7 +722,6 @@
     }
     return res;
   };
-
 
   _.every = function(data, predicate) {
     if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
@@ -872,18 +820,21 @@
   // </respect _>
 
   _.groupBy = _.group_by = function(data, iteratee) {
+    if (_.isString(iteratee)) iteratee = _(_.val, _, iteratee);
     var res = {}, arr = _.map(data, iteratee);
     for (var i = 0, l = arr.length; i < l ; i++) { _.has(res, arr[i]) ? res[arr[i]].push(data[i]) : (res[arr[i]] = [data[i]]) }
     return res;
   };
 
   _.indexBy = _.index_by = function(data, iteratee) {
+    if (_.isString(iteratee)) iteratee = _(_.val, _, iteratee);
     var res = {}, arr = _.map(data, iteratee);
     for (var i = 0, l = arr.length; i < l; i++) { res[arr[i]] = data[i]; }
     return res;
   };
 
   _.countBy = _.count_by = function(data, iteratee) {
+    if (_.isString(iteratee)) iteratee = _(_.val, _, iteratee);
     var res = {}, arr = _.map(data, iteratee);
     for (var i = 0, l = arr.length; i < l; i++) { res[arr[i]]++ || (res[arr[i]] = 1); }
     return res;
@@ -928,7 +879,6 @@
   // _.flatten
   _.without = function(ary) { return _.difference(ary, slice.call(arguments, 1)); };
   _.union = function() { return _.uniq(flatten(arguments, true, true)); };
-
 
   _.intersection = function(ary) {
     var result = [];
