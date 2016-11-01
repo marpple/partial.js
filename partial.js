@@ -509,20 +509,22 @@
     }
   }(_, {});
 
+
+  //_.each(_.mr([1,2,3],1,2))
+
   /* Collections */
-  function Iter(iter, args, num) {
-    if (!_.isFunction(iter)) return _(_.val, _, iter);
-    if (args.length == num) return iter;
-    var args2 = _.rest(args, num), args3;
+  function Iter(iter, args, rnum) {
+    for (var args2 = [], i = 0, l = args.length; i < l; i++) args2[i+rnum] = args[i];
     return function() {
-      if (args3) for (var i = 0, l = arguments.length; i < l; i++) args3[i] = arguments[i];
-      else args3 = _.to_array(arguments).concat(args2);
-      return iter.apply(null, args3);
+      args2[0] = arguments[0];
+      args2[1] = arguments[1];
+      if (rnum === 3) args2[2] = arguments[2];
+      return iter.apply(null, args2);
     }
   }
 
   _.each = function(data, iteratee, limiter) {
-    if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 1); data = data[0]; }
+    if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 2); data = data[0]; }
 
     if (_.isArrayLike(data))
       for (var i = 0, l = limiter || data.length; i < l; i++)
@@ -536,7 +538,7 @@
   _.each2 = function(data, iteratee, limiter) {
     if (limiter === 0) return [];
     if (_.isNumber(limiter)) return _.each(data, iteratee, limiter);
-    if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 1); data = data[0]; }
+    if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 2); data = data[0]; }
 
     if (_.isArrayLike(data))
       for (var i = 0, l = data.length; i < l; i++) {
@@ -595,7 +597,7 @@
   //};
 
   _.reduce = function(data, iteratee, memo, limiter) {
-    if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 1); data = data[0]; }
+    if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 3); data = data[0]; }
 
     if (_.isArrayLike(data))
       for (var i = 0, res = (memo == undefined ? data[i++] : memo), l = limiter || data.length; i < l; i++) // memo 0일 때? 적용 안되는 값으로 써도 되고... undefined 조사 해야하나
