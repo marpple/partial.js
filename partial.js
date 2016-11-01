@@ -1244,7 +1244,7 @@
     }
   }
 
-  function s_each(func, var_names/*, source...*/) {     // used by H.each and S.each
+  function  s_each(func, var_names/*, source...*/) {     // used by H.each and S.each
     var map = _.partial(_.map, _, func.apply(null, _.rest(arguments)));
     return function(ary /*, args...*/) {
       return pipe(ary, _.partial.apply(null, [map, _].concat(_.rest(arguments))), function(res) { return res.join(""); });
