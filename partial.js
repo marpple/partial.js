@@ -94,7 +94,7 @@
   };
   function ithis(self, args) { return { parent: self, args: args }; }
 
-  _.Tap = _.tap = function() {
+  _.Tap = function() {
     // var fns = C.toArray(arguments);
     // return function() { return A(arguments, fns.concat([J(arguments), to_mr]), this); };
   };
@@ -199,7 +199,7 @@
   _.args3 = function() { return arguments[3]; };
   _.args4 = function() { return arguments[4]; };
   _.args5 = function() { return arguments[5]; };
-  _.Always = _.always = function(v) { return function() { return v; }; };
+  _.Always = _.always = _.constant = function(v) { return function() { return v; }; };
   _.true = _.Always(true);
   _.false = _.Always(false);
   _.null = _.Always(null);
@@ -304,22 +304,23 @@
   _.is_empty = _.isEmpty = function(obj) { return !(obj && obj.length) };
   _.is_arguments = _.isArguments = function(obj) { return !!(obj && obj.callee) };
   _.is_element = _.isElement = function(obj) { return !!(obj && obj.nodeType === 1) };
+  _.is_date = _.isDate = function(obj) { return toString.call(obj) === '[object Date]' };
+  _.is_error = _.isError = function(obj) { return toString.call(obj) === '[object Error]' };
+  _.is_reg_exp = _.is_reg = _.isRegExp = function(obj) { return toString.call(obj) === '[object RegExp]' };
+  _.isNaN = isNaN;
   _.is_equal = _.isEqual = function(a, b) {
-    if (a.length !== b.length || a.constructor !== b.constructor) return false; // typeof 대신 constructor를 사용하는 이유는 arguments와 array를 구분하기 위함
-
-    if (_.isArray(a) || _.isArguments(a)) { // _.isArrayLike는 함수도 true를 반환
+    if (a.length !== b.length || a.constructor !== b.constructor) return false;
+    if (_.isArray(a) || _.isArguments(a)) {
       for (var i = 0, l = a.length; i < l; i++) { if (a[i] !== b[i]) return false; }
       return true;
     }
-
-    if (typeof a === 'object') { // _.isObject() 보다 더 빠르고 함수를 걸러내기 위함
+    if (typeof a === 'object') {
       return !_.find(a, function(value, key) {
         if (_.isArrayLike(value) || _.isObject(value)) { return !_.isEqual(value, b[key]); }
         return value !== b[key];
       });
     }
-
-    return a === b; // 함수, 문자열, 숫자, 불리언, 정규표현식
+    return a === b;
   };
 
   _.keys = function(obj) { return _.isObject(obj) ? Object.keys(obj) : []; };
@@ -810,17 +811,17 @@
     return result;
   };
 
-  _.indexOf = function(ary, val) {
+  _.indexOf = _.index_of = function(ary, val) {
     for (var i= 0, l = ary.length; i<l; i++) { if (ary[i] == val) return i; }
     return -1;
   };
 
-  _.lastIndexOf = function(ary, val) {
+  _.lastIndexOf = _.last_index_of = function(ary, val) {
     for (var i = ary.length; i >= 0; i--) { if (ary[i] == val) return i; }
     return -1;
   };
 
-  _.sortedIndex = function(ary, obj, iteratee) {
+  _.sortedIndex = _.sorted_idx = _.sorted_i = function(ary, obj, iteratee) {
     iteratee = Iter(iteratee, arguments, 3);
 
     var value = iteratee(obj);
@@ -839,7 +840,7 @@
     return -1;
   };
 
-  _.findLastIndex = function(ary, predicate) {
+  _.findLastIndex = _.find_last_idx = _.find_last_i = function(ary, predicate) {
     predicate = Iter(predicate, arguments, 2);
     for(var i = ary.length; i >= 0; i--) {
       if (predicate(ary[i], i, ary)) return i;
@@ -855,16 +856,10 @@
     return range;
   };
 
+
   /* Object */
   // _.keys (clear)
   // _.values (clear)
-
-  _.mapObject = _.map_object = function(obj, iteratee) {
-    iteratee = Iter(iteratee, arguments, 2);
-    var res = {};
-    _.each(obj, function(v, k, l) { res[k] = iteratee(v, k, l) });
-    return res;
-  };
 
   _.mapObject = _.map_object = function(obj, iteratee) {
     iteratee = Iter(iteratee, arguments, 2);
@@ -904,7 +899,6 @@
 
   _.pick = function(obj, iteratee) {
     var res = {};
-
     if (_.isString(iteratee)) {
       for (var keys = _.rest(arguments), i = 0, l = keys.length; i < l; i++)
         res[keys[i]] = obj[keys[i]];
@@ -913,13 +907,11 @@
       for (var keys = _.keys(obj), i = 0, l = keys.length; i < l; i++)
         if (iteratee(obj[keys[i]], keys[i], obj)) res[keys[i]] = obj[keys[i]];
     }
-
     return res;
   };
 
   _.omit = function(obj, iteratee) {
     var res = {};
-
     if (_.isString(iteratee)) {
       var oKeys = _.keys(obj), keys = _.rest(arguments);
       for (var i = 0, l = oKeys.length; i < l; i++)
@@ -929,13 +921,29 @@
       for (var keys = _.keys(obj), i = 0, l = keys.length; i < l; i++)
         if (!iteratee(obj[keys[i]], keys[i], obj)) res[keys[i]] = obj[keys[i]];
     }
-
     return res;
   };
 
   // _.clone (clear)
-  // _.tap (not yet)
   // _.has (clear)
+
+  _.Tap = function(func) {
+    return function(arg) {
+      arguments.length > 1 ? func.apply(null, _.to_mr(arguments)) : func(arg);
+      return arguments.length > 1 ? _.to_mr(arguments) : arg;
+    }
+  };
+
+  _.Tap = function(func) {
+    return function(arg) {
+      if (arguments.length > 1) {
+        func.apply(null, _.to_mr(arguments));
+        return _.to_mr(arguments);
+      }
+      func(arg);
+      return arg;
+    }
+  };
 
   _.all = function(args) {
     var res = [], tmp;
