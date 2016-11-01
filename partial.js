@@ -610,7 +610,7 @@
 
   _.reduce2 = function(data, iteratee, memo, limiter) {
     if (limiter === 0) return [];
-    if (_.isNumber(limiter)) return _.map(data, iteratee, limiter);
+    if (_.isNumber(limiter)) return _.reduce(data, iteratee, limiter);
     if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 3); data = data[0]; }
 
     if (_.isArrayLike(data))
@@ -652,7 +652,7 @@
 
   _.reduceRight2 = function(data, iteratee, memo, limiter) {
     if (limiter === 0) return [];
-    if (_.isNumber(limiter)) return _.map(data, iteratee, limiter);
+    if (_.isNumber(limiter)) return _.reduceRight(data, iteratee, limiter);
     if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 3); data = data[0]; }
 
     if (_.isArrayLike(data))
@@ -680,15 +680,47 @@
     }
   };
 
-  _.filter = function(data, predicate) {
-    var res = [];
+  //_.filter = function(data, predicate) {
+  //  var res = [];
+  //  if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
+  //  if (_.isArrayLike(data)) {
+  //    for (var i = 0, l = data.length; i < l; i++)
+  //      if (predicate(data[i], i, data)) res.push(data[i]);
+  //  } else {
+  //    for (var keys = _.keys(data), i = 0, l = keys.length; i < l; i++)
+  //      if (predicate(data[keys[i]], keys[i], data)) res.push(data[keys[i]]);
+  //  }
+  //  return res;
+  //};
+
+  _.filter = function(data, predicate, limiter) {
     if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
+
     if (_.isArrayLike(data)) {
-      for (var i = 0, l = data.length; i < l; i++)
+      for (var i = 0, res = [], l = limiter || data.length; i < l; i++)
         if (predicate(data[i], i, data)) res.push(data[i]);
     } else {
-      for (var keys = _.keys(data), i = 0, l = keys.length; i < l; i++)
+      for (var keys = _.keys(data), i = 0, res = [], l = limiter || keys.length, res = []; i < l; i++)
         if (predicate(data[keys[i]], keys[i], data)) res.push(data[keys[i]]);
+    }
+    return res;
+  };
+
+  _.filter2 = function(data, predicate, limiter) {
+    if (limiter === 0) return [];
+    if (_.isNumber(limiter)) return _.filter(data, predicate, limiter);
+    if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
+
+    if (_.isArrayLike(data)) {
+      for (var i = 0, res = [], l = data.length; i < l; i++) {
+        if (predicate(data[i], i, data)) res.push(data[i]);
+        if (limiter(data[i], i, data)) break;
+      }
+    } else {
+      for (var i = 0, res = [], keys = _.keys(data), l = keys.length; i < l; i++) {
+        if (predicate(data[keys[i]], keys[i], data)) res.push(data[keys[i]]);
+        if (limiter(data[keys[i]], keys[i], data)) break;
+      }
     }
     return res;
   };
@@ -697,18 +729,51 @@
 
   _.findWhere = _.find_where = function(list, attrs) { return _.find(list, function(obj) { return _.is_match(obj, attrs) }); };
 
-  _.reject = function(data, predicate) {
-    var res = [];
+  //_.reject = function(data, predicate) {
+  //  var res = [];
+  //  if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
+  //  if (_.isArrayLike(data)) {
+  //    for (var i = 0, l = data.length; i < l; i++)
+  //      if (!predicate(data[i], i, data)) res.push(data[i]);
+  //  } else {
+  //    for (var keys = _.keys(data), i = 0, l = keys.length; i < l; i++)
+  //      if (!predicate(data[keys[i]], keys[i], data)) res.push(data[keys[i]]);
+  //  }
+  //  return res;
+  //};
+
+  _.reject = function(data, predicate, limiter) {
     if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
+
     if (_.isArrayLike(data)) {
-      for (var i = 0, l = data.length; i < l; i++)
+      for (var i = 0, res = [], l = limiter || data.length; i < l; i++)
         if (!predicate(data[i], i, data)) res.push(data[i]);
     } else {
-      for (var keys = _.keys(data), i = 0, l = keys.length; i < l; i++)
+      for (var keys = _.keys(data), i = 0, res = [], l = limiter || keys.length, res = []; i < l; i++)
         if (!predicate(data[keys[i]], keys[i], data)) res.push(data[keys[i]]);
     }
     return res;
   };
+
+  _.reject2 = function(data, predicate, limiter) {
+    if (limiter === 0) return [];
+    if (_.isNumber(limiter)) return _.reject(data, predicate, limiter);
+    if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
+
+    if (_.isArrayLike(data)) {
+      for (var i = 0, res = [], l = data.length; i < l; i++) {
+        if (!predicate(data[i], i, data)) res.push(data[i]);
+        if (limiter(data[i], i, data)) break;
+      }
+    } else {
+      for (var i = 0, res = [], keys = _.keys(data), l = keys.length; i < l; i++) {
+        if (!predicate(data[keys[i]], keys[i], data)) res.push(data[keys[i]]);
+        if (limiter(data[keys[i]], keys[i], data)) break;
+      }
+    }
+    return res;
+  };
+
 
   _.every = function(data, predicate) {
     if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
@@ -922,8 +987,7 @@
   };
 
   _.sortedIndex = _.sorted_idx = _.sorted_i = function(ary, obj, iteratee) {
-    iteratee = Iter(iteratee, arguments, 2);
-
+    // Iter 지움
     var value = iteratee(obj);
     var low = 0, high = getLength(ary);
     while (low < high) {
