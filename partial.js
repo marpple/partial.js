@@ -538,16 +538,57 @@
     return data;
   };
 
-  _.map = function(data, iteratee) {
-    iteratee = Iter(iteratee, arguments, 2);
-    if (_.isArrayLike(data))
-      for (var i = 0, l = data.length, res = Array(l); i < l; i++)
+  //_.map = function(data, iteratee) {
+  //  iteratee = Iter(iteratee, arguments, 2);
+  //  if (_.isArrayLike(data))
+  //    for (var i = 0, l = data.length, res = Array(l); i < l; i++)
+  //      res[i] = iteratee(data[i], i, data);
+  //  else
+  //    for (var keys = _.keys(data), i = 0, l = keys.length, res = Array(l); i < l; i++)
+  //      res[i] = iteratee(data[keys[i]], keys[i], data);
+  //  return res;
+  //};
+
+  _.map = function(data, iteratee, limiter) {
+    if (_.is_mr(data)) {
+      iteratee = Iter(iteratee, data, 1);
+      data = data[0];
+    }
+
+    if (_.isArrayLike(data)) {
+      for (var i = 0, l = limiter||data.length, res = Array(l); i < l; i++)
         res[i] = iteratee(data[i], i, data);
-    else
-      for (var keys = _.keys(data), i = 0, l = keys.length, res = Array(l); i < l; i++)
+    } else {
+      for (var i = 0, keys = _.keys(data), l = limiter||keys.length, res = Array(l); i < l; i++)
         res[i] = iteratee(data[keys[i]], keys[i], data);
+    }
     return res;
   };
+
+  _.map2 = function(data, iteratee, limiter) {
+    if (limiter === 0) return [];
+    if (_.isNumber(limiter)) return _.map(data, iteratee, limiter);
+
+    if (_.is_mr(data)) {
+      iteratee = Iter(iteratee, data, 1);
+      data = data[0];
+    }
+
+    if (_.isArrayLike(data)) {
+      for (var i = 0, res = [], l = data.length; i < l; i++) {
+        res.push(iteratee(data[i], i, data));
+        if(limiter(data[i], i, data)) break;
+      }
+    } else {
+      for (var i = 0, res = [], keys = _.keys(data), l = keys.length; i < l; i++) {
+        res.push(iteratee(data[keys[i]], keys[i], data));
+        if(limiter(data[keys[i]], keys[i], data)) break;
+      }
+    }
+    return res;
+  };
+
+
 
   _.reduce = function(data, predicate, memo) {
     predicate = Iter(predicate, arguments, 3);
@@ -1015,48 +1056,6 @@
   _.once = _.partial(_.before, 2);
 
 
-
-  _.map = function(data, iteratee, limiter) {
-    if (_.is_mr(data)) {
-      var temp = data.splice(0, 1);
-      iteratee = Iter(iteratee, data);
-      data = temp;
-    }
-
-    if (_.isArrayLike(data)) {
-      for (var i = 0, l = limiter||data.length, res = Array(l); i < l; i++)
-        res[i] = iteratee(data[i], i, data);
-    } else {
-      for (var i = 0, keys = _.keys(data), l = limiter||keys.length, res = Array(l); i < l; i++)
-        res[i] = iteratee(data[keys[i]], keys[i], data);
-    }
-    return res;
-  };
-
-  _.map2 = function(data, iteratee, limiter) {
-    if (limiter === 0) return [];
-    if (_.isNumber(limiter)) return _.map(data, iteratee, limiter);
-
-    // mr 구분
-    if (_.is_mr(data)) { // mr인 경우
-      var temp = data.splice(0, 1); // 브라우저?
-      iteratee = Iter(iteratee, data);
-      data = temp;
-    }
-
-    if (_.isArrayLike(data)) {
-      for (var i = 0, res = [], l = data.length; i < l; i++) {
-        res.push(iteratee(data[i], i, data));
-        if(limiter(data[i], i, data)) break;
-      }
-    } else {
-      for (var i = 0, res = [], keys = _.keys(data), l = keys.length; i < l; i++) {
-        res.push(iteratee(data[keys[i]], keys[i], data));
-        if(limiter(data[keys[i]], keys[i], data)) break;
-      }
-    }
-    return res;
-  };
 
 
 
