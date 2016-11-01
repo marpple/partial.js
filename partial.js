@@ -583,25 +583,100 @@
     return res;
   };
 
-  _.reduce = function(data, predicate, memo) {
-    predicate = Iter(predicate, arguments, 3);
+  //_.reduce = function(data, predicate, memo) {
+  //  predicate = Iter(predicate, arguments, 3);
+  //  if (_.isArrayLike(data))
+  //    for (var i = 0, res = memo || data[i++], l = data.length; i < l; i++)
+  //      res = predicate(res, data[i], i, data);
+  //  else
+  //    for (var i = 0, keys = _.keys(data), res = memo || data[keys[i++]], l = keys.length; i < l; i++)
+  //      res = predicate(res, data[keys[i]], i, data);
+  //  return res;
+  //};
+
+  _.reduce = function(data, iteratee, memo, limiter) {
+    if (_.is_mr(data)) {
+      iteratee = Iter(iteratee, data, 1);
+      data = data[0];
+    }
+
     if (_.isArrayLike(data))
-      for (var i = 0, res = memo || data[i++], l = data.length; i < l; i++)
-        res = predicate(res, data[i], i, data);
+      for (var i = 0, res = memo || data[i++], l = limiter||data.length; i < l; i++) // memo 0일 때? 적용 안되는 값으로 써도 되고... undefined 조사 해야하나
+        res = iteratee(res, data[i], i, data);
     else
-      for (var i = 0, keys = _.keys(data), res = memo || data[keys[i++]], l = keys.length; i < l; i++)
-        res = predicate(res, data[keys[i]], i, data);
+      for (var i = 0, keys = _.keys(data), res = memo || data[keys[i++]], l = limiter||keys.length; i < l; i++)
+        res = iteratee(res, data[keys[i]], i, data);
     return res;
   };
 
-  _.reduceRight = _.reduce_right = function(data, predicate, memo) {
-    predicate = Iter(predicate, arguments, 3);
+  _.reduce2 = function(data, iteratee, memo, limiter) {
+    if (limiter === 0) return [];
+    if (_.isNumber(limiter)) return _.map(data, iteratee, limiter);
+
+    if (_.is_mr(data)) {
+      iteratee = Iter(iteratee, data, 1);
+      data = data[0];
+    }
+
     if (_.isArrayLike(data))
-      for (var i = data.length - 1, res = memo || data[i++]; i > -1; i--)
-        res = predicate(res, data[i], i, data);
+      for (var i = 0, res = memo || data[i++], l = data.length; i < l; i++) {
+        res = iteratee(res, data[i], i, data);
+        if (limiter(data[i], i, data)) break;
+      }
     else
-      for (var keys = _.keys(data), i = keys.length - 1, res = memo || data[keys[i--]]; i > -1; i--)
-        res = predicate(res, data[keys[i]], i, data);
+      for (var i = 0, keys = _.keys(data), res = memo || data[keys[i++]], l = keys.length; i < l; i++) {
+        res = iteratee(res, data[keys[i]], i, data);
+        if (limiter(data[keys[i]], keys[i], data)) break;
+      }
+    return res;
+  };
+
+  // reduceRight
+  //_.reduceRight = _.reduce_right = function(data, predicate, memo) {
+  //  predicate = Iter(predicate, arguments, 3);
+  //  if (_.isArrayLike(data))
+  //    for (var i = data.length - 1, res = memo || data[i--]; i > -1; i--)
+  //      res = predicate(res, data[i], i, data);
+  //  else
+  //    for (var keys = _.keys(data), i = keys.length - 1, res = memo || data[keys[i--]]; i > -1; i--)
+  //      res = predicate(res, data[keys[i]], i, data);
+  //  return res;
+  //};
+
+  _.reduceRight = _.reduce_right = function(data, iteratee, memo, limiter) {
+    if (_.is_mr(data)) {
+      iteratee = Iter(iteratee, data, 1);
+      data = data[0];
+    }
+
+    if (_.isArrayLike(data))
+      for (var i = data.length - 1, res = memo || data[i--], end = limiter || 0; i >= end; i--)
+        res = iteratee(res, data[i], i, data);
+    else
+      for (var keys = _.keys(data), i = keys.length - 1, res = memo || data[keys[i--]], end = limiter || 0; i >= end; i--)
+        res = iteratee(res, data[keys[i]], i, data);
+    return res;
+  };
+
+  _.reduceRight2 = function(data, iteratee, memo, limiter) {
+    if (limiter === 0) return [];
+    if (_.isNumber(limiter)) return _.map(data, iteratee, limiter);
+
+    if (_.is_mr(data)) {
+      iteratee = Iter(iteratee, data, 1);
+      data = data[0];
+    }
+
+    if (_.isArrayLike(data))
+      for (var i = data.length - 1, res = memo || data[i--]; i >= 0; i--) {
+        res = iteratee(res, data[i], i, data);
+        if (limiter(data[i], i, data)) break;
+      }
+    else
+        for (var keys = _.keys(data), i = keys.length - 1, res = memo || data[keys[i--]]; i >= 0; i--) {
+          res = iteratee(res, data[keys[i]], i, data);
+          if (limiter(data[keys[i]], keys[i], data)) break;
+        }
     return res;
   };
 
