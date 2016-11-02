@@ -653,7 +653,19 @@
         for (var keys = _.keys(data), i = 0, res = [], l = keys.length; i < l; i++) {
           if (predicate(data[keys[i]], keys[i], data)) res.push(data[keys[i]]);
         }
-    } else if (_.isNumber(limiter)) {
+    } else if (_.isFunction(limiter)) {
+      if (_.isArrayLike(data)) {
+        for (var i = 0, res = [], l = data.length; i < l; i++) {
+          if (predicate(data[i], i, data)) res.push(data[i]);
+          if (limiter(res, data[i], i, data)) break;
+        }
+      }
+      else
+        for (var i = 0, res = [], keys = _.keys(data), l = keys.length; i < l; i++) {
+          if (predicate(data[keys[i]], keys[i], data)) res.push(data[keys[i]]);
+          if (limiter(res, data[keys[i]], keys[i], data)) break;
+        }
+    } else {
       if (_.isArrayLike(data))
         for (var i = 0, res = [], l = data.length; i < l; i++) {
           if (predicate(data[i], i, data)) res.push(data[i]);
@@ -663,17 +675,6 @@
         for (var keys = _.keys(data), i = 0, res = [], l = keys.length; i < l; i++) {
           if (predicate(data[keys[i]], keys[i], data)) res.push(data[keys[i]]);
           if (res.length == limiter) break;
-        }
-    } else {
-      if (_.isArrayLike(data))
-        for (var i = 0, res = [], l = data.length; i < l; i++) {
-          if (predicate(data[i], i, data)) res.push(data[i]);
-          if (limiter(res, data[i], i, data)) break;
-        }
-      else
-        for (var i = 0, res = [], keys = _.keys(data), l = keys.length; i < l; i++) {
-          if (predicate(data[keys[i]], keys[i], data)) res.push(data[keys[i]]);
-          if (limiter(res, data[keys[i]], keys[i], data)) break;
         }
     }
     return res;
@@ -695,18 +696,7 @@
         for (var keys = _.keys(data), i = 0, res = [], l = keys.length; i < l; i++) {
           if (!predicate(data[keys[i]], keys[i], data)) res.push(data[keys[i]]);
         }
-    } else if (_.isNumber(limiter)) {
-      if (_.isArrayLike(data))
-        for (var i = 0, res = [], l = data.length; i < l; i++) {
-          if (!predicate(data[i], i, data)) res.push(data[i]);
-          if (res.length == limiter) break;
-        }
-      else
-        for (var keys = _.keys(data), i = 0, res = [], l = keys.length; i < l; i++) {
-          if (!predicate(data[keys[i]], keys[i], data)) res.push(data[keys[i]]);
-          if (res.length == limiter) break;
-        }
-    } else {
+    } else if (_.isFunction(limiter)) {
       if (_.isArrayLike(data))
         for (var i = 0, res = [], l = data.length; i < l; i++) {
           if (!predicate(data[i], i, data)) res.push(data[i]);
@@ -716,6 +706,17 @@
         for (var i = 0, res = [], keys = _.keys(data), l = keys.length; i < l; i++) {
           if (!predicate(data[keys[i]], keys[i], data)) res.push(data[keys[i]]);
           if (limiter(res, data[keys[i]], keys[i], data)) break;
+        }
+    } else {
+      if (_.isArrayLike(data))
+        for (var i = 0, res = [], l = data.length; i < l; i++) {
+          if (!predicate(data[i], i, data)) res.push(data[i]);
+          if (res.length == limiter) break;
+        }
+      else
+        for (var keys = _.keys(data), i = 0, res = [], l = keys.length; i < l; i++) {
+          if (!predicate(data[keys[i]], keys[i], data)) res.push(data[keys[i]]);
+          if (res.length == limiter) break;
         }
     }
     return res;
