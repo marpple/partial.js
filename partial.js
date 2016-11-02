@@ -606,6 +606,7 @@
 
   _.reduceRight = _.reduce_right = function(data, iteratee, memo, limiter) {
     if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 3); data = data[0]; }
+    if (limiter === 0) return void 0;
 
     if (limiter && _.isFunction(limiter)) {
       if (_.isArrayLike(data))
@@ -643,6 +644,7 @@
 
   _.filter = function(data, predicate, limiter) {
     if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
+    if (limiter === 0) return [];
 
     if (!limiter) {
       if (_.isArrayLike(data))
@@ -686,6 +688,7 @@
 
   _.reject = function(data, predicate, limiter) {
     if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
+    if (limiter === 0) return [];
 
     if (!limiter) {
       if (_.isArrayLike(data))
