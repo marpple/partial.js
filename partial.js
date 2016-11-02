@@ -587,7 +587,7 @@
     if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 3); data = data[0]; }
 
     if (_.isArrayLike(data))
-      for (var i = 0, res = (memo == undefined ? data[i++] : memo), l = limiter || data.length; i < l; i++) // memo 0일 때? 적용 안되는 값으로 써도 되고... undefined 조사 해야하나
+      for (var i = 0, res = (memo == undefined ? data[i++] : memo), l = limiter || data.length; i < l; i++)
         res = iteratee(res, data[i], i, data);
     else
       for (var i = 0, keys = _.keys(data), res = (memo == undefined ? data[keys[i++]] : memo), l = limiter || keys.length; i < l; i++)
@@ -603,12 +603,12 @@
     if (_.isArrayLike(data))
       for (var i = 0, res = (memo == undefined ? data[i++] : memo), l = data.length; i < l; i++) {
         res = iteratee(res, data[i], i, data);
-        if (limiter(data[i], i, data)) break;
+        if (limiter(res, data[i], i, data)) break;
       }
     else
       for (var i = 0, keys = _.keys(data), res = (memo == undefined ? data[keys[i++]] : memo), l = keys.length; i < l; i++) {
         res = iteratee(res, data[keys[i]], i, data);
-        if (limiter(data[keys[i]], keys[i], data)) break;
+        if (limiter(res, data[keys[i]], keys[i], data)) break;
       }
     return res;
   };
@@ -633,12 +633,12 @@
     if (_.isArrayLike(data))
       for (var i = data.length - 1, res = (memo==undefined ? data[i--] : memo); i >= 0; i--) {
         res = iteratee(res, data[i], i, data);
-        if (limiter(data[i], i, data)) break;
+        if (limiter(res, data[i], i, data)) break;
       }
     else
         for (var keys = _.keys(data), i = keys.length - 1, res = (memo==undefined ? data[keys[i--]] : memo); i >= 0; i--) {
           res = iteratee(res, data[keys[i]], i, data);
-          if (limiter(data[keys[i]], keys[i], data)) break;
+          if (limiter(res, data[keys[i]], keys[i], data)) break;
         }
     return res;
   };
@@ -662,7 +662,7 @@
       for (var i = 0, res = [], l = limiter || data.length; i < l; i++)
         if (predicate(data[i], i, data)) res.push(data[i]);
     } else {
-      for (var keys = _.keys(data), i = 0, res = [], l = limiter || keys.length, res = []; i < l; i++)
+      for (var keys = _.keys(data), i = 0, res = [], l = limiter || keys.length; i < l; i++)
         if (predicate(data[keys[i]], keys[i], data)) res.push(data[keys[i]]);
     }
     return res;
