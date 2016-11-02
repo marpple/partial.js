@@ -523,7 +523,6 @@
 
   _.each = function(data, iteratee, limiter) { // limiter x 경우, number인 경우, 함수인 경우
     if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 2); data = data[0]; }
-    if (limiter === 0) return data;
 
     if (_.isFunction(limiter)) {
       if (_.isArrayLike(data)) {
@@ -540,6 +539,7 @@
       }
 
     } else {
+      if (limiter === 0) return data;
       if (_.isArrayLike(data))
         for (var i = 0, l = limiter || data.length; i < l; i++)
           iteratee(data[i], i, data);
@@ -552,7 +552,6 @@
 
   _.map = function(data, iteratee, limiter) {
     if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 2); data = data[0]; }
-    if (limiter === 0) return [];
 
     if (limiter && _.isFunction(limiter)) {
       if (_.isArrayLike(data)) {
@@ -567,6 +566,7 @@
         }
       }
     } else {
+      if (limiter === 0) return [];
       if (_.isArrayLike(data)) {
         for (var i = 0, l = limiter || data.length, res = Array(l); i < l; i++)
           res[i] = iteratee(data[i], i, data);
@@ -580,7 +580,6 @@
 
   _.reduce = function(data, iteratee, memo, limiter) {
     if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 3); data = data[0]; }
-    if (limiter === 0) return void 0;
 
     if (limiter && isFunction(limiter)) {
       if (_.isArrayLike(data))
@@ -594,6 +593,7 @@
           if (limiter(data[keys[i]], keys[i], data)) break;
         }
     } else {
+      if (limiter === 0) return void 0;
       if (_.isArrayLike(data))
         for (var i = 0, res = (memo == undefined ? data[i++] : memo), l = limiter || data.length; i < l; i++) // memo 0일 때? 적용 안되는 값으로 써도 되고... undefined 조사 해야하나
           res = iteratee(res, data[i], i, data);
@@ -606,7 +606,6 @@
 
   _.reduceRight = _.reduce_right = function(data, iteratee, memo, limiter) {
     if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 3); data = data[0]; }
-    if (limiter === 0) return void 0;
 
     if (limiter && _.isFunction(limiter)) {
       if (_.isArrayLike(data))
@@ -620,6 +619,7 @@
           if (limiter(res, data[keys[i]], keys[i], data)) break;
         }
     } else {
+      if (limiter === 0) return void 0;
       if (_.isArrayLike(data))
         for (var i = data.length - 1, res = (memo == undefined ? data[i--] : memo), end = (data.length - limiter) || 0; i >= end; i--)
           res = iteratee(res, data[i], i, data);
@@ -644,7 +644,6 @@
 
   _.filter = function(data, predicate, limiter) {
     if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
-    if (limiter === 0) return [];
 
     if (!limiter) {
       if (_.isArrayLike(data))
@@ -668,6 +667,7 @@
           if (limiter(res, data[keys[i]], keys[i], data)) break;
         }
     } else {
+      if (limiter === 0) return [];
       if (_.isArrayLike(data))
         for (var i = 0, res = [], l = data.length; i < l; i++) {
           if (predicate(data[i], i, data)) res.push(data[i]);
@@ -688,7 +688,6 @@
 
   _.reject = function(data, predicate, limiter) {
     if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
-    if (limiter === 0) return [];
 
     if (!limiter) {
       if (_.isArrayLike(data))
@@ -711,6 +710,7 @@
           if (limiter(res, data[keys[i]], keys[i], data)) break;
         }
     } else {
+      if (limiter === 0) return [];
       if (_.isArrayLike(data))
         for (var i = 0, res = [], l = data.length; i < l; i++) {
           if (!predicate(data[i], i, data)) res.push(data[i]);
