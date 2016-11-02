@@ -521,63 +521,58 @@
     }
   }
 
-  _.each = function(data, iteratee, limiter) {
+  _.each = function(data, iteratee, limiter) { // limiter x 경우, number인 경우, 함수인 경우
     if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 2); data = data[0]; }
+    if (limiter === 0) return data;
 
-    if (_.isArrayLike(data))
-      for (var i = 0, l = limiter || data.length; i < l; i++)
-        iteratee(data[i], i, data);
-    else
-      for (var keys = _.keys(data), i = 0, l = limiter || keys.length; i < l; i++)
-        iteratee(data[keys[i]], keys[i], data);
-    return data;
-  };
-
-  _.each2 = function(data, iteratee, limiter) {
-    if (limiter === 0) return [];
-    if (_.isNumber(limiter)) return _.each(data, iteratee, limiter);
-    if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 2); data = data[0]; }
-
-    if (_.isArrayLike(data))
-      for (var i = 0, l = data.length; i < l; i++) {
-        iteratee(data[i], i, data);
-        if (limiter(data[i], i, data)) break;
+    if (_.isFunction(limiter)) {
+      if (_.isArrayLike(data)) {
+        for (var i = 0, l = data.length; i < l; i++) {
+          iteratee(data[i], i, data);
+          if (limiter(data[i], i, data)) break;
+        }
       }
-    else
-      for (var keys = _.keys(data), i = 0, l = keys.length; i < l; i++) {
-        iteratee(data[keys[i]], keys[i], data);
-        if (limiter(data[keys[i]], keys[i], data)) break;
+      else {
+        for (var keys = _.keys(data), i = 0, l = keys.length; i < l; i++) {
+          iteratee(data[keys[i]], keys[i], data);
+          if (limiter(data[keys[i]], keys[i], data)) break;
+        }
       }
+
+    } else {
+      if (_.isArrayLike(data))
+        for (var i = 0, l = limiter || data.length; i < l; i++)
+          iteratee(data[i], i, data);
+      else
+        for (var keys = _.keys(data), i = 0, l = limiter || keys.length; i < l; i++)
+          iteratee(data[keys[i]], keys[i], data);
+    }
     return data;
   };
 
   _.map = function(data, iteratee, limiter) {
     if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 2); data = data[0]; }
-
-    if (_.isArrayLike(data)) {
-      for (var i = 0, l = limiter || data.length, res = Array(l); i < l; i++)
-        res[i] = iteratee(data[i], i, data);
-    } else {
-      for (var i = 0, keys = _.keys(data), l = limiter || keys.length, res = Array(l); i < l; i++)
-        res[i] = iteratee(data[keys[i]], keys[i], data);
-    }
-    return res;
-  };
-
-  _.map2 = function(data, iteratee, limiter) {
     if (limiter === 0) return [];
-    if (_.isNumber(limiter)) return _.map(data, iteratee, limiter);
-    if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 2); data = data[0]; }
 
-    if (_.isArrayLike(data)) {
-      for (var i = 0, res = [], l = data.length; i < l; i++) {
-        res.push(iteratee(data[i], i, data));
-        if (limiter(data[i], i, data)) break;
+    if (limiter && _.isFunction(limiter)) {
+      if (_.isArrayLike(data)) {
+        for (var i = 0, res = [], l = data.length; i < l; i++) {
+          res.push(iteratee(data[i], i, data));
+          if (limiter(data[i], i, data)) break;
+        }
+      } else {
+        for (var i = 0, res = [], keys = _.keys(data), l = keys.length; i < l; i++) {
+          res.push(iteratee(data[keys[i]], keys[i], data));
+          if (limiter(data[keys[i]], keys[i], data)) break;
+        }
       }
     } else {
-      for (var i = 0, res = [], keys = _.keys(data), l = keys.length; i < l; i++) {
-        res.push(iteratee(data[keys[i]], keys[i], data));
-        if (limiter(data[keys[i]], keys[i], data)) break;
+      if (_.isArrayLike(data)) {
+        for (var i = 0, l = limiter || data.length, res = Array(l); i < l; i++)
+          res[i] = iteratee(data[i], i, data);
+      } else {
+        for (var i = 0, keys = _.keys(data), l = limiter || keys.length, res = Array(l); i < l; i++)
+          res[i] = iteratee(data[keys[i]], keys[i], data);
       }
     }
     return res;
@@ -585,31 +580,27 @@
 
   _.reduce = function(data, iteratee, memo, limiter) {
     if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 3); data = data[0]; }
+    if (limiter === 0) return void 0;
 
-    if (_.isArrayLike(data))
-      for (var i = 0, res = (memo == undefined ? data[i++] : memo), l = limiter || data.length; i < l; i++) // memo 0일 때? 적용 안되는 값으로 써도 되고... undefined 조사 해야하나
-        res = iteratee(res, data[i], i, data);
-    else
-      for (var i = 0, keys = _.keys(data), res = (memo == undefined ? data[keys[i++]] : memo), l = limiter || keys.length; i < l; i++)
-        res = iteratee(res, data[keys[i]], i, data);
-    return res;
-  };
-
-  _.reduce2 = function(data, iteratee, memo, limiter) {
-    if (limiter === 0) return [];
-    if (_.isNumber(limiter)) return _.reduce(data, iteratee, limiter);
-    if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 3); data = data[0]; }
-
-    if (_.isArrayLike(data))
-      for (var i = 0, res = (memo == undefined ? data[i++] : memo), l = data.length; i < l; i++) {
-        res = iteratee(res, data[i], i, data);
-        if (limiter(data[i], i, data)) break;
-      }
-    else
-      for (var i = 0, keys = _.keys(data), res = (memo == undefined ? data[keys[i++]] : memo), l = keys.length; i < l; i++) {
-        res = iteratee(res, data[keys[i]], i, data);
-        if (limiter(data[keys[i]], keys[i], data)) break;
-      }
+    if (limiter && isFunction(limiter)) {
+      if (_.isArrayLike(data))
+        for (var i = 0, res = (memo == undefined ? data[i++] : memo), l = data.length; i < l; i++) {
+          res = iteratee(res, data[i], i, data);
+          if (limiter(data[i], i, data)) break;
+        }
+      else
+        for (var i = 0, keys = _.keys(data), res = (memo == undefined ? data[keys[i++]] : memo), l = keys.length; i < l; i++) {
+          res = iteratee(res, data[keys[i]], i, data);
+          if (limiter(data[keys[i]], keys[i], data)) break;
+        }
+    } else {
+      if (_.isArrayLike(data))
+        for (var i = 0, res = (memo == undefined ? data[i++] : memo), l = limiter || data.length; i < l; i++) // memo 0일 때? 적용 안되는 값으로 써도 되고... undefined 조사 해야하나
+          res = iteratee(res, data[i], i, data);
+      else
+        for (var i = 0, keys = _.keys(data), res = (memo == undefined ? data[keys[i++]] : memo), l = limiter || keys.length; i < l; i++)
+          res = iteratee(res, data[keys[i]], i, data);
+    }
     return res;
   };
 
