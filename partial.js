@@ -616,7 +616,7 @@
   _.reduceRight = _.reduce_right = function(data, iteratee, memo, limiter) {
     if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 3); data = data[0]; }
 
-    if (_.isFunction(limiter)) {
+    if (limiter && _.isFunction(limiter)) {
       if (_.isArrayLike(data))
         for (var i = data.length - 1, res = (memo == undefined ? data[i--] : memo); i >= 0; i--) {
           res = iteratee(res, data[i], i, data);
@@ -637,24 +637,6 @@
     }
     return res;
   };
-
-  // _.reduceRight2 = function(data, iteratee, memo, limiter) {
-  //   if (limiter === 0) return [];
-  //   if (_.isNumber(limiter)) return _.reduceRight(data, iteratee, limiter);
-  //   if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 3); data = data[0]; }
-  //
-  //   if (_.isArrayLike(data))
-  //     for (var i = data.length - 1, res = (memo == undefined ? data[i--] : memo); i >= 0; i--) {
-  //       res = iteratee(res, data[i], i, data);
-  //       if (limiter(res, data[i], i, data)) break;
-  //     }
-  //   else
-  //     for (var keys = _.keys(data), i = keys.length - 1, res = (memo == undefined ? data[keys[i--]] : memo); i >= 0; i--) {
-  //       res = iteratee(res, data[keys[i]], i, data);
-  //       if (limiter(res, data[keys[i]], keys[i], data)) break;
-  //     }
-  //   return res;
-  // };
 
   _.find = function(data, predicate) {
     if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
