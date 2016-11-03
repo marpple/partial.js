@@ -134,135 +134,170 @@
       console.log(a, b, c);
     }
   ]));*/
+//
+//  log(_.async.Pipe(
+//    log,
+//    _.noop,
+//    log,
+//    function() {
+//      return 1;
+//    },
+//    function(a) {
+//      log(this);
+//    },
+//    function() {
+//      return _.mr(20, 5);
+//    },
+//    log,
+//    function(a, b) {
+//      return [1,2,3];
+//    },
+//    _.to_mr,
+//    function(a, b, c) {
+//      console.log(a, b, c);
+//    }
+//  )(10));
+//
+//  log('-----------------------------')
+//
+//  log(_.async.Indent(
+//    log,
+//    _.noop,
+//    log,
+//    function() {
+//      return 1;
+//    },
+//    function(a) {
+//      log(this);
+//    },
+//    function() {
+//      return _.mr(20, 5);
+//    },
+//    log,
+//    function(a, b) {
+//      return [1,2,3];
+//    },
+//    _.to_mr,
+//    function(a, b, c) {
+//      console.log(a, b, c);
+//    }
+//  )(undefined));
+//
+//  log('-----------------------------')
+//
+//  log(_.async.pipe(10,
+//    log,
+//    _.noop,
+//    log,
+//    function() {
+//      return 1;
+//    },
+//    _.callback(function(a, next) {
+//      setTimeout(function() {
+//        next(10 + a, 20);
+//      }, 500);
+//    }),
+//    function(a) {
+//      log(arguments);
+//      log(this);
+//    },
+//    function() {
+//      return _.mr(20, 5);
+//    },
+//    log,
+//    function(a, b) {
+//      return [1,2,3];
+//    },
+//    _.to_mr,
+//    function(a, b, c) {
+//      console.log(a, b, c);
+//    }
+//  ));
+//
+//  log('-----------------------------')
+//
+//  log(_.async.pipec({hi:'hi'}, 10,
+//    log,
+//    _.noop,
+//    log,
+//    function() {
+//      return 1;
+//    },
+//    function(a) {
+//      log(this);
+//    },
+//    function() {
+//      return _.mr(20, 5);
+//    },
+//    log,
+//    function(a, b) {
+//      return [1,2,3];
+//    },
+//    _.to_mr,
+//    function(a, b, c) {
+//      console.log(a, b, c);
+//    }
+//  ));
+//
+//  log('-----------------------------')
+//
+//  log(_.async.pipea({hi:'hi'}, 10, [
+//    log,
+//    _.noop,
+//    log,
+//    function() {
+//      return 1;
+//    },
+//    function(a) {
+//      log(this);
+//    },
+//    function() {
+//      return _.mr(20, 5);
+//    },
+//    log,
+//    function(a, b) {
+//      return [1,2,3];
+//    },
+//    _.to_mr,
+//    function(a, b, c) {
+//      console.log(a, b, c);
+//    }
+//  ]));
+//
 
-  log(_.async.Pipe(
-    log,
-    _.noop,
-    log,
-    function() {
-      return 1;
-    },
-    function(a) {
-      log(this);
-    },
-    function() {
-      return _.mr(20, 5);
-    },
-    log,
-    function(a, b) {
-      return [1,2,3];
-    },
-    _.to_mr,
-    function(a, b, c) {
-      console.log(a, b, c);
-    }
-  )(10));
 
-  log('-----------------------------')
 
-  log(_.async.Indent(
-    log,
-    _.noop,
-    log,
-    function() {
-      return 1;
-    },
-    function(a) {
-      log(this);
-    },
-    function() {
-      return _.mr(20, 5);
-    },
-    log,
-    function(a, b) {
-      return [1,2,3];
-    },
-    _.to_mr,
-    function(a, b, c) {
-      console.log(a, b, c);
-    }
-  )(undefined));
+//  _.reduce(ary, iter, memo, limiter);
 
-  log('-----------------------------')
 
-  log(_.async.pipe(10,
-    log,
-    _.noop,
-    log,
-    function() {
-      return 1;
-    },
-    _.callback(function(a, next) {
-      setTimeout(function() {
-        next(10 + a, 20);
-      }, 500);
-    }),
-    function(a) {
-      log(arguments);
-      log(this);
-    },
-    function() {
-      return _.mr(20, 5);
-    },
-    log,
-    function(a, b) {
-      return [1,2,3];
-    },
-    _.to_mr,
-    function(a, b, c) {
-      console.log(a, b, c);
-    }
-  ));
+  var res = _.reduce([1,2,3,4], function(memo, v) { return memo + (v+10); }, undefined, 1); // ary, iteratee
+  // 1 + 12
+  // 1
+  // undefined11
+  console.log(res);
 
-  log('-----------------------------')
 
-  log(_.async.pipec({hi:'hi'}, 10,
-    log,
-    _.noop,
-    log,
-    function() {
-      return 1;
-    },
-    function(a) {
-      log(this);
-    },
-    function() {
-      return _.mr(20, 5);
-    },
-    log,
-    function(a, b) {
-      return [1,2,3];
-    },
-    _.to_mr,
-    function(a, b, c) {
-      console.log(a, b, c);
-    }
-  ));
+  _.reduce([1,2,3,4], function(memo, v) { return memo + (v+10); }, 0, 1);
+  // 11
+  // 11
 
-  log('-----------------------------')
+  _.reduce([1,2,3,4], function(memo, v) { return memo + (v+10); }, undefined, 0);
+  // undefined
+  // undefined
 
-  log(_.async.pipea({hi:'hi'}, 10, [
-    log,
-    _.noop,
-    log,
-    function() {
-      return 1;
-    },
-    function(a) {
-      log(this);
-    },
-    function() {
-      return _.mr(20, 5);
-    },
-    log,
-    function(a, b) {
-      return [1,2,3];
-    },
-    _.to_mr,
-    function(a, b, c) {
-      console.log(a, b, c);
-    }
-  ]));
+
+
+  _.reduce([1,2,3,4], function(memo, v) { return memo + (v+10); }, undefined, 2);
+  // (1 + 12) + 13
+  // 1 + 12
+
+
+
+
+  // underscore
+  _.reduce(['1','2','3','4'], function(memo, v) { return memo + (v+10); }, undefined, 0);
+  // 1 + 12 + 13 + 14
+
 
 
 </script>
