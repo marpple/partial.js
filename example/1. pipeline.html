@@ -270,12 +270,10 @@
 //  _.reduce(ary, iter, memo, limiter);
 
 
-  var res = _.reduce([1,2,3,4], function(memo, v) { return memo + (v+10); }, undefined, 1); // ary, iteratee
+  _.reduce([1,2,3,4], function(memo, v) { return memo + (v+10); }, undefined, 1); // ary, iteratee
   // 1 + 12
   // 1
   // undefined11
-  console.log(res);
-
 
   _.reduce([1,2,3,4], function(memo, v) { return memo + (v+10); }, 0, 1);
   // 11
@@ -285,14 +283,9 @@
   // undefined
   // undefined
 
-
-
   _.reduce([1,2,3,4], function(memo, v) { return memo + (v+10); }, undefined, 2);
   // (1 + 12) + 13
   // 1 + 12
-
-
-
 
   // underscore
   _.reduce(['1','2','3','4'], function(memo, v) { return memo + (v+10); }, undefined, 0);
