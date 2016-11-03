@@ -1205,7 +1205,7 @@
   function s_matcher(length, key, re, source, var_names, self) {
 
     // test
-    if (self && self[key]) console.log("self 캐쉬 사용!!!!!!!!!!!!");
+    if (self && self[key]) console.log("self 캐쉬 사용!!!!!!!!!!!!"); // 테스트를 마치면 지워주세요.
 
     if (self && self[key]) return self[key];
     var res = map(source.match(re), function(matched) {
@@ -1285,7 +1285,6 @@
   //    return pipe(ary, _.partial.apply(null, [map, _].concat(_.rest(arguments))), function(res) { return res.join(""); });
   //  };
   //}
-
   //// pipe, convert_to_html, self {}
   //_.T.each = function() { // var names, source...
   //  return s_each.apply(null, [_.T, _.pipe].concat(_.toArray(arguments)));
@@ -1295,14 +1294,14 @@
   _.T.each = function() { // var names, source...
     var template = _.T.apply(null, arguments);
 
-    // 1
+    // 1 - 가장 빠른
     //return function(data) { // ary, d1, d2
     //  return _.map(_.to_mr(arguments), function(v, k, l, a, b) {
     //    return template.apply(null, arguments);
     //  }).join('');
     //};
 
-    // 2
+    // 2 - 코드 합치기 좋은
     return function(data) {
       return _.pipe(_.mr(_.to_mr(arguments)),
         _.partial(_.map, _, function(v, k, l, a, b) { return template.apply(null, arguments); }),
