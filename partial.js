@@ -94,17 +94,10 @@
   };
   function ithis(self, args) { return { parent: self, args: args }; }
 
-  _.Tap = function() {
+  // _.Tap = function() {
     // var fns = C.toArray(arguments);
     // return function() { return A(arguments, fns.concat([J(arguments), to_mr]), this); };
-  };
-
-  _.Tap = function(func) {
-    return function(arg) {
-      arguments.length > 1 ? func.apply(null, _.to_mr(arguments)) : func(arg);
-      return arguments.length > 1 ? _.to_mr(arguments) : arg;
-    }
-  };
+  // };
 
   _.Tap = function(func) {
     return function(arg) {
@@ -278,15 +271,32 @@
     }
     return result;
   };
-  _.escape = (function(map) {
-    var escaper = function(match) { return map[match]; };
-    var source = '(?:' + Object.keys(map).join('|') + ')';
-    var testRegexp = RegExp(source), replaceRegexp = RegExp(source, 'g');
+
+  var _keys = function(obj) { return _.isObject(obj) ? Object.keys(obj) : []; };
+  var _invert = function(obj) {
+    var keys = _keys(obj), l = keys.length, res = {};
+    for (var i = 0; i < l; i++) res[obj[keys[i]]] = keys[i]
+    return res;
+  };
+
+  var escapeMap = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;', '`': '&#x60;' };
+  var unescapeMap = _invert(escapeMap);
+
+  var createEscaper = function(map) {
+    var escaper = function(match) {
+      return map[match];
+    };
+    var source = '(?:' + _keys(map).join('|') + ')';
+    var testRegexp = RegExp(source);
+    var replaceRegexp = RegExp(source, 'g');
     return function(string) {
       string = string == null ? '' : '' + string;
       return testRegexp.test(string) ? string.replace(replaceRegexp, escaper) : string;
     };
-  })({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;', '`': '&#x60;'});
+  };
+  _.escape = createEscaper(escapeMap);
+  _.unescape = createEscaper(unescapeMap);
+
   var idCounter = 0;
   _.unique_id = _.uniqueId = function(prefix) {
     var id = ++idCounter + '';
@@ -336,7 +346,7 @@
     return a === b;
   };
 
-  _.keys = function(obj) { return _.isObject(obj) ? Object.keys(obj) : []; };
+  _.keys = _keys;
   _.wrapArray = _.wrap_arr = function(v) { return _.isArray(v) ? v : [v]; };
   _.parseInt = _.parse_int = function(v) { return parseInt(v, 10); };
   try { var has_lambda = true; eval('a=>a'); } catch (err) { var has_lambda = false; }
@@ -1006,11 +1016,7 @@
     return res;
   };
 
-  _.invert = function(obj) {
-    var keys = _.keys(obj), l = keys.length, res = {};
-    for (var i = 0; i < l; i++) res[obj[keys[i]]] = keys[i]
-    return res;
-  };
+  _.invert = _invert;
 
   _.functions = function(obj) {
     var keys = _.keys(obj), res = [];
@@ -1103,6 +1109,7 @@
 
   //_.throttle
   //_.debounce
+
   _.negate = function (predicate) {
     return function () {
       return !predicate.apply(this, arguments);
