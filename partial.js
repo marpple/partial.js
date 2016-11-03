@@ -94,17 +94,10 @@
   };
   function ithis(self, args) { return { parent: self, args: args }; }
 
-  _.Tap = function() {
+  // _.Tap = function() {
     // var fns = C.toArray(arguments);
     // return function() { return A(arguments, fns.concat([J(arguments), to_mr]), this); };
-  };
-
-  _.Tap = function(func) {
-    return function(arg) {
-      arguments.length > 1 ? func.apply(null, _.to_mr(arguments)) : func(arg);
-      return arguments.length > 1 ? _.to_mr(arguments) : arg;
-    }
-  };
+  // };
 
   _.Tap = function(func) {
     return function(arg) {
@@ -278,15 +271,25 @@
     }
     return result;
   };
-  _.escape = (function(map) {
-    var escaper = function(match) { return map[match]; };
-    var source = '(?:' + Object.keys(map).join('|') + ')';
-    var testRegexp = RegExp(source), replaceRegexp = RegExp(source, 'g');
+
+  var escapeMap = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;', '`': '&#x60;' };
+  var unescapeMap = _.invert(escapeMap);
+
+  var createEscaper = function(map) {
+    var escaper = function(match) {
+      return map[match];
+    };
+    var source = '(?:' + _.keys(map).join('|') + ')';
+    var testRegexp = RegExp(source);
+    var replaceRegexp = RegExp(source, 'g');
     return function(string) {
       string = string == null ? '' : '' + string;
       return testRegexp.test(string) ? string.replace(replaceRegexp, escaper) : string;
     };
-  })({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;', '`': '&#x60;'});
+  };
+  _.escape = createEscaper(escapeMap);
+  _.unescape = createEscaper(unescapeMap);
+
   var idCounter = 0;
   _.unique_id = _.uniqueId = function(prefix) {
     var id = ++idCounter + '';
@@ -1103,6 +1106,7 @@
 
   //_.throttle
   //_.debounce
+
   _.negate = function (predicate) {
     return function () {
       return !predicate.apply(this, arguments);
