@@ -535,8 +535,6 @@
           iteratee(data[keys[i]], keys[i], data);
           if (limiter(data[keys[i]], keys[i], data)) break;
         }
-      }
-
     } else {
       if (limiter == 0) return data;
       if (_.isArrayLike(data))
@@ -563,7 +561,6 @@
           res.push(iteratee(data[keys[i]], keys[i], data));
           if (limiter(data[keys[i]], keys[i], data)) break;
         }
-      }
     } else {
       if (limiter == 0) return [];
       if (_.isArrayLike(data))
