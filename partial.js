@@ -548,8 +548,8 @@
   };
 
   _.map = function(data, iteratee, limiter) {
-    if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 2); data = data[0]; }
 
+    if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 2); data = data[0]; }
     if (limiter && _.isFunction(limiter)) {
       if (_.isArrayLike(data))
         for (var i = 0, res = [], l = data.length; i < l; i++) {
@@ -1250,12 +1250,7 @@
     }).join("");
 
     return function() { // data...
-      //console.log("source : ", source);
-      //console.log("var names : ", var_names);
-      //console.log("arguments : ", args);
-      //console.log("self : ", self);
       return pipe(_.mr(source, var_names, arguments, self), remove_comment, convert, insert_datas1, insert_datas2, _.i);
-      //source, var_names, args, self // args는 [data....]
     }
   }
 
@@ -1265,9 +1260,6 @@
   _.T$ = function() { // source...
     return s.apply(null, [convert_to_html, _.pipe, {}, '$'].concat(_.toArray(arguments)));
   };
-
-
-
 
   _.t = function(args) { // _.mr(인자들), var names, source...
     var f = s.apply(null, [convert_to_html, _.pipe, null].concat(_.rest(arguments)));
@@ -1282,47 +1274,53 @@
   _.t._func_storage = {};
 
 
+  //function  s_each(func, var_names/*, source...*/) {     // used by H.each and S.each
+  //  var map = _.partial(_.map, _, func.apply(null, _.rest(arguments)));
+  //  return function(ary /*, args...*/) {
+  //    return pipe(ary, _.partial.apply(null, [map, _].concat(_.rest(arguments))), function(res) { return res.join(""); });
+  //  };
+  //}
+
+  //// pipe, convert_to_html, self {}
+  //_.T.each = function() { // var names, source...
+  //  return s_each.apply(null, [_.T, _.pipe].concat(_.toArray(arguments)));
+  //};
 
 
+  _.T.each = function() { // var names, source...
+    var template = _.T.apply(null, arguments);
 
+    // 1
+    //return function(data) { // ary, d1, d2
+    //  return _.map(_.to_mr(arguments), function(v, k, l, a, b) {
+    //    return template.apply(null, arguments);
+    //  }).join('');
+    //};
 
-  function  s_each(func, var_names/*, source...*/) {     // used by H.each and S.each
-    var map = _.partial(_.map, _, func.apply(null, _.rest(arguments)));
-    return function(ary /*, args...*/) {
-      return pipe(ary, _.partial.apply(null, [map, _].concat(_.rest(arguments))), function(res) { return res.join(""); });
-    };
-  }
+    // 2
+    return function(data) {
+      return _.pipe(_.mr(_.to_mr(arguments)),
+        _.partial(_.map, _, function(v, k, l, a, b) { return template.apply(null, arguments); }),
+        function(res) { return res.join(''); }
+      )
+    }
+  };
 
+  _.t.each = function(data) { // var names, source...
+    var args = _.rest(arguments); // [var names, source...]
 
+    // 1
+    //return _.map(data, function() {
+    //  return _.t.apply(null, [_.to_mr(arguments)].concat(args));
+    //}).join('');
 
+    // 2
+    return _.pipe(_.mr(data),
+      _.partial(_.map, _, function() { return _.t.apply(null, [_.to_mr(arguments)].concat(args)); }),
+      function(res) { return res.join(''); }
+    );
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  };
 
 
   function remove_comment(source, var_names, args, self) {
