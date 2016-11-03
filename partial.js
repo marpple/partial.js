@@ -272,14 +272,21 @@
     return result;
   };
 
+  var _keys = function(obj) { return _.isObject(obj) ? Object.keys(obj) : []; };
+  var _invert = function(obj) {
+    var keys = _keys(obj), l = keys.length, res = {};
+    for (var i = 0; i < l; i++) res[obj[keys[i]]] = keys[i]
+    return res;
+  };
+
   var escapeMap = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;', '`': '&#x60;' };
-  var unescapeMap = _.invert(escapeMap);
+  var unescapeMap = _invert(escapeMap);
 
   var createEscaper = function(map) {
     var escaper = function(match) {
       return map[match];
     };
-    var source = '(?:' + _.keys(map).join('|') + ')';
+    var source = '(?:' + _keys(map).join('|') + ')';
     var testRegexp = RegExp(source);
     var replaceRegexp = RegExp(source, 'g');
     return function(string) {
@@ -339,7 +346,7 @@
     return a === b;
   };
 
-  _.keys = function(obj) { return _.isObject(obj) ? Object.keys(obj) : []; };
+  _.keys = _keys;
   _.wrapArray = _.wrap_arr = function(v) { return _.isArray(v) ? v : [v]; };
   _.parseInt = _.parse_int = function(v) { return parseInt(v, 10); };
   try { var has_lambda = true; eval('a=>a'); } catch (err) { var has_lambda = false; }
@@ -1009,11 +1016,7 @@
     return res;
   };
 
-  _.invert = function(obj) {
-    var keys = _.keys(obj), l = keys.length, res = {};
-    for (var i = 0; i < l; i++) res[obj[keys[i]]] = keys[i]
-    return res;
-  };
+  _.invert = _invert;
 
   _.functions = function(obj) {
     var keys = _.keys(obj), res = [];
