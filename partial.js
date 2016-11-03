@@ -98,6 +98,25 @@
     // var fns = C.toArray(arguments);
     // return function() { return A(arguments, fns.concat([J(arguments), to_mr]), this); };
   };
+
+  _.Tap = function(func) {
+    return function(arg) {
+      arguments.length > 1 ? func.apply(null, _.to_mr(arguments)) : func(arg);
+      return arguments.length > 1 ? _.to_mr(arguments) : arg;
+    }
+  };
+
+  _.Tap = function(func) {
+    return function(arg) {
+      if (arguments.length > 1) {
+        func.apply(null, _.to_mr(arguments));
+        return _.to_mr(arguments);
+      }
+      func(arg);
+      return arg;
+    }
+  };
+
   // B.boomerang = function() { // fork
   //   var fns = arguments;
   //   return _.async.jcb(function(res, cb) {
@@ -205,8 +224,8 @@
   _.null = _.Always(null);
   _.not = function(v) { return !v; };
   _.nnot = function(v) { return !!v; };
-  _.log = window.console && window.console.log ? console.log.bind ? console.log.bind(console) : function() { console.log.apply(console, arguments); } : I;
-  _.loge = window.console && window.console.error ? console.error.bind ? console.error.bind(console) : function() { console.error.apply(console, arguments); } : I;
+  _.log = window.console && window.console.log ? console.log.bind ? console.log.bind(console) : function() { console.log.apply(console, arguments); } : _.i;
+  _.loge = window.console && window.console.error ? console.error.bind ? console.error.bind(console) : function() { console.error.apply(console, arguments); } : _.i;
   _.Hi = _.Tap(_.log);
 
   _.f = function(nodes) {
@@ -578,22 +597,22 @@
 
     if (limiter && _.isFunction(limiter)) {
       if (_.isArrayLike(data))
-        for (var i = 0, res = (memo == undefined ? data[i++] : memo), l = data.length; i < l; i++) {
+        for (var i = 0, res = (arguments.length > 2 ? memo : data[i++]), l = data.length; i < l; i++) {
           res = iteratee(res, data[i], i, data);
           if (limiter(res, data[i], i, data)) break;
         }
       else
-        for (var i = 0, keys = _.keys(data), res = (memo == undefined ? data[keys[i++]] : memo), l = keys.length; i < l; i++) {
+        for (var i = 0, keys = _.keys(data), res = (arguments.length > 2 ? memo : data[keys[i++]]), l = keys.length; i < l; i++) {
           res = iteratee(res, data[keys[i]], i, data);
           if (limiter(res, data[keys[i]], keys[i], data)) break;
         }
     } else {
       if (limiter == 0) return void 0;
       if (_.isArrayLike(data))
-        for (var i = 0, res = (memo == undefined ? data[i++] : memo), l = limiter || data.length; i < l; i++)
+        for (var i = 0, res = (arguments.length > 2 ? memo : data[i++]), l = limiter || data.length; i < l; i++)
           res = iteratee(res, data[i], i, data);
       else
-        for (var i = 0, keys = _.keys(data), res = (memo == undefined ? data[keys[i++]] : memo), l = limiter || keys.length; i < l; i++)
+        for (var i = 0, keys = _.keys(data), res = (arguments.length > 2 ? memo : data[keys[i++]]), l = limiter || keys.length; i < l; i++)
           res = iteratee(res, data[keys[i]], i, data);
     }
     return res;
@@ -604,22 +623,22 @@
 
     if (limiter && _.isFunction(limiter)) {
       if (_.isArrayLike(data))
-        for (var i = data.length - 1, res = (memo == undefined ? data[i--] : memo); i >= 0; i--) {
+        for (var i = data.length - 1, res = (arguments.length > 2 ? memo : data[i--]); i >= 0; i--) {
           res = iteratee(res, data[i], i, data);
           if (limiter(res, data[i], i, data)) break;
         }
       else
-        for (var keys = _.keys(data), i = keys.length - 1, res = (memo == undefined ? data[keys[i--]] : memo); i >= 0; i--) {
+        for (var keys = _.keys(data), i = keys.length - 1, res = (arguments.length > 2 ? memo : data[keys[i--]]); i >= 0; i--) {
           res = iteratee(res, data[keys[i]], i, data);
           if (limiter(res, data[keys[i]], keys[i], data)) break;
         }
     } else {
       if (limiter == 0) return void 0;
       if (_.isArrayLike(data))
-        for (var i = data.length - 1, res = (memo == undefined ? data[i--] : memo), end = (data.length - limiter) || 0; i >= end; i--)
+        for (var i = data.length - 1, res = (arguments.length > 2 ? memo : data[i--]), end = (data.length - limiter) || 0; i >= end; i--)
           res = iteratee(res, data[i], i, data);
       else
-        for (var keys = _.keys(data), i = keys.length - 1, res = (memo == undefined ? data[keys[i--]] : memo), end = (data.length - limiter) || 0; i >= end; i--)
+        for (var keys = _.keys(data), i = keys.length - 1, res = (arguments.length > 2 ? memo : data[keys[i--]]), end = (data.length - limiter) || 0; i >= end; i--)
           res = iteratee(res, data[keys[i]], i, data);
     }
     return res;
@@ -1037,24 +1056,6 @@
 
   // _.clone (clear)
   // _.has (clear)
-
-  _.Tap = function(func) {
-    return function(arg) {
-      arguments.length > 1 ? func.apply(null, _.to_mr(arguments)) : func(arg);
-      return arguments.length > 1 ? _.to_mr(arguments) : arg;
-    }
-  };
-
-  _.Tap = function(func) {
-    return function(arg) {
-      if (arguments.length > 1) {
-        func.apply(null, _.to_mr(arguments));
-        return _.to_mr(arguments);
-      }
-      func(arg);
-      return arg;
-    }
-  };
 
   _.all = function(args) {
     var res = [], tmp;
