@@ -68,14 +68,14 @@
     return v;
   }
   function mr() {
-    //arguments._mr = true;
-    //return arguments;
-    var args = _.toArray(arguments);
-    args._mr = true;
-    return args;
+    arguments._mr = true;
+    return arguments;
+    //var args = _.toArray(arguments);
+    //args._mr = true;
+    //return args;
   }
   function to_mr(args) {
-    if (args.length < 2) return args;
+    //if (args.length < 2) return args;
     args._mr = true;
     return args;
   }
@@ -1325,9 +1325,11 @@
     //};
 
     // 2 - 코드 합치기 좋은
-    return function() {
+    return function() { // ary, d1, d2
       return _.pipe(_.mr(_.to_mr(arguments)),
-        _.partial(_.map, _, function(v, k, l, a, b) { return template.apply(null, arguments); }),
+        _.partial(_.map, _, function() {
+          return template.apply(null, arguments);
+        }),
         function(res) { return res.join(''); }
       )
     }
@@ -1407,11 +1409,10 @@
       return _.is_mr(args) ? f.apply(null, args) : f(args);
     };
 
-
-  //_.asyc.T.each
-  //_.asyc.t.each
-  //_.asyc.S.each
-  //_.asyc.s.each
+  //_.asyc.Template.each = _.asyc.T.each
+  //_.asyc.template.each = _.asyc.t.each
+  //_.asyc.String.each = _.asyc.S.each
+  //_.asyc.string.each = _.asyc.s.each
 
 
   function remove_comment(source, var_names, args, self) {
