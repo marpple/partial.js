@@ -70,12 +70,12 @@
   function mr() {
     arguments._mr = true;
     return arguments;
-    // var args = _.toArray(arguments);
-    // args._mr = true;
-    // return args;
+    //var args = _.toArray(arguments);
+    //args._mr = true;
+    //return args;
   }
   function to_mr(args) {
-    if (args.length < 2) return args;
+    //if (args.length < 2) return args;
     args._mr = true;
     return args;
   }
@@ -1240,17 +1240,16 @@
     return space_length / TAB_SIZE + tab_length;
   }
 
-
-
-
-
-  function s(convert, pipe, self, var_names/*, source...*/) {      // used by H and S
+  function s(convert, pipe, self, var_names/*, source...*/) {
     var source = _.map(_.rest(arguments, 4), function(str_or_func) {
       if (_.isString(str_or_func)) return str_or_func;
+      //var key = _.uniqueId("func");
+      //_.t._func_storage[key] = str_or_func;
+      //return '_.t._func_storage.' + key;
 
-      var key = _.uniqueId("func"); // func100
-      _.t._func_storage[key] = str_or_func; // _.template._func_storage[func100]
-      return '_.t._func_storage.' + key;
+      var key = _.uniqueId("func");
+      _._ts_storage[key] = str_or_func;
+      return '_._ts_storage.' + key;
 
     }).join("");
 
@@ -1258,25 +1257,46 @@
       return pipe(_.mr(source, var_names, arguments, self), remove_comment, convert, insert_datas1, insert_datas2, _.i);
     }
   }
-
-  _.T = function() { // var names, source...
-    return s.apply(null, [convert_to_html, _.pipe, {}].concat(_.toArray(arguments)));
-  };
-  _.T$ = function() { // source...
-    return s.apply(null, [convert_to_html, _.pipe, {}, '$'].concat(_.toArray(arguments)));
-  };
-
-  _.t = function(args) { // _.mr(인자들), var names, source...
-    var f = s.apply(null, [convert_to_html, _.pipe, null].concat(_.rest(arguments)));
-    return _.is_mr(args) ? f.apply(null, args) : f(args);
-  };
-  _.t$ = function(args) { // _.mr(인자들), source...
-    var f = s.apply(null, [convert_to_html, _.pipe, null, '$'].concat(_.rest(arguments)));
-    return _.is_mr(args) ? f.apply(null, args) : f(args);
-  };
+  _._ts_storage = {};
 
 
-  _.t._func_storage = {};
+  /* sync */
+
+  _.Template = _.T = // var names, source...
+    function() { return s.apply(null, [convert_to_html, _.pipe, {}].concat(_.toArray(arguments))); };
+
+  _.Template$ = _.T$ = // source...
+    function() { return s.apply(null, [convert_to_html, _.pipe, {}, '$'].concat(_.toArray(arguments))); };
+
+  _.template = _.t = // _.mr(인자들), var names, source...
+    function(args) {
+      var f = s.apply(null, [convert_to_html, _.pipe, null].concat(_.rest(arguments)));
+      return _.is_mr(args) ? f.apply(null, args) : f(args);
+    };
+  _.template$ = _.t$ = // _.mr(인자들), source...
+    function(args) {
+      var f = s.apply(null, [convert_to_html, _.pipe, null, '$'].concat(_.rest(arguments)));
+      return _.is_mr(args) ? f.apply(null, args) : f(args);
+    };
+
+  _.String = _.S =
+    function() { return s.apply(null, [_.mr, _.pipe, {}].concat(_.toArray(arguments))); };
+
+  _.String$ = _.S$ =
+    function() { return s.apply(null, [_.mr, _.pipe, {}, '$'].concat(_.toArray(arguments))); };
+
+  _.string = _.s =
+    function(args) {
+      var f = s.apply(null, [_.mr,  _.pipe, null].concat(_.rest(arguments)));
+      return _.is_mr(args) ? f.apply(null, args) : f(args);
+    };
+  _.string$ = _.s$ =
+    function(args) {
+      var f = s.apply(null, [_.mr, _.pipe, null, '$'].concat(_.rest(arguments)));
+      return _.is_mr(args) ? f.apply(null, args) : f(args);
+    };
+
+  //_.t._func_storage = {};
 
 
   //function  s_each(func, var_names/*, source...*/) {     // used by H.each and S.each
@@ -1291,7 +1311,7 @@
   //};
 
 
-  _.T.each = function() { // var names, source...
+  _.Template.each = _.T.each = function() { // var names, source...
     var template = _.T.apply(null, arguments);
 
     // 1 - 가장 빠른
@@ -1302,15 +1322,17 @@
     //};
 
     // 2 - 코드 합치기 좋은
-    return function(data) {
+    return function() { // ary, d1, d2
       return _.pipe(_.mr(_.to_mr(arguments)),
-        _.partial(_.map, _, function(v, k, l, a, b) { return template.apply(null, arguments); }),
+        _.partial(_.map, _, function() {
+          return template.apply(null, arguments);
+        }),
         function(res) { return res.join(''); }
       )
     }
   };
 
-  _.t.each = function(data) { // var names, source...
+  _.template.each = _.t.each = function(data) { // _.mr(data...), var names, source...
     var args = _.rest(arguments); // [var names, source...]
 
     // 1
@@ -1325,6 +1347,69 @@
     );
 
   };
+
+  _.String.each = _.S.each = function() {
+    var template = _.S.apply(null, arguments);
+
+    return function(data) {
+      return _.pipe(_.mr(_.to_mr(arguments)),
+        _.partial(_.map, _, function(v, k, l, a, b) { return template.apply(null, arguments); }),
+        function(res) { return res.join(''); }
+      )
+    }
+  };
+
+  _.string.each = _.s.each = function(data) {
+    var args = _.rest(arguments);
+
+    return _.pipe(_.mr(data),
+      _.partial(_.map, _, function() { return _.s.apply(null, [_.to_mr(arguments)].concat(args)); }),
+      function(res) { return res.join(''); }
+    );
+  };
+
+
+
+  /* async */
+
+  _.async.Template = _.async.T =
+    function() { return s.apply(null, [convert_to_html, _.async.pipe, {}].concat(_.toArray(arguments))); };
+
+  _.async.Template$ = _.async.T$ =
+    function() { return s.apply(null, [convert_to_html, _.async.pipe, {}, '$'].concat(_.toArray(arguments))); };
+
+  _.async.template = _.async.t =
+    function(args) {
+      var f = s.apply(null, [convert_to_html, _.async.pipe, null].concat(_.rest(arguments)));
+      return _.is_mr(args) ? f.apply(null, args) : f(args);
+    };
+  _.async.template$ = _.async.t$ =
+    function(args) {
+      var f = s.apply(null, [convert_to_html, _.async.pipe, null, '$'].concat(_.rest(arguments)));
+      return _.is_mr(args) ? f.apply(null, args) : f(args);
+    };
+
+  _.async.String = _.async.S =
+    function() { return s.apply(null, [_.mr, _.async.pipe, {}].concat(_.toArray(arguments))); };
+
+  _.async.String$ = _.async.S$ =
+    function() { return s.apply(null, [_.mr, _.async.pipe, {}, '$'].concat(_.toArray(arguments))); };
+
+  _.async.string = _.async.s =
+    function(args) {
+      var f = s.apply(null, [_.mr,  _.async.pipe, null].concat(_.rest(arguments)));
+      return _.is_mr(args) ? f.apply(null, args) : f(args);
+    };
+  _.async.string$ = _.async.s$ =
+    function(args) {
+      var f = s.apply(null, [_.mr, _.async.pipe, null, '$'].concat(_.rest(arguments)));
+      return _.is_mr(args) ? f.apply(null, args) : f(args);
+    };
+
+  //_.asyc.Template.each = _.asyc.T.each
+  //_.asyc.template.each = _.asyc.t.each
+  //_.asyc.String.each = _.asyc.S.each
+  //_.asyc.string.each = _.asyc.s.each
 
 
   function remove_comment(source, var_names, args, self) {
