@@ -750,6 +750,7 @@
   };
 
   _.every = function(data, predicate) {
+    predicate = predicate || _.identity;
     if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
     if (_.isArrayLike(data)) {
       for (var i = 0, l = data.length; i < l; i++)
@@ -762,6 +763,7 @@
   };
 
   _.some = function(data, predicate) {
+    predicate = predicate || _.identity;
     if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
     if (_.isArrayLike(data)) {
       for (var i = 0, l = data.length; i < l; i++)
