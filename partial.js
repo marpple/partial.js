@@ -19,7 +19,10 @@
       if (i < ___idx) args1.push(arg);
       else args3.push(arg);
     }
-    return function() { return fn.apply(this, merge_args(args1, arguments, args3)); };
+    var f = function() { return fn.apply(this, merge_args(args1, arguments, args3)); };
+    f._p_async = fn._p_async;
+    f._p_cb = fn._p_cb;
+    return f;
   }
   _.partial = _;
   function _to_unde(args1, args2, args3) {
@@ -131,20 +134,25 @@
   //   return err && err.constructor == Error && err._ABC_is_err;
   // }
 
-  _.async = function (v) {
-    return async_pipe(void 0, v, arguments, 1);
-  };
-  _.async.Pipe = function() {
+
+  _.async = function() {
     var fs = arguments;
-    return function() {
+    var f = function() {
       return this == undefined ? _.async.pipea2(to_mr(arguments), fs) : _.async.pipea(this, to_mr(arguments), fs);
-    }
+    };
+    f._p_async = true;
+    return f;
   };
+  _.async.Pipe = _.async;
   _.async.Indent = function() {
     var fs = arguments;
-    return function() { return _.async.pipea(ithis(this, arguments), to_mr(arguments), fs); }
+    var f = function() { return _.async.pipea(ithis(this, arguments), to_mr(arguments), fs); };
+    f._p_async = true;
+    return f;
   };
-  _.async.pipe = _.async;
+  _.async.pipe = function (v) {
+    return async_pipe(void 0, v, arguments, 1);
+  };
   _.async.pipec = function(self, v) {
     return async_pipe(self, v, arguments, 2);
   };
@@ -162,6 +170,7 @@
     f._p_jcb = true;
     return f;
   };
+
 
   function has_promise() { return has_promise.__cache || (has_promise.__cache = !!_.val(window, 'Promise.prototype.then')); }
   function maybe_promise(res) { return _.isObject(res) && res.then && _.isFunction(res.then); }
@@ -186,20 +195,253 @@
     function cp() { return has_promise() ? new Promise(function(rs) { resolve = rs; }) : { then: function(rs) { resolve = rs; } } }
     return (function c(res) {
       do {
-        if (i === args_len) return !promise ? res : resolve ? resolve(res) : setTimeout(function() { resolve && resolve(res); }, 0);
+        if (i === args_len) return !promise ? res : resolve ? resolve(fpro(res)) : setTimeout(function() { resolve && resolve(fpro(res)); }, 0);
         if (unpack_promise(res, c)) return promise || (promise = cp());
         if (!args[i]._p_cb && !args[i]._p_jcb) res = is_mr(res) ? _.Lambda(args[i++]).apply(self, res) : _.Lambda(args[i++]).call(self, res);
         else if (!args[i]._p_cb) is_mr(res) ?
-          _.Lambda(args[i++]).apply(self, res[res.length++] = function() { res = to_mr(arguments); } && res) :
+          _.Lambda(args[i++]).apply(self, (res[res.length++] = function() { res = to_mr(arguments); }) && res) :
           _.Lambda(args[i++]).call(self, res, function() { res = to_mr(arguments); });
       } while (i == args_len || i < args_len && !args[i]._p_cb);
       if ((promise || (promise = cp())) && unpack_promise(res, c)) return promise;
       is_mr(res) ?
-        _.Lambda(args[i++]).apply(self, res[res.length++] = function() { c(to_mr(arguments)); } && res) :
+        _.Lambda(args[i++]).apply(self, (res[res.length++] = function() { c(to_mr(arguments)); }) && res) :
         _.Lambda(args[i++]).call(self, res, function() { c(to_mr(arguments)); });
       return promise;
     })(v);
   }
+
+  function fpro(res) { return is_mr(res) && res.length == 1 ? res[0] : res; }
+
+  _.async.pipe = function (v) {
+    return async_pipe(void 0, v, arguments, 1);
+  };
+
+  //_.async.pipe(100, _.cb(function(v, cb){
+  //  setTimeout(function() {
+  //    cb(v+11111111);
+  //  }, 1000)
+  //})).then(function(res) { console.log("결과는 ", res) });
+
+
+
+
+  function Iter(iter, args, rnum) {
+    for (var args2 = [], i = 0, l = args.length; i < l; i++) args2[i+rnum] = args[i];
+    if (iter._p_cb) args2.length++;
+    var f = function() {
+      args2[0] = arguments[0];
+      args2[1] = arguments[1];
+      if (rnum === 3) args2[2] = arguments[2];
+      if (iter._p_cb) args2[args2.length-1] = arguments[arguments.length-1];
+      return iter.apply(null, args2);
+    };
+    f._p_async = iter._p_async, f._p_cb = iter._p_cb;
+    return f;
+  }
+
+
+
+  _.async.reduce = function(data, iteratee, memo, limiter) {
+    //if (this != G) {                         //요기 _를 _.async로 바꿨음
+    //  iteratee = iteratee.bind(this);
+    //  if (_.isFunction(limiter)) limiter = limiter.bind(this);
+    //}
+
+    if (_.is_mr(data)) {
+      iteratee = Iter(iteratee, data, 3);
+      if (_.isFunction(limiter)) limiter = Iter(limiter, data, 3);
+      data = data[0];
+    }
+
+    var i = -1, keys = _.isArrayLike(data) ? null : _.keys(data);
+    memo = (arguments.length > 2) ? memo : data[keys ? keys[++i] : ++i];
+
+    return (function f(i, memo) {
+      if (++i == (keys || data).length) return memo;
+      var args = keys ? _.mr(memo, data[keys[i]], keys[i], data) : _.mr(memo, data[i], i, data);
+
+      //console.log(data);
+      if (limiter == 0 || _.isEmpty(data)) {
+        console.log("짠!!!");
+        return { then : function(f) { return f(memo); } }; // 이렇게해두 되나
+      }
+
+      return _.async.pipe(args, iteratee).then(function(res) {
+        args[0] = res; // iter 직후, limiter에서의 memo를 갱신시켜서 보내줘야 함
+        return (_.isFunction(limiter) ? limiter.apply(null, args) : limiter == i+1) ? res : f(i, res); // f가 res를 안받아도 되나?
+      });
+
+
+
+    })(i, memo);
+
+  };
+
+
+
+
+
+
+
+  // memo 필요없는 애들 공통 limiter
+  function _limiter(limiter) {
+    if (!_.isFunction(limiter)) return limiter;
+    return function() {
+      return limiter.apply(null, _.rest(arguments));
+    }
+  }
+
+
+  /* async, each */
+  _.async.each = function(data, iteratee, limiter) {
+    //var memo = null;
+    var memo = _.is_mr(data) ? data[0] : data; // 구리다 고치고싶다
+    var new_iter = _.cb(each_iter(iteratee));
+    return (arguments.length > 2) ? _.async.reduce(data, new_iter, memo, _limiter(limiter)) : _.async.reduce(data, new_iter, memo);
+  };
+
+  function each_iter(iteratee) {
+    return function(m, v, k, l) {
+      console.log("===================");
+      var cb = _.last(arguments);
+      var args = _.initial(_.rest(arguments));
+      args.push(function() { cb(l); }); // 두줄 pipe로 어떻게 합칠 수 있낭..
+      return _.async.pipe(_.to_mr(args), iteratee);
+    }
+  }
+
+
+
+  /* async, map */
+  _.async.map = function(data, iteratee, limiter) { // map은 안뱉어도 undefined 들어감
+    var memo = [];
+    var new_iter = _.cb(map_iter(iteratee));
+    return (arguments.length > 2) ? _.async.reduce(data, new_iter, memo, _limiter(limiter)) : _.async.reduce(data, new_iter, memo);
+  };
+
+  function map_iter(iteratee) {
+    return function(m) {
+      console.log("===================");
+      var cb = _.last(arguments);
+      var args = _.initial(_.rest(arguments));
+      args.push(function(res) { m.push(res); cb(m); });
+      return _.async.pipe(_.to_mr(args), iteratee);
+    }
+  }
+
+
+  /* async, filter */
+  _.async.filter = function(data, iteratee, limiter) {
+    var memo = [];
+    var new_iter = _.cb(filter_iter(iteratee));
+    return (arguments.length > 2) ? _.async.reduce(data, new_iter, memo, _limiter(limiter)) : _.async.reduce(data, new_iter, memo);
+  };
+
+  function filter_iter(iteratee) {
+    return function(m, v) {
+      console.log("===================");
+      var cb = _.last(arguments);
+      var args = _.initial(_.rest(arguments));
+      args.push(function(res) { if (res) m.push(v); cb(m); });
+      return _.async.pipe(_.to_mr(args), iteratee);
+    }
+  }
+
+
+  /* async, reject */
+  _.async.reject = function(data, iteratee, limiter) {
+    var memo = [];
+    var new_iter = _.cb(reject_iter(iteratee));
+    return (arguments.length > 2) ? _.async.reduce(data, new_iter, memo, _limiter(limiter)) : _.async.reduce(data, new_iter, memo);
+  };
+
+  function reject_iter(iteratee) {
+    return function(m, v) {
+      console.log("===================");
+      var cb = _.last(arguments);
+      var args = _.initial(_.rest(arguments));
+      args.push(function(res) { if (!res) m.push(v); cb(m); }); // res랑  m이랑 똑같은값 아님????
+      return _.async.pipe(_.to_mr(args), iteratee);
+    }
+  }
+
+
+
+
+  // limiter도 비동기여야 하는가.........
+
+  // 끝까지 못찾을 경우 undefined
+  /* async, find */
+  _.async.find = function(data, iteratee) { // 얘는 limiter가 없음. 나중에 합칠꺼니까 이름 일단 iteratee로.
+    var memo = undefined;
+    var new_iter = _.cb(find_iter(iteratee));
+    return _.async.reduce(data, new_iter, memo,
+      function(m) {
+        if (m !== undefined) return true;
+      });
+  };
+
+  function find_iter(iteratee) {
+    return function(m, v) {
+      var cb = _.last(arguments);
+      var args = _.initial(_.rest(arguments));
+      args.push(function(res) { cb(res ? v : undefined); }); // 그럼 찾고자 하는 v가 undefined 일 때..
+      // 결과는 맞아보이게 나오는데, 찾아서 undefined가 나온게 아니라 못찾아서 undefined가 나온 것
+      // undefined 찾아도 끝까지 다 돔.
+      return _.async.pipe(_.to_mr(args), iteratee);
+    }
+  }
+
+
+
+
+  // 끝까지 true일 경우 true // return 값이 falsy값이어도 false로 취급 !!!!!!!!!!!!
+  // falsy값 잘 조사 = null
+
+  /* async, every */
+  _.async.every = function(data, iteratee) {
+    var memo = true;
+    var new_iter = _.cb(every_iter(iteratee));
+    return _.async.reduce(data, new_iter, memo,
+      function(m) {
+        return m == false;
+      })
+  };
+
+  function every_iter(iteratee) {
+    return function(m, v) {
+      var cb = _.last(arguments);
+      var args = _.initial(_.rest(arguments));
+      args.push(function(res) { cb(res); });
+      return _.async.pipe(_.to_mr(args), iteratee);
+    }
+  }
+
+
+
+  // 끝까지 못찾을 경우 false
+  /* async, some */
+  _.async.some = function(data, iteratee) {
+    var memo = false;
+    var new_iter = _.cb(some_iter(iteratee));
+    return _.async.reduce(data, new_iter, memo,
+      function(m) {
+        return m == true;
+      })
+  };
+  function some_iter(iteratee) {
+    return function(m, v) {
+      var cb = _.last(arguments);
+      var args = _.initial(_.rest(arguments));
+      args.push(function(res) { cb(res); });
+      return _.async.pipe(_.to_mr(args), iteratee);
+    }
+  }
+
+
+
+
+
 
   /* Ice cream */
   _.noop = function() {};
@@ -539,19 +781,14 @@
   }(_, {});
 
 
-  /* Collections */
-  function Iter(iter, args, rnum) {
-    for (var args2 = [], i = 0, l = args.length; i < l; i++) args2[i+rnum] = args[i];
-    return function() {
-      args2[0] = arguments[0];
-      args2[1] = arguments[1];
-      if (rnum === 3) args2[2] = arguments[2];
-      return iter.apply(null, args2);
-    }
-  }
-
   _.each = function(data, iteratee, limiter) {
-    if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 2); data = data[0]; }
+    //if (this != _ && this != G) {
+    //  iteratee = iteratee.bind(this);
+    //  if (_.isFunction(limiter)) limiter = limiter.bind(this);
+    //}
+    if (iteratee._p_async || iteratee._p_cb) return _.async.each.apply(null, arguments);
+
+    if (_.is_mr(data)) iteratee = Iter(iteratee, data, 2), limiter = Iter(limiter, data, 2), data = data[0]; // 밑으로
 
     if (_.isFunction(limiter)) {
       if (_.isArrayLike(data))
@@ -577,8 +814,13 @@
   };
 
   _.map = function(data, iteratee, limiter) {
+    //if (this != _ && this != G) {
+    //  iteratee = iteratee.bind(this);
+    //  if (_.isFunction(limiter)) limiter = limiter.bind(this);
+    //}
+    if (iteratee._p_async || iteratee._p_cb) return _.async.map.apply(null, arguments);
 
-    if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 2); data = data[0]; }
+    if (_.is_mr(data)) iteratee = Iter(iteratee, data, 2), limiter = Iter(limiter, data, 2), data = data[0];
     if (limiter && _.isFunction(limiter)) {
       if (_.isArrayLike(data))
         for (var i = 0, res = [], l = data.length; i < l; i++) {
@@ -602,8 +844,21 @@
     return res;
   };
 
+
+
   _.reduce = function(data, iteratee, memo, limiter) {
-    if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 3); data = data[0]; }
+    if (iteratee._p_async || iteratee._p_cb) return _.async.reduce.apply(this, arguments);
+
+    //if (this != _ && this != G) {
+    //  iteratee = iteratee.bind(this);
+    //  if (_.isFunction(limiter)) limiter = limiter.bind(this);
+    //}
+
+    if (_.is_mr(data)) {
+      iteratee = Iter(iteratee, data, 3);
+      if (_.isFunction(limiter)) limiter = Iter(limiter, data, 3);
+      data = data[0];
+    }
 
     if (limiter && _.isFunction(limiter)) {
       if (_.isArrayLike(data))
@@ -654,7 +909,13 @@
     return res;
   };
 
-  _.find = function(data, predicate) {
+  _.find = function(data, predicate) { // find에는 limiter가 없다.
+    //if (this != _ && this != G) {
+    //  iteratee = iteratee.bind(this);
+    //  if (_.isFunction(limiter)) limiter = limiter.bind(this);
+    //}
+    if (predicate._p_async || predicate._p_cb) return _.async.find.apply(null, arguments);
+
     if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
 
     if (_.isArrayLike(data)) {
@@ -667,6 +928,12 @@
   };
 
   _.filter = function(data, predicate, limiter) {
+    //if (this != _ && this != G) {
+    //  iteratee = iteratee.bind(this);
+    //  if (_.isFunction(limiter)) limiter = limiter.bind(this);
+    //}
+    if (iteratee._p_async || iteratee._p_cb) return _.async.filter.apply(null, arguments);
+
     if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
 
     if (!limiter) {
@@ -711,6 +978,12 @@
   _.findWhere = _.find_where = function(list, attrs) { return _.find(list, function(obj) { return _.is_match(obj, attrs) }); };
 
   _.reject = function(data, predicate, limiter) {
+    //if (this != _ && this != G) {
+    //  iteratee = iteratee.bind(this);
+    //  if (_.isFunction(limiter)) limiter = limiter.bind(this);
+    //}
+    if (iteratee._p_async || iteratee._p_cb) return _.async.reject.apply(null, arguments);
+
     if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
 
     if (!limiter) {
@@ -750,6 +1023,12 @@
   };
 
   _.every = function(data, predicate) {
+    //if (this != _ && this != G) {
+    //  iteratee = iteratee.bind(this);
+    //  if (_.isFunction(limiter)) limiter = limiter.bind(this);
+    //}
+    if (iteratee._p_async || iteratee._p_cb) return _.async.every.apply(null, arguments);
+
     if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
     if (_.isArrayLike(data)) {
       for (var i = 0, l = data.length; i < l; i++)
@@ -762,6 +1041,12 @@
   };
 
   _.some = function(data, predicate) {
+    //if (this != _ && this != G) {
+    //  iteratee = iteratee.bind(this);
+    //  if (_.isFunction(limiter)) limiter = limiter.bind(this);
+    //}
+    if (iteratee._p_async || iteratee._p_cb) return _.async.some.apply(null, arguments);
+
     if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
     if (_.isArrayLike(data)) {
       for (var i = 0, l = data.length; i < l; i++)
