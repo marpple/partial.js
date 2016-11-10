@@ -171,7 +171,6 @@
     return f;
   };
 
-
   function has_promise() { return has_promise.__cache || (has_promise.__cache = !!_.val(window, 'Promise.prototype.then')); }
   function maybe_promise(res) { return _.isObject(res) && res.then && _.isFunction(res.then); }
   function unpack_promise(res, callback) {
@@ -781,6 +780,17 @@
   }(_, {});
 
 
+  /* Collections */
+  function Iter(iter, args, rnum) {
+    for (var args2 = [], i = 0, l = args.length; i < l; i++) args2[i+rnum] = args[i];
+    return function() {
+      args2[0] = arguments[0];
+      args2[1] = arguments[1];
+      if (rnum === 3) args2[2] = arguments[2];
+      return iter.apply(null, args2);
+    }
+  }
+
   _.each = function(data, iteratee, limiter) {
     //if (this != _ && this != G) {
     //  iteratee = iteratee.bind(this);
@@ -843,8 +853,6 @@
     }
     return res;
   };
-
-
 
   _.reduce = function(data, iteratee, memo, limiter) {
     if (iteratee._p_async || iteratee._p_cb) return _.async.reduce.apply(this, arguments);
@@ -1029,6 +1037,7 @@
     //}
     if (iteratee._p_async || iteratee._p_cb) return _.async.every.apply(null, arguments);
 
+    //predicate = predicate || _.identity;
     if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
     if (_.isArrayLike(data)) {
       for (var i = 0, l = data.length; i < l; i++)
@@ -1047,6 +1056,7 @@
     //}
     if (iteratee._p_async || iteratee._p_cb) return _.async.some.apply(null, arguments);
 
+    //predicate = predicate || _.identity;
     if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
     if (_.isArrayLike(data)) {
       for (var i = 0, l = data.length; i < l; i++)
@@ -1491,10 +1501,6 @@
   var TAB_SIZE;
   var REG1, REG2, REG3, REG4 = {}, REG5, REG6, REG7, REG8;
   function s_matcher(length, key, re, source, var_names, self) {
-
-    // test
-    if (self && self[key]) console.log("self 캐쉬 사용!!!!!!!!!!!!"); // 테스트를 마치면 지워주세요.
-
     if (self && self[key]) return self[key];
     var res = map(source.match(re), function(matched) {
       return new Function(var_names, "return " + matched.substring(length, matched.length-length) + ";");
