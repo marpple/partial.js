@@ -1501,6 +1501,10 @@
   var TAB_SIZE;
   var REG1, REG2, REG3, REG4 = {}, REG5, REG6, REG7, REG8;
   function s_matcher(length, key, re, source, var_names, self) {
+
+    // test
+    if (self && self[key]) console.log("self 캐쉬 사용!!!!!!!!!!!!"); // 테스트를 마치면 지워주세요.
+
     if (self && self[key]) return self[key];
     var res = map(source.match(re), function(matched) {
       return new Function(var_names, "return " + matched.substring(length, matched.length-length) + ";");
