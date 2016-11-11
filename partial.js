@@ -134,25 +134,20 @@
   //   return err && err.constructor == Error && err._ABC_is_err;
   // }
 
-
-  _.async = function() {
-    var fs = arguments;
-    var f = function() {
-      return this == undefined ? _.async.pipea2(to_mr(arguments), fs) : _.async.pipea(this, to_mr(arguments), fs);
-    };
-    f._p_async = true;
-    return f;
-  };
-  _.async.Pipe = _.async;
-  _.async.Indent = function() {
-    var fs = arguments;
-    var f = function() { return _.async.pipea(ithis(this, arguments), to_mr(arguments), fs); };
-    f._p_async = true;
-    return f;
-  };
-  _.async.pipe = function (v) {
+  _.async = function (v) {
     return async_pipe(void 0, v, arguments, 1);
   };
+  _.async.Pipe = function() {
+    var fs = arguments;
+    return function() {
+      return this == undefined ? _.async.pipea2(to_mr(arguments), fs) : _.async.pipea(this, to_mr(arguments), fs);
+    }
+  };
+  _.async.Indent = function() {
+    var fs = arguments;
+    return function() { return _.async.pipea(ithis(this, arguments), to_mr(arguments), fs); }
+  };
+  _.async.pipe = _.async;
   _.async.pipec = function(self, v) {
     return async_pipe(self, v, arguments, 2);
   };
@@ -224,19 +219,7 @@
 
 
 
-  function Iter(iter, args, rnum) {
-    for (var args2 = [], i = 0, l = args.length; i < l; i++) args2[i+rnum] = args[i];
-    if (iter._p_cb) args2.length++;
-    var f = function() {
-      args2[0] = arguments[0];
-      args2[1] = arguments[1];
-      if (rnum === 3) args2[2] = arguments[2];
-      if (iter._p_cb) args2[args2.length-1] = arguments[arguments.length-1];
-      return iter.apply(null, args2);
-    };
-    f._p_async = iter._p_async, f._p_cb = iter._p_cb;
-    return f;
-  }
+
 
 
 
@@ -781,16 +764,20 @@
 
 
   /* Collections */
+
   function Iter(iter, args, rnum) {
     for (var args2 = [], i = 0, l = args.length; i < l; i++) args2[i+rnum] = args[i];
-    return function() {
+    if (iter._p_cb) args2.length++;
+    var f = function() {
       args2[0] = arguments[0];
       args2[1] = arguments[1];
       if (rnum === 3) args2[2] = arguments[2];
+      if (iter._p_cb) args2[args2.length-1] = arguments[arguments.length-1];
       return iter.apply(null, args2);
-    }
+    };
+    f._p_async = iter._p_async, f._p_cb = iter._p_cb;
+    return f;
   }
-
   _.each = function(data, iteratee, limiter) {
     //if (this != _ && this != G) {
     //  iteratee = iteratee.bind(this);
