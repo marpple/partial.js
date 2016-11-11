@@ -240,9 +240,9 @@
       });
     })(i, memo);
 
-  };
+  }
 
-   function _async_reduce(data, iteratee, memo, limiter) {
+  function _async_reduce(data, iteratee, memo, limiter) {
     if (this != G) {
       iteratee = iteratee.bind(this);
       if (_.isFunction(limiter)) limiter = limiter.bind(this);
@@ -270,7 +270,7 @@
         return (_.isFunction(limiter) ? limiter.apply(null, args) : limiter == i+1) ? res : f(i, res); // f가 res를 안받아도 되나? - 한꺼풀 밖에다가
       });
     })(i, memo);
-  };
+  }
 
   function _limiter(limiter) {
     if (!_.isFunction(limiter)) return limiter;
@@ -289,7 +289,7 @@
       _.is_mr(data) ? data[0] : data, //memo
       _limiter(limiter) //limiter
     );
-  };
+  }
 
   function _async_map(data, iteratee, limiter) {
     return _async_reduce.call(
@@ -301,7 +301,7 @@
       [], //memo
       _limiter(limiter) // limiter
     );
-  };
+  }
 
   function _async_filter(data, iteratee, limiter) {
     return _async_reduce.call(
@@ -313,7 +313,7 @@
       [], //memo
       _limiter(limiter) // limiter
     );
-  };
+  }
 
   function _async_reject(data, iteratee, limiter) {
     return _async_reduce.call(
@@ -325,7 +325,7 @@
       [], //memo
       _limiter(limiter) // limiter
     );
-  };
+  }
 
   function _async_find(data, iteratee) {
     var tmp = false;
@@ -338,7 +338,7 @@
       undefined, //memo
       function() { return tmp === true; }
     );
-  };
+  }
 
   function _async_every(data, iteratee) {
     return _async_reduce.call(
@@ -350,7 +350,7 @@
       true, //memo
       _.negate(_.identity) //limiter
     );
-  };
+  }
 
   function _async_some(data, iteratee) {
     return _async_reduce.call(
@@ -362,8 +362,7 @@
       false, //memo
       _.identity //limiter
     );
-  };
-
+  }
 
   /* Ice cream */
   _.noop = function() {};
