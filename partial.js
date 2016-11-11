@@ -210,16 +210,6 @@
     return async_pipe(void 0, v, arguments, 1);
   };
 
-  //_.async.pipe(100, _.cb(function(v, cb){
-  //  setTimeout(function() {
-  //    cb(v+11111111);
-  //  }, 1000)
-  //})).then(function(res) { console.log("결과는 ", res) });
-
-
-
-
-
   function _async_reduceRight(data, iteratee, memo, limiter) {
     if (this != G) {
       iteratee = iteratee.bind(this);
@@ -252,7 +242,6 @@
 
   };
 
-
    function _async_reduce(data, iteratee, memo, limiter) {
     if (this != G) {
       iteratee = iteratee.bind(this);
@@ -281,12 +270,8 @@
         return (_.isFunction(limiter) ? limiter.apply(null, args) : limiter == i+1) ? res : f(i, res); // f가 res를 안받아도 되나? - 한꺼풀 밖에다가
       });
     })(i, memo);
-
   };
 
-
-
-  // memo 필요없는 애들 공통 limiter
   function _limiter(limiter) {
     if (!_.isFunction(limiter)) return limiter;
     return function() {
@@ -378,8 +363,6 @@
       _.identity //limiter
     );
   };
-
-
 
 
   /* Ice cream */
@@ -1667,10 +1650,10 @@
       return _.is_mr(args) ? f.apply(null, args) : f(args);
     };
 
-  //_.asyc.Template.each = _.asyc.T.each
-  //_.asyc.template.each = _.asyc.t.each
-  //_.asyc.String.each = _.asyc.S.each
-  //_.asyc.string.each = _.asyc.s.each
+  //_.async.Template.each = _.async.T.each
+  //_.async.template.each = _.async.t.each
+  //_.async.String.each = _.async.S.each
+  //_.async.string.each = _.async.s.each
 
 
   function remove_comment(source, var_names, args, self) {

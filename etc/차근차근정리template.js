@@ -165,3 +165,160 @@ _.template.each = _.t.each = function(args) { // _.mr(datas..), var_names, sourc
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// memo 필요없는 애들 공통 limiter
+function _limiter(limiter) {
+  if (!_.isFunction(limiter)) return limiter;
+  return function() {
+    return limiter.apply(null, _.rest(arguments));
+  }
+}
+
+function _async_each(data, iteratee, limiter) {
+  return _async_reduce.call(
+    this,
+    data, //data
+    function(memo) { //iteratee
+      return _.async.pipe(_.to_mr(_.rest(arguments)), iteratee, function() { return memo; });
+    },
+    _.is_mr(data) ? data[0] : data, //memo
+    _limiter(limiter) //limiter
+  );
+};
+
+function _async_map(data, iteratee, limiter) {
+  return _async_reduce.call(
+    this,
+    data, //data
+    function(memo) { //iteratee
+      return _.async.pipe(_.to_mr(_.rest(arguments)), iteratee, function(v) { memo.push(v); return memo; });
+    },
+    [], //memo
+    _limiter(limiter) // limiter
+  );
+};
+
+function _async_filter(data, iteratee, limiter) {
+  return _async_reduce.call(
+    this,
+    data, //data
+    function(memo, val) { //iteratee
+      return _.async.pipe(_.to_mr(_.rest(arguments)), iteratee, function(v) { if (v) memo.push(val); return memo; });
+    },
+    [], //memo
+    _limiter(limiter) // limiter
+  );
+};
+
+function _async_reject(data, iteratee, limiter) {
+  return _async_reduce.call(
+    this,
+    data, //data
+    function(memo, val) { //iteratee
+      return _.async.pipe(_.to_mr(_.rest(arguments)), iteratee, function(v) { if(!v) memo.push(val); return memo; });
+    },
+    [], //memo
+    _limiter(limiter) // limiter
+  );
+};
+
+function _async_find(data, iteratee) {
+  var tmp = false;
+  return _async_reduce.call(
+    this,
+    data, //data
+    function(memo, val) { //iteratee
+      return _.async.pipe(_.to_mr(_.rest(arguments)), iteratee, function(res) { if (res) { tmp = true; return val; } return memo; }); // undefined
+    },
+    undefined, //memo
+    function() { return tmp === true; }
+  );
+};
+
+function _async_every(data, iteratee) {
+  return _async_reduce.call(
+    this,
+    data, //data
+    function(memo, val) { //iteratee
+      return _.async.pipe(_.to_mr(_.rest(arguments)), iteratee);
+    },
+    true, //memo
+    _.negate(_.identity) //limiter
+  );
+};
+
+function _async_some(data, iteratee) {
+  return _async_reduce.call(
+    this,
+    data, //data
+    function(memo, val) { //iteratee
+      return _.async.pipe(_.to_mr(_.rest(arguments)), iteratee);
+    },
+    false, //memo
+    _.identity //limiter
+  );
+};
