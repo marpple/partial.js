@@ -206,9 +206,7 @@
 
   function fpro(res) { return is_mr(res) && res.length == 1 ? res[0] : res; }
 
-  _.async.pipe = function (v) {
-    return async_pipe(void 0, v, arguments, 1);
-  };
+  _.async.pipe = function (v) { return async_pipe(void 0, v, arguments, 1); };
 
   function _async_reduceRight(data, iteratee, memo, limiter) {
     if (this != G) {
@@ -239,7 +237,6 @@
         return (_.isFunction(limiter) ? limiter.apply(null, args) : (data.length - limiter) == i) ? res : f(i, res);
       });
     })(i, memo);
-
   }
 
   function _async_reduce(data, iteratee, memo, limiter) {
@@ -434,7 +431,6 @@
     }
     return result;
   };
-
   var _keys = function(obj) { return _.isObject(obj) ? Object.keys(obj) : []; };
   var _invert = function(obj) {
     var keys = _keys(obj), l = keys.length, res = {};
@@ -444,7 +440,6 @@
 
   var escapeMap = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;', '`': '&#x60;' };
   var unescapeMap = _invert(escapeMap);
-
   var createEscaper = function(map) {
     var escaper = function(match) {
       return map[match];
@@ -1145,7 +1140,6 @@
   };
 
   _.compact = function(ary) { return _.filter(ary, _.identity); };
-  // _.flatten
   _.without = function(ary) { return _.difference(ary, slice.call(arguments, 1)); };
   _.union = function() { return _.uniq(flatten(arguments, true, true)); };
 
@@ -1182,7 +1176,6 @@
   _.unzip = function(ary) {
     var length = ary && _.max(ary, getLength).length || 0, result = Array(length);
     for (var index = 0; index < length; index++) result[index] = _.pluck(ary, index);
-
     return result;
   };
 
@@ -1191,7 +1184,6 @@
   _.object = function(list, values) {
     for (var i = 0, result = {}, length = getLength(list); i < length; i++)
       values ? result[list[i]] = values[i] : result[list[i][0]] = list[i][1];
-
     return result;
   };
 
@@ -1239,11 +1231,7 @@
     return range;
   };
 
-
   /* Object */
-  // _.keys (clear)
-  // _.values (clear)
-
   _.mapObject = _.map_object = function(obj, iteratee) {
     if (_.is_mr(obj)) { iteratee = Iter(iteratee, obj, 2); obj = obj[0]; }
     var res = {};
@@ -1273,9 +1261,6 @@
       if (predicate(obj[key = keys[i]], key, obj)) return key;
   };
 
-  // _.extend (clear)
-  // _.defaults (clear)
-
   _.pick = function(obj, iteratee) {
     var res = {};
     if (_.isString(iteratee)) {
@@ -1303,9 +1288,6 @@
     return res;
   };
 
-  // _.clone (clear)
-  // _.has (clear)
-
   _.all = function(args) {
     var res = [], tmp;
     for (var i = 1, l = arguments.length; i < l; i++) {
@@ -1329,7 +1311,6 @@
     }
     return _.to_mr(res);
   };
-
 
   /* Functions */
   _.memoize = function (func, hasher) {
@@ -1376,41 +1357,6 @@
 
   _.once = _.partial(_.before, 2);
 
-
-
-
-
-  // async each - reduce
-  // function base_loop_fn(body, end_q, end, complete, iter_or_predi, params) {
-  //   var context = this;
-  //   var args = C.rest(arguments, 6);
-  //   var list = args.shift();
-  //   var keys = C.isArrayLike(list) ? null : C.keys(list);
-  //   iter_or_predi = iter_or_predi || C.lambda(args.pop());
-  //   var fast = !args.length && C.isFunction(iter_or_predi);
-  //   if (fast && this != C && this != G) iter_or_predi = iter_or_predi.bind(this);
-  //   var length = (keys || list).length;
-  //   var result = [], tmp = [];
-  //   var resolve = I, async = false;
-  //   var go = fast ? function(list, keys, i, res, args, iter_or_predi) {
-  //     var key = keys ? keys[i] : i;
-  //     return iter_or_predi(list[key], key, list);
-  //   } : function(list, keys, i, res, args, iter_or_predi, context) {
-  //     return A(params(list, keys, i, res, args), iter_or_predi, context);
-  //   };
-  //   return (function f(i, res) {
-  //     do {
-  //       if (end_q(res = body(result, list, keys, i, res, tmp, args))) return resolve(end(list, keys, i));
-  //       if (i == length) return resolve(complete(result, list, res));
-  //       res = go(list, keys, i++, res, args, iter_or_predi, context);
-  //     } while (!maybe_promise(res));
-  //     res.then(function(res) { f(i, res); });
-  //     return async || C(CB(function(cb) { resolve = cb, async = true; }));
-  //   })(0);
-  // }
-
-
-
   /* if else */
   // function IF(predicate, fn) {
   //   var store = [fn ? [predicate, fn] : [I, predicate]];
@@ -1426,7 +1372,6 @@
   //     ]);
   //   }
   // } F.IF = window.IF = IF;
-
 
   // TDD
   // C.test = function(tests) {
@@ -1476,6 +1421,7 @@
     REG8 = new RegExp("^" + TABS + "\\|");
   };
   _.TAB_SIZE(2);
+
   function number_of_tab(a) {
     var snt = a.match(REG1)[0];
     var tab_length = (snt.match(/\t/g) || []).length;
@@ -1486,14 +1432,9 @@
   function s(convert, pipe, self, var_names/*, source...*/) {
     var source = _.map(_.rest(arguments, 4), function(str_or_func) {
       if (_.isString(str_or_func)) return str_or_func;
-      //var key = _.uniqueId("func");
-      //_.t._func_storage[key] = str_or_func;
-      //return '_.t._func_storage.' + key;
-
       var key = _.uniqueId("func");
       _._ts_storage[key] = str_or_func;
       return '_._ts_storage.' + key;
-
     }).join("");
 
     return function() { // data...
@@ -1502,9 +1443,7 @@
   }
   _._ts_storage = {};
 
-
   /* sync */
-
   _.Template = _.T = // var names, source...
     function() { return s.apply(null, [convert_to_html, _.pipe, {}].concat(_.toArray(arguments))); };
 
@@ -1611,10 +1550,7 @@
     );
   };
 
-
-
   /* async */
-
   _.async.Template = _.async.T =
     function() { return s.apply(null, [convert_to_html, _.async.pipe, {}].concat(_.toArray(arguments))); };
 
@@ -1643,6 +1579,7 @@
       var f = s.apply(null, [_.mr,  _.async.pipe, null].concat(_.rest(arguments)));
       return _.is_mr(args) ? f.apply(null, args) : f(args);
     };
+
   _.async.string$ = _.async.s$ =
     function(args) {
       var f = s.apply(null, [_.mr, _.async.pipe, null, '$'].concat(_.rest(arguments)));
@@ -1653,7 +1590,6 @@
   //_.async.template.each = _.async.t.each
   //_.async.String.each = _.async.S.each
   //_.async.string.each = _.async.s.each
-
 
   function remove_comment(source, var_names, args, self) {
     return _.mr(source.replace(/\/\*(.*?)\*\//g, "").replace(REG2, ""), var_names, args, self);
@@ -1730,9 +1666,7 @@
   }
   function end_tag(tag) { return '</' + tag + '>'; }
   function return_check(val) { return (val == null || val == void 0) ? '' : val; }
-
   /*
   * 템플릿 끝
   * */
-
 }(typeof global == 'object' && global.global == global && (global.G = global) || window);
