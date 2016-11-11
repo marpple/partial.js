@@ -766,6 +766,7 @@
   /* Collections */
 
   function Iter(iter, args, rnum) {
+    console.log(iter, args, rnum);
     for (var args2 = [], i = 0, l = args.length; i < l; i++) args2[i+rnum] = args[i];
     if (iter._p_cb) args2.length++;
     var f = function() {
