@@ -266,6 +266,231 @@
 
 
 
+//
+//  _.callback(function(a, next) {
+//    setTimeout(function() {
+//      next(10 + a, 20);
+//    }, 500);
+//  }),
+
+
+  var delay = function(m, v, k, l, d1, d2, cb) {
+    setTimeout(function() {
+//      console.log("cb : ", cb);
+      console.log("m, v, k, l, d1, d2 : ", m, v, k, l, d1, d2);
+      cb(m+v);
+    }, 1000);
+  };
+  delay = _.callback(delay);
+
+
+  var delay2 = function(m, v, k, l, cb) {
+    setTimeout(function() {
+      cb(m+v);
+    }, 1000);
+  };
+  delay2 = _.callback(delay2);
+
+//        _.reduce(_.mr([100,200,300], 'ㅎㅎ', 'ㅋㅋㅋ'), delay).then(function(a) {console.log(a);});
+
+  //  _.async.reduce(_.mr([100,200,300], 'ㅎㅎ', 'ㅋㅋㅋ'), delay).then(function(a) {console.log(a);});
+
+  //  _.async.reduce([100,200,300], delay2).then(function(a){console.log(a)});
+//  _.async.reduce(_.mr([100,200,300], 'ㅎㅎ', 'ㅋㅋㅋ'), delay, 1000).then(function(a){console.log(a)});
+//  _.async.reduce([100,200,300], delay, 1000, function(memo) { return memo==1100; }).then(function(a){console.log(a)});
+//
+
+//  _.reduce([100,200,300], delay2).then(function(a){console.log(a)});
+//  _.reduce(_.mr([100,200,300], 'ㅎㅎ', 'ㅋㅋㅋ'), delay, 1000).then(function(a){console.log(a)});
+//  _.reduce([100,200,300], delay2, 1000, function(memo) { return memo>1000; }).then(function(a){console.log(a)});
+//  _.reduce(_.mr([100,200,300],'ㅎㅎ','ㅋ'), delay, 1000, function(memo) { return memo>1000; }).then(function(a){console.log(a)});
+
+//  _.reduce(_.mr([100,200,300],'ㅎㅎ','ㅋ'), delay, 1000, function(m, v){console.log(v);return v==100;}).then(function(a){console.log(a)});
+//  _.reduce(_.mr([100,200,300],'ㅎㅎ','ㅋ'), delay, 1000, 0).then(function(a){console.log(a)});
+//
+//
+//
+//  // 비동기
+//  _.reduce(_.mr([10,20,30,40,50,60,70],'ㅎㅎ','ㅋㅋ'), delay).then(function(a) {console.log(a)}); // 280
+//    _.reduce(_.mr([10,20,30,40,50,60,70],'ㅎㅎ','ㅋㅋ'), delay, 1000, function(m, v) { return v==30 }).then(function(a){console.log(a)});
+//  _.reduce(_.mr([10,20,30,40,50,60,70],'ㅎㅎ','ㅋㅋ'), delay, 1000, 3).then(function(a) {console.log(a)});
+//  _.async.pipe(_.mr(_.mr([10,20,30,40,50,60,70],'ㅎㅎ','ㅋㅋ')), _.partial(_.reduce, _, delay, 1000, 3)).then(function(a){console.log(a)});
+//  _.async.pipe(_.mr(_.mr([10,20,30,40,50,60,70],'ㅎㅎ','ㅋㅋ')), _.partial(_.reduce, _, delay, 1000, 3),
+//    function(a){console.log("출력 1 : ", a); return a;},
+//    function(a){console.log("출력 2 : ", a); return a;}
+//  );
+
+//  _.reduce(_.mr([],'ㅎㅎ','ㅋㅋ'), delay).then(function(a) {console.log(a)}); // 280
+
+
+  //  // 동기
+//  _.reduce(_.mr([100,200,300],'ㅎㅎ','ㅋ'), function(m, v){return m+v;}, 1000, 0)
+
+
+
+
+
+
+  // limiter test 할 것
+
+
+  /////////////////////////// limiter에 memo 빼고 보내주는 것 조작 해야 함!!, 그리고 find, some, every에서는 limiter 없으니까 memo 살리고 그걸로 조사, 나가기 실행 !!!!!!!!!!!
+
+
+  /* async, each */
+
+  var edelay = function(v, k, l, d1, d2, cb) {
+    setTimeout(function() {
+      console.log("each_delay 비동기 실행!", v);
+      cb();
+    }, 500)
+  };
+  edelay = _.cb(edelay);
+
+//  _.each(_.mr([10,20,30],'ㅎㅎ','ㅋㅋ'), edelay).then(function(res) { console.log("each의 결과 : ", res); });
+
+
+//    _.async.each(_.mr([10,20,30],'ㅎㅎ','ㅋㅋ'), edelay, 1).then(function(res) { console.log("each의 결과 : ", res); });
+//  _.pipe(_.mr(_.mr([10,20,30],'ㅎㅎ','ㅋㅋ')), _.partial(_.async.each, _, edelay)).then(function(res) { console.log("each의 결과 : ", res); });
+//  _.async.pipe(_.mr(_.mr([10,20,30],'ㅎㅎ','ㅋㅋ')),
+//    _.partial(_.async.each, _, edelay),
+//    function(res) { console.log("중간 res : ", res); res.push(9999); return res; }
+//  ).then(function(res) { console.log("each의 결과 : ", res); });
+
+//  _.async.each(_.mr([10,20,30,40,50,60,70],'ㅎㅎ','ㅋㅋ'), edelay, function(v) { console.log(v); return v===30; }).then(function(res) { console.log("each의 결과 : ", res); });
+//  _.async.each(_.mr([10,20,30,40,50,60,70],'ㅎㅎ','ㅋㅋ'), edelay, function(v) { console.log(v); return v===30; }).then(function(res) { console.log("each의 결과 : ", res); });
+//  _.async.each(_.mr([10,20,30,40,50,60,70],'ㅎㅎ','ㅋㅋ'), edelay, 0).then(function(res) { console.log("each의 결과 : ", res); });
+//  _.async.each(_.mr([10,20,30,40,50,60,70],'ㅎㅎ','ㅋㅋ'), edelay, 2).then(function(res) { console.log("each의 결과 : ", res); });
+
+// 빈배열 test
+//  _.each(_.mr([],'ㅎㅎ','ㅋㅋ'), edelay).then(function(res) { console.log("each의 결과 : ", res); });
+//  _.each(_.mr([1,2,3],'ㅎㅎ','ㅋㅋ'), edelay).then(function(res) { console.log("each의 결과 : ", res); });
+
+
+
+  /* async, map */
+
+  var mdelay = function(v, k, l, a, b, cb) {
+    setTimeout(function() {
+      console.log(v, k, l, cb);
+//      console.log("map_delay 비동기 실행!", v);
+//      cb();
+      cb(v+100);
+    }, 500)
+  };
+  mdelay = _.cb(mdelay);
+
+  // 기본 test
+//  _.async.map(_.mr([10,20,30],'ㅎㅎ','ㅋㅋ'), mdelay).then(function(res) { console.log("map의 결과 : ", res); });
+//  _.async.map([10,20,30], mdelay).then(function(res) { console.log("map의 결과 : ", res); });
+//  _.async.map(_.mr([10,20,30]), mdelay).then(function(res) { console.log("map의 결과 : ", res); });
+
+  // limiter test
+//    _.async.map(_.mr([10,20,30],'ㅎㅎ','ㅋㅋ'), mdelay, 1).then(function(res) { console.log("map의 결과 : ", res); });
+//  _.map(_.mr([10,20,30],'ㅎㅎ','ㅋㅋ'), mdelay).then(function(res) { console.log("map의 결과 : ", res); });
+//  _.map(_.mr([10,20,30,40,50],'ㅎㅎ','ㅋㅋ'), mdelay, 3).then(function(res) { console.log("map의 결과 : ", res); });
+//  _.map(_.mr([10,20,30],'ㅎㅎ','ㅋㅋ'), mdelay, function(v, k, l) {return v==20;}).then(function(res) { console.log("map의 결과 : ", res); });
+
+
+
+
+  /* async, filter */
+  var fdelay = function(v, k, l, d1, d2, cb) {
+    setTimeout(function() {
+      console.log("filter_delay 비동기 실행!", v);
+      cb(v%2);
+    }, 500)
+  };
+  fdelay = _.cb(fdelay);
+//    _.filter(_.mr([11,12,13,14,15],'ㅎㅎ','ㅋㅋ'), fdelay).then(function(res) { console.log("filter의 결과 : ", res); });
+
+
+
+  /* async, reject */
+  var rdelay = function(v, k, l, d1, d2, cb) {
+    setTimeout(function() {
+      console.log("filter_delay 비동기 실행!", v);
+      cb(v%2);
+    }, 500)
+  };
+  rdelay = _.cb(rdelay);
+//  _.reject(_.mr([11,12,13,14,15],'ㅎㅎ','ㅋㅋ'), rdelay).then(function(res) { console.log("filter의 결과 : ", res); });
+//  _.reject(_.mr([11,12,13,14,15],'ㅎㅎ','ㅋㅋ'), rdelay).then(function(res) { console.log("filter의 결과 : ", res); });
+
+
+
+
+  /* async, find */
+  var fdelay = function(v, k, l, d1, d2, cb) {
+    setTimeout(function() {
+      console.log("find_delay 비동기 실행!", v);
+//      cb(v===30);
+//      cb(v==undefined);
+//      cb(v==10000);
+    }, 200)
+  };
+  fdelay = _.cb(fdelay);
+//  _.async.find(_.mr([10,20,30,40,50,60,70],'ㅎㅎ','ㅋㅋ'), fdelay).then(function(res) { console.log("find의 결과 : ", res); });
+//  _.async.find(_.mr([10,20,30,40,50,60,70],'ㅎㅎ','ㅋㅋ'), fdelay).then(function(res) { console.log("find의 결과 : ", res); });
+//  console.log(_.find([1,2,3,undefined,5,6], function(v){return v===undefined})) // 동기
+
+//  _async_find(_.mr([10,20,30,undefined,50,60,70],'ㅎㅎ','ㅋㅋ'), fdelay).then(function(res) { console.log("find의 결과 : ", res); });
+//  _.find(_.mr([10,20,30,undefined,50,60,70],'ㅎㅎ','ㅋㅋ'), fdelay).then(function(res) { console.log("find의 결과 : ", res); });
+
+
+
+
+  /* async, every */
+  var edelay = function(v, k, l, d1, d2, cb) {
+    setTimeout(function() {
+      console.log("every_delay 비동기 실행!", v);
+//      cb(v%10 === 0);
+      cb(v < 40);
+//      cb(v === null);
+    }, 500)
+  };
+  edelay = _.cb(edelay);
+//  _.async.every(_.mr([10,20,30,40,50,60,70],'ㅎㅎ','ㅋㅋ'), edelay).then(function(res) { console.log("every의 결과 : ", res); });
+//  _.every(_.mr([null, null, null, null, null, null],'ㅎㅎ','ㅋㅋ'), edelay).then(function(res) { console.log("every의 결과 : ", res); });
+
+
+
+
+
+  /* async, some */
+  var sdelay = function(v, k, l, d1, d2, cb) {
+    setTimeout(function() {
+      console.log("some_delay 비동기 실행!", v);
+//      cb(v < 0);
+      cb(v > 30);
+//      cb(v === null);
+    }, 500)
+  };
+  sdelay = _.cb(sdelay);
+//  _.async.some(_.mr([10,20,30,40,50,60,70],'ㅎㅎ','ㅋㅋ'), sdelay).then(function(res) { console.log("some의 결과 : ", res); });
+//  _.some(_.mr([1,2,3,4,null, 5, 6],'ㅎㅎ','ㅋㅋ'), sdelay).then(function(res) { console.log("some의 결과 : ", res); });
+
+
+
+
+  /* async, reduceRight */
+
+  var delayr = function(m, v, k, l, d1, d2, cb) {
+    setTimeout(function() {
+      console.log(m, v, k, l, d1, d2);
+      cb(m+v);
+    }, 1000);
+  };
+  delayr = _.callback(delayr);
+
+//  _.reduceRight(_.mr(["가","나","다","라"],'ㅎㅎ','ㅋㅋ'), delayr).then(function(a) {console.log(a)}); // 280
+//  _.reduceRight(_.mr(["가","나","다","라"],'ㅎㅎ','ㅋㅋ'), delayr, "", 3).then(function(a) {console.log(a)}); // 280
+//  _.reduceRight(_.mr(["가","나","다","라"],'ㅎㅎ','ㅋㅋ'), delayr, "", function(m, v) { return v=="나"; }).then(function(a) {console.log(a)}); // 280
+
+//  _.reduceRight(_.mr([],'ㅎㅎ','ㅋㅋ'), delay, 1000, function(m, v) { return v==30 }).then(function(a){console.log(a)});
+//  _.reduceRight(_.mr([],'ㅎㅎ','ㅋㅋ'), delay).then(function(a){console.log(a)});
+
+
 
 
 

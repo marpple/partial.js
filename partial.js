@@ -861,7 +861,7 @@
           res = iteratee(res, data[i], i, data);
       else
         for (var keys = _.keys(data), i = keys.length - 1, res = (arguments.length > 2 ? memo : data[keys[i--]]), end = (data.length - limiter) || 0; i >= end; i--)
-          res = iteratee(res, data[keys[i]], i, data);
+          res = iteratee(res, data[keys[i]], keys[i], data);
     }
     return res;
   };
