@@ -786,7 +786,11 @@
     //}
     if (iteratee._p_async || iteratee._p_cb) return _.async.each.apply(null, arguments);
 
-    if (_.is_mr(data)) iteratee = Iter(iteratee, data, 2), limiter = Iter(limiter, data, 2), data = data[0]; // 밑으로
+    if (_.is_mr(data)) {
+      iteratee = Iter(iteratee, data, 3);
+      if (_.isFunction(limiter)) limiter = Iter(limiter, data, 3);
+      data = data[0];
+    }
 
     if (_.isFunction(limiter)) {
       if (_.isArrayLike(data))
@@ -818,7 +822,12 @@
     //}
     if (iteratee._p_async || iteratee._p_cb) return _.async.map.apply(null, arguments);
 
-    if (_.is_mr(data)) iteratee = Iter(iteratee, data, 2), limiter = Iter(limiter, data, 2), data = data[0];
+    if (_.is_mr(data)) {
+      iteratee = Iter(iteratee, data, 3);
+      if (_.isFunction(limiter)) limiter = Iter(limiter, data, 3);
+      data = data[0];
+    }
+
     if (limiter && _.isFunction(limiter)) {
       if (_.isArrayLike(data))
         for (var i = 0, res = [], l = data.length; i < l; i++) {
