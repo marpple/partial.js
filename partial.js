@@ -1331,8 +1331,8 @@
 
   _.defer = _.partial(_.delay, _, 1);
 
-  //_.throttle (comming soon)
-  //_.debounce (comming soon)
+  //_.throttle
+  //_.debounce
 
   _.negate = function (predicate) {
     return function () {
