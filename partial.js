@@ -721,7 +721,7 @@
     }
 
     if (_.is_mr(data)) {
-      iteratee = Iter(iteratee, data, 3);
+      iteratee = Iter(iteratee, data, 2);
       if (_.isFunction(limiter)) limiter = Iter(limiter, data, 3);
       data = data[0];
     }
@@ -758,7 +758,7 @@
     }
 
     if (_.is_mr(data)) {
-      iteratee = Iter(iteratee, data, 3);
+      iteratee = Iter(iteratee, data, 2);
       if (_.isFunction(limiter)) limiter = Iter(limiter, data, 3);
       data = data[0];
     }
@@ -1437,7 +1437,8 @@
       return '_._ts_storage.' + key;
     }).join("");
 
-    return function() { // data...
+    return function(a) { // data...
+      console.log(a);
       return pipe(_.mr(source, var_names, arguments, self), remove_comment, convert, insert_datas1, insert_datas2, _.i);
     }
   }
