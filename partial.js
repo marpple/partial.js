@@ -461,6 +461,26 @@
     return prefix ? prefix + id : id;
   };
   _.clone = function(obj) { return !_.isObject(obj) ? obj : _.isArray(obj) ? obj.slice() : _.extend({}, obj); };
+
+  var flatten = function (input, shallow, strict, startIndex) { //flat?
+    var output = [], idx = 0;
+    for (var i = startIndex || 0, length = getLength(input); i < length; i++) {
+      var value = input[i];
+      if (_.isArrayLike(value) && (_.isArray(value) || _.isArguments(value))) {
+        //flatten current level of array or arguments object
+        if (!shallow) value = flatten(value, shallow, strict);
+        var j = 0, len = value.length;
+        output.length += len;
+        while (j < len) {
+          output[idx++] = value[j++];
+        }
+      } else if (!strict) {
+        output[idx++] = value;
+      }
+    }
+    return output;
+  };
+
   // </respect _>
 
   function each(list, iter, start) {
@@ -1422,27 +1442,6 @@
   };
   _.TAB_SIZE(2);
 
-  function number_of_tab(a) {
-    var snt = a.match(REG1)[0];
-    var tab_length = (snt.match(/\t/g) || []).length;
-    var space_length = snt.replace(/\t/g, "").length;
-    return space_length / TAB_SIZE + tab_length;
-  }
-
-  function s(convert, pipe, self, var_names/*, source...*/) {
-    var source = _.map(_.rest(arguments, 4), function(str_or_func) {
-      if (_.isString(str_or_func)) return str_or_func;
-      var key = _.uniqueId("func");
-      _._ts_storage[key] = str_or_func;
-      return '_._ts_storage.' + key;
-    }).join("");
-
-    return function(a) { // data...
-      console.log(a);
-      return pipe(_.mr(source, var_names, arguments, self), remove_comment, convert, insert_datas1, insert_datas2, _.i);
-    }
-  }
-  _._ts_storage = {};
 
   /* sync */
   _.Template = _.T = // var names, source...
@@ -1478,21 +1477,6 @@
       var f = s.apply(null, [_.mr, _.pipe, null, '$'].concat(_.rest(arguments)));
       return _.is_mr(args) ? f.apply(null, args) : f(args);
     };
-
-  //_.t._func_storage = {};
-
-
-  //function  s_each(func, var_names/*, source...*/) {     // used by H.each and S.each
-  //  var map = _.partial(_.map, _, func.apply(null, _.rest(arguments)));
-  //  return function(ary /*, args...*/) {
-  //    return pipe(ary, _.partial.apply(null, [map, _].concat(_.rest(arguments))), function(res) { return res.join(""); });
-  //  };
-  //}
-  //// pipe, convert_to_html, self {}
-  //_.T.each = function() { // var names, source...
-  //  return s_each.apply(null, [_.T, _.pipe].concat(_.toArray(arguments)));
-  //};
-
 
   _.Template.each = _.T.each = function() { // var names, source...
     var template = _.T.apply(null, arguments);
@@ -1551,9 +1535,43 @@
     );
   };
 
+
+
+
+  function number_of_tab(a) {
+    var snt = a.match(REG1)[0];
+    var tab_length = (snt.match(/\t/g) || []).length;
+    var space_length = snt.replace(/\t/g, "").length;
+    return space_length / TAB_SIZE + tab_length;
+  }
+
+
+  function s(convert, pipe, self, var_names/*, source...*/) {
+    var source = _.map(_.rest(arguments, 4), function(str_or_func) {
+      if (_.isString(str_or_func)) return str_or_func;
+      var key = _.uniqueId("func");
+      _._ts_storage[key] = str_or_func;
+      return '_._ts_storage.' + key;
+    }).join("");
+
+    return function(a) { // data...
+      return pipe(_.mr(source, var_names, arguments, self), remove_comment, convert, insert_datas1, insert_datas2, _.i);
+    }
+  }
+
+  _._ts_storage = {};
+
+
   /* async */
   _.async.Template = _.async.T =
-    function() { return s.apply(null, [convert_to_html, _.async.pipe, {}].concat(_.toArray(arguments))); };
+    //function() { return s.apply(null, [convert_to_html, _.async.pipe, {}].concat(_.toArray(arguments))); };
+  function() {
+    //return _.async.pipe(
+    //  _.to_mr([convert_to_html, _.async.pipe, {}].concat(_.toArray(arguments))),
+    //  s
+    //);
+  };
+
 
   _.async.Template$ = _.async.T$ =
     function() { return s.apply(null, [convert_to_html, _.async.pipe, {}, '$'].concat(_.toArray(arguments))); };
@@ -1587,10 +1605,39 @@
       return _.is_mr(args) ? f.apply(null, args) : f(args);
     };
 
-  //_.async.Template.each = _.async.T.each
+  _.async.Template.each = _.async.T.each = function() { // var names, source...
+    var template = _.async.T.apply(null, arguments);
+
+    // 1 - 가장 빠른
+    //return function(data) { // ary, d1, d2
+    //  return _.map(_.to_mr(arguments), function(v, k, l, a, b) {
+    //    return template.apply(null, arguments);
+    //  }).join('');
+    //};
+
+    //return function() { // ary, d1, d2
+    //  return _.async.pipe(_.mr(_.to_mr(arguments)),
+    //    _.partial(_.async, _, function() {
+    //      return template.apply(null, arguments);
+    //    }),
+    //    function(res) { return res.join(''); }
+    //  )
+    //}
+    // 2 - 코드 합치기 좋은
+    return function() { // ary, d1, d2
+      return _.async.pipe(_.mr(_.to_mr(arguments)),
+        _.partial(_.map, _, _.cb(function() {
+          return template.apply(null, arguments);
+        })),
+        function(res) { return res.join(''); }
+      )
+    }
+
+  };
   //_.async.template.each = _.async.t.each
   //_.async.String.each = _.async.S.each
   //_.async.string.each = _.async.s.each
+
 
   function remove_comment(source, var_names, args, self) {
     return _.mr(source.replace(/\/\*(.*?)\*\//g, "").replace(REG2, ""), var_names, args, self);
@@ -1598,6 +1645,13 @@
   function s_exec(re, wrap, matcher, source, var_names, args, self) {
     return pipe(_.mr(source.split(re), _.map(matcher(re, source, var_names, self), function(func) {
         return pipe(func.apply(null, args), wrap, return_check);
+      })),
+      function(s, vs) { return _.mr(map(vs, function(v, i) { return s[i] + v; }).join("") + s[s.length-1], var_names, args, self); }
+    );
+  }
+  function s_exec(re, wrap, matcher, source, var_names, args, self) {
+    return _.async.pipe(_.mr(source.split(re), _.map(matcher(re, source, var_names, self), function(func) {
+        return _.async.pipe(func.apply(null, args), wrap, return_check);
       })),
       function(s, vs) { return _.mr(map(vs, function(v, i) { return s[i] + v; }).join("") + s[s.length-1], var_names, args, self); }
     );
