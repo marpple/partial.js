@@ -1693,7 +1693,7 @@
   }
   function push_in(ary, index, data) {
     var rest_ary = ary.splice(index);
-    ary.push(data);
+    ary.push(data)
     return ary.concat(rest_ary);
   }
   function start_tag(str, tag_stack, attrs, name, cls) {
