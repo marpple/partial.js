@@ -1,8 +1,8 @@
-// partial.js
-// History - lmn.js -> lego.js -> L.js -> abc.js -> partial.js
+// Partial.js 1.0
+// History - lmn.js -> lego.js -> L.js -> abc.js -> Partial.js
 // Project Lead - Indong Yoo
 // Maintainers - Piljung Park, Hanah Choi
-// Contributors - Byeongjin Kim, Joeun Ha, Hoonil Kim
+// Contributors - Joeun Ha, Byeongjin Kim, Hoonil Kim
 // (c) 2015-2016 Marpple. MIT Licensed.
 !function(G) {
   var window = typeof window != 'object' ? G : window;
@@ -73,12 +73,8 @@
   function mr() {
     arguments._mr = true;
     return arguments;
-    //var args = _.toArray(arguments);
-    //args._mr = true;
-    //return args;
   }
   function to_mr(args) {
-    //if (args.length < 2) return args;
     args._mr = true;
     return args;
   }
@@ -134,20 +130,22 @@
   //   return err && err.constructor == Error && err._ABC_is_err;
   // }
 
-  _.async = function (v) {
-    return async_pipe(void 0, v, arguments, 1);
-  };
-  _.async.Pipe = function() {
+  _.async = function() {
     var fs = arguments;
-    return function() {
+    var f = function() {
       return this == undefined ? _.async.pipea2(to_mr(arguments), fs) : _.async.pipea(this, to_mr(arguments), fs);
-    }
+    };
+    f._p_async = true;
+    return f;
   };
+  _.async.Pipe = _.async;
   _.async.Indent = function() {
     var fs = arguments;
     return function() { return _.async.pipea(ithis(this, arguments), to_mr(arguments), fs); }
   };
-  _.async.pipe = _.async;
+  _.async.pipe = function (v) {
+    return async_pipe(void 0, v, arguments, 1);
+  };
   _.async.pipec = function(self, v) {
     return async_pipe(self, v, arguments, 2);
   };
@@ -185,23 +183,23 @@
     })(0, (res = is_r ? res : [res]), res.length, false);
   }
   function async_pipe(self, v, args, i) {
-    var args_len = args.length, promise = null, resolve = null;
-    function cp() { return has_promise() ? new Promise(function(rs) { resolve = rs; }) : { then: function(rs) { resolve = rs; } } }
-    return (function c(res) {
+    var args_len = args.length, resolve = null;
+    var promise = has_promise() ? new Promise(function(rs) { resolve = rs; }) : { then: function(rs) { resolve = rs; } };
+    (function c(res) {
       do {
-        if (i === args_len) return !promise ? res : resolve ? resolve(fpro(res)) : setTimeout(function() { resolve && resolve(fpro(res)); }, 0);
-        if (unpack_promise(res, c)) return promise || (promise = cp());
+        if (i === args_len) return resolve ? resolve(fpro(res)) : setTimeout(function() { resolve && resolve(fpro(res)); }, 0);
+        if (unpack_promise(res, c)) return;
         if (!args[i]._p_cb && !args[i]._p_jcb) res = is_mr(res) ? _.Lambda(args[i++]).apply(self, res) : _.Lambda(args[i++]).call(self, res);
         else if (!args[i]._p_cb) is_mr(res) ?
           _.Lambda(args[i++]).apply(self, (res[res.length++] = function() { res = to_mr(arguments); }) && res) :
           _.Lambda(args[i++]).call(self, res, function() { res = to_mr(arguments); });
       } while (i == args_len || i < args_len && !args[i]._p_cb);
-      if ((promise || (promise = cp())) && unpack_promise(res, c)) return promise;
+      if (unpack_promise(res, c)) return;
       is_mr(res) ?
         _.Lambda(args[i++]).apply(self, (res[res.length++] = function() { c(to_mr(arguments)); }) && res) :
         _.Lambda(args[i++]).call(self, res, function() { c(to_mr(arguments)); });
-      return promise;
     })(v);
+    return promise;
   }
 
   function fpro(res) { return is_mr(res) && res.length == 1 ? res[0] : res; }
@@ -223,21 +221,19 @@
     var i = data.length, keys = _.isArrayLike(data) ? null : _.keys(data);
     memo = (arguments.length > 2) ? memo : data[keys ? keys[--i] : --i];
 
-    return (function f(i, memo) {
-      if (limiter == 0 || _.isEmpty(data)) return _.async.pipe(void 0, function() {
-        return has_promise() ? Promise.resolve(memo) : { then : function(f) { return f(memo); }
-        } });
+    if (limiter == 0 || _.isEmpty(data)) return _.async.pipe(memo);
 
-      if (--i == -1) return memo;
+    return (function f(i, memo) {
+      if (--i == -1) return _.async.pipe(memo);
       var args = keys ? _.mr(memo, data[keys[i]], keys[i], data) : _.mr(memo, data[i], i, data);
 
       return _.async.pipe(args, iteratee).then(function(res) {
         args[0] = res;
-
         return (_.isFunction(limiter) ? limiter.apply(null, args) : (data.length - limiter) == i) ? res : f(i, res);
       });
     })(i, memo);
   }
+
 
   function _async_reduce(data, iteratee, memo, limiter) {
     if (this != G) {
@@ -254,12 +250,10 @@
     var i = -1, keys = _.isArrayLike(data) ? null : _.keys(data);
     memo = (arguments.length > 2) ? memo : data[keys ? keys[++i] : ++i];
 
-    return (function f(i, memo) {
-      if (limiter == 0 || _.isEmpty(data)) return _.async.pipe(void 0, function() {
-        return has_promise() ? Promise.resolve(memo) : { then : function(f) { return f(memo); }
-      } });
+    if (limiter == 0 || _.isEmpty(data)) return _.async.pipe(memo);
 
-      if (++i == (keys || data).length) return memo;
+    return (function f(i, memo) {
+      if (++i == (keys || data).length) return _.async.pipe(memo);
       var args = keys ? _.mr(memo, data[keys[i]], keys[i], data) : _.mr(memo, data[i], i, data);
 
       return _.async.pipe(args, iteratee).then(function(res) {
@@ -461,26 +455,6 @@
     return prefix ? prefix + id : id;
   };
   _.clone = function(obj) { return !_.isObject(obj) ? obj : _.isArray(obj) ? obj.slice() : _.extend({}, obj); };
-
-  var flatten = function (input, shallow, strict, startIndex) { //flat?
-    var output = [], idx = 0;
-    for (var i = startIndex || 0, length = getLength(input); i < length; i++) {
-      var value = input[i];
-      if (_.isArrayLike(value) && (_.isArray(value) || _.isArguments(value))) {
-        //flatten current level of array or arguments object
-        if (!shallow) value = flatten(value, shallow, strict);
-        var j = 0, len = value.length;
-        output.length += len;
-        while (j < len) {
-          output[idx++] = value[j++];
-        }
-      } else if (!strict) {
-        output[idx++] = value;
-      }
-    }
-    return output;
-  };
-
   // </respect _>
 
   function each(list, iter, start) {
@@ -1161,7 +1135,8 @@
 
   _.compact = function(ary) { return _.filter(ary, _.identity); };
   _.without = function(ary) { return _.difference(ary, slice.call(arguments, 1)); };
-  _.union = function() { return _.uniq(flatten(arguments, true, true)); };
+  //_.union = function() { return _.uniq(flatten(arguments, true, true)); };
+  _.union = function() { return _.uniq(_.flatten(arguments, true)); };
 
   _.intersection = function(ary) {
     var result = [];
@@ -1178,7 +1153,8 @@
   };
 
   _.difference = function(ary) {
-    var rest = flatten(arguments, true, true, 1);
+    //var rest = flatten(arguments, true, true, 1);
+    var rest = _.flatten(arguments, true, 1);
     return _.filter(ary, function (value) {
       return !_.contains(rest, value);
     });
@@ -1218,7 +1194,6 @@
   };
 
   _.sortedIndex = _.sorted_idx = _.sorted_i = function(ary, obj, iteratee) {
-    // Iter 지움
     var value = iteratee(obj);
     var low = 0, high = getLength(ary);
     while (low < high) {
@@ -1425,6 +1400,8 @@
 
   var insert_datas1 = _.partial(s_exec, /\{\{\{.*?\}\}\}/g, _.escape, s_matcher.bind(null, 3, "insert_datas1")); // {{{}}}
   var insert_datas2 = _.partial(s_exec, /\{\{.*?\}\}/g, _.i, s_matcher.bind(null, 2, "insert_datas2")); // {{}}
+  var async_insert_datas1 = _.partial(async_s_exec, /\{\{\{.*?\}\}\}/g, _.escape, s_matcher.bind(null, 3, "insert_datas1")); // {{{}}}
+  var async_insert_datas2 = _.partial(async_s_exec, /\{\{.*?\}\}/g, _.i, s_matcher.bind(null, 2, "insert_datas2")); // {{}}
 
   var TAB;
   _.TAB_SIZE = function(size) {
@@ -1441,26 +1418,25 @@
     REG8 = new RegExp("^" + TABS + "\\|");
   };
   _.TAB_SIZE(2);
-
+  _._ts_storage = {};
 
   /* sync */
-  _.Template = _.T = // var names, source...
+  _.Template = _.T =
     function() { return s.apply(null, [convert_to_html, _.pipe, {}].concat(_.toArray(arguments))); };
 
-  _.Template$ = _.T$ = // source...
+  _.Template$ = _.T$ =
     function() { return s.apply(null, [convert_to_html, _.pipe, {}, '$'].concat(_.toArray(arguments))); };
 
-  _.template = _.t = // _.mr(인자들), var names, source...
+  _.template = _.t =
     function(args) {
       var f = s.apply(null, [convert_to_html, _.pipe, null].concat(_.rest(arguments)));
       return _.is_mr(args) ? f.apply(null, args) : f(args);
     };
-  _.template$ = _.t$ = // _.mr(인자들), source...
+  _.template$ = _.t$ =
     function(args) {
       var f = s.apply(null, [convert_to_html, _.pipe, null, '$'].concat(_.rest(arguments)));
       return _.is_mr(args) ? f.apply(null, args) : f(args);
     };
-
   _.String = _.S =
     function() { return s.apply(null, [_.mr, _.pipe, {}].concat(_.toArray(arguments))); };
 
@@ -1477,44 +1453,22 @@
       var f = s.apply(null, [_.mr, _.pipe, null, '$'].concat(_.rest(arguments)));
       return _.is_mr(args) ? f.apply(null, args) : f(args);
     };
-
-  _.Template.each = _.T.each = function() { // var names, source...
+  _.Template.each = _.T.each = function() {
     var template = _.T.apply(null, arguments);
 
-    // 1 - 가장 빠른
-    //return function(data) { // ary, d1, d2
-    //  return _.map(_.to_mr(arguments), function(v, k, l, a, b) {
-    //    return template.apply(null, arguments);
-    //  }).join('');
-    //};
-
-    // 2 - 코드 합치기 좋은
-    return function() { // ary, d1, d2
-      return _.pipe(_.mr(_.to_mr(arguments)),
-        _.partial(_.map, _, function() {
-          return template.apply(null, arguments);
-        }),
-        function(res) { return res.join(''); }
-      )
-    }
+    return function(data) { // ary, d1, d2
+      return _.map(_.to_mr(arguments), function(v, k, l, a, b) {
+        return template.apply(null, arguments);
+      }).join('');
+    };
   };
-
   _.template.each = _.t.each = function(data) { // _.mr(data...), var names, source...
     var args = _.rest(arguments); // [var names, source...]
 
-    // 1
-    //return _.map(data, function() {
-    //  return _.t.apply(null, [_.to_mr(arguments)].concat(args));
-    //}).join('');
-
-    // 2
-    return _.pipe(_.mr(data),
-      _.partial(_.map, _, function() { return _.t.apply(null, [_.to_mr(arguments)].concat(args)); }),
-      function(res) { return res.join(''); }
-    );
-
+    return _.map(data, function() {
+      return _.t.apply(null, [_.to_mr(arguments)].concat(args));
+    }).join('');
   };
-
   _.String.each = _.S.each = function() {
     var template = _.S.apply(null, arguments);
 
@@ -1535,16 +1489,12 @@
     );
   };
 
-
-
-
   function number_of_tab(a) {
     var snt = a.match(REG1)[0];
     var tab_length = (snt.match(/\t/g) || []).length;
     var space_length = snt.replace(/\t/g, "").length;
     return space_length / TAB_SIZE + tab_length;
   }
-
 
   function s(convert, pipe, self, var_names/*, source...*/) {
     var source = _.map(_.rest(arguments, 4), function(str_or_func) {
@@ -1553,25 +1503,16 @@
       _._ts_storage[key] = str_or_func;
       return '_._ts_storage.' + key;
     }).join("");
-
     return function(a) { // data...
-      return pipe(_.mr(source, var_names, arguments, self), remove_comment, convert, insert_datas1, insert_datas2, _.i);
+      return pipe == _.pipe ?
+        pipe(_.mr(source, var_names, arguments, self), remove_comment, convert, insert_datas1, insert_datas2, _.i) :
+        pipe(_.mr(source, var_names, arguments, self), remove_comment, convert, async_insert_datas1, async_insert_datas2, _.i);
     }
   }
 
-  _._ts_storage = {};
-
-
   /* async */
   _.async.Template = _.async.T =
-    //function() { return s.apply(null, [convert_to_html, _.async.pipe, {}].concat(_.toArray(arguments))); };
-  function() {
-    //return _.async.pipe(
-    //  _.to_mr([convert_to_html, _.async.pipe, {}].concat(_.toArray(arguments))),
-    //  s
-    //);
-  };
-
+    function() { return s.apply(null, [convert_to_html, _.async.pipe, {}].concat(_.toArray(arguments))); };
 
   _.async.Template$ = _.async.T$ =
     function() { return s.apply(null, [convert_to_html, _.async.pipe, {}, '$'].concat(_.toArray(arguments))); };
@@ -1586,7 +1527,6 @@
       var f = s.apply(null, [convert_to_html, _.async.pipe, null, '$'].concat(_.rest(arguments)));
       return _.is_mr(args) ? f.apply(null, args) : f(args);
     };
-
   _.async.String = _.async.S =
     function() { return s.apply(null, [_.mr, _.async.pipe, {}].concat(_.toArray(arguments))); };
 
@@ -1598,64 +1538,77 @@
       var f = s.apply(null, [_.mr,  _.async.pipe, null].concat(_.rest(arguments)));
       return _.is_mr(args) ? f.apply(null, args) : f(args);
     };
-
   _.async.string$ = _.async.s$ =
     function(args) {
       var f = s.apply(null, [_.mr, _.async.pipe, null, '$'].concat(_.rest(arguments)));
       return _.is_mr(args) ? f.apply(null, args) : f(args);
     };
 
-  _.async.Template.each = _.async.T.each = function() { // var names, source...
-    var template = _.async.T.apply(null, arguments);
-
-    // 1 - 가장 빠른
-    //return function(data) { // ary, d1, d2
-    //  return _.map(_.to_mr(arguments), function(v, k, l, a, b) {
-    //    return template.apply(null, arguments);
-    //  }).join('');
-    //};
-
-    //return function() { // ary, d1, d2
-    //  return _.async.pipe(_.mr(_.to_mr(arguments)),
-    //    _.partial(_.async, _, function() {
-    //      return template.apply(null, arguments);
-    //    }),
-    //    function(res) { return res.join(''); }
-    //  )
-    //}
-    // 2 - 코드 합치기 좋은
-    return function() { // ary, d1, d2
-      return _.async.pipe(_.mr(_.to_mr(arguments)),
-        _.partial(_.map, _, _.cb(function() {
-          return template.apply(null, arguments);
+  _.async.Template.each = _.async.T.each =
+    function() {
+      var template = _.async.T.apply(null, arguments);
+      return function() {
+        return _.async.pipe(_.mr(_.to_mr(arguments)),
+          _.partial(_.map, _, _.async(function() {
+            return template.apply(null, arguments);
+          })),
+          function(res) { return res.join(''); }
+        )
+      }
+    };
+  _.async.template.each = _.async.t.each =
+    function(data) {
+      var args = _.rest(arguments);
+      return _.async.pipe(_.mr(data),
+        _.partial(_.map, _, _.async(function() {
+          return _.async.t.apply(null, [_.to_mr(arguments)].concat(args));
         })),
-        function(res) { return res.join(''); }
-      )
-    }
-
-  };
-  //_.async.template.each = _.async.t.each
-  //_.async.String.each = _.async.S.each
-  //_.async.string.each = _.async.s.each
-
+        function(res) { return res.join(''); })
+    };
+  _.async.String.each = _.async.S.each =
+    function() {
+      var string = _.async.S.apply(null, arguments);
+      return function() {
+        return _.async.pipe(_.mr(_.to_mr(arguments)),
+          _.partial(_.map, _, _.async(function() {
+            return string.apply(null, arguments);
+          })),
+          function(res) { return res.join(''); }
+        )
+      }
+    };
+  _.async.string.each = _.async.s.each =
+    function(data) {
+      var args = _.rest(arguments);
+      return _.async.pipe(_.mr(data),
+        _.partial(_.map, _, _.async(function() {
+          return _.async.s.apply(null, [_.to_mr(arguments)].concat(args));
+        })),
+        function(res) { return res.join(''); })
+    };
 
   function remove_comment(source, var_names, args, self) {
     return _.mr(source.replace(/\/\*(.*?)\*\//g, "").replace(REG2, ""), var_names, args, self);
   }
+
   function s_exec(re, wrap, matcher, source, var_names, args, self) {
-    return pipe(_.mr(source.split(re), _.map(matcher(re, source, var_names, self), function(func) {
-        return pipe(func.apply(null, args), wrap, return_check);
-      })),
-      function(s, vs) { return _.mr(map(vs, function(v, i) { return s[i] + v; }).join("") + s[s.length-1], var_names, args, self); }
-    );
+    var s = source.split(re);
+    return _.mr(map(map(matcher(re, source, var_names, self), function(func) {
+      return pipe(func.apply(null, args), wrap, return_check);
+    }), function(v, i) { return s[i] + v; }).join("") + s[s.length-1], var_names, args, self);
   }
-  function s_exec(re, wrap, matcher, source, var_names, args, self) {
-    return _.async.pipe(_.mr(source.split(re), _.map(matcher(re, source, var_names, self), function(func) {
-        return _.async.pipe(func.apply(null, args), wrap, return_check);
-      })),
-      function(s, vs) { return _.mr(map(vs, function(v, i) { return s[i] + v; }).join("") + s[s.length-1], var_names, args, self); }
-    );
+
+  function async_s_exec(re, wrap, matcher, source, var_names, args, self) {
+    return _.async.pipe(
+      _.mr(source.split(re),
+        _.map(matcher(re, source, var_names, self), _.async(function(func) {
+          return _.async.pipe(func.apply(null, args), wrap, return_check);
+        }))
+      ),
+      function(s, vs) { return _.mr(map(vs, function(v, i) { return s[i] + v; }).join("") + s[s.length-1], var_names, args, self); });
   }
+
+
   function convert_to_html(source, var_names, args, self) {
     if (self && self.convert_to_html) return _.mr(self.convert_to_html, var_names, args, self);
 
