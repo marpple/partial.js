@@ -1421,57 +1421,42 @@
   _._ts_storage = {};
 
   /* sync */
-  _.Template = _.T =
-    function() { return s.apply(null, [convert_to_html, _.pipe, {}].concat(_.toArray(arguments))); };
-
-  _.Template$ = _.T$ =
-    function() { return s.apply(null, [convert_to_html, _.pipe, {}, '$'].concat(_.toArray(arguments))); };
-
-  _.template = _.t =
-    function(args) {
+  _.Template = _.T = function() { return s.apply(null, [convert_to_html, _.pipe, {}].concat(_.toArray(arguments))); };
+  _.Template$ = _.T$ = function() { return s.apply(null, [convert_to_html, _.pipe, {}, '$'].concat(_.toArray(arguments))); };
+  _.template = _.t = function(args) {
       var f = s.apply(null, [convert_to_html, _.pipe, null].concat(_.rest(arguments)));
       return _.is_mr(args) ? f.apply(null, args) : f(args);
     };
-  _.template$ = _.t$ =
-    function(args) {
+  _.template$ = _.t$ = function(args) {
       var f = s.apply(null, [convert_to_html, _.pipe, null, '$'].concat(_.rest(arguments)));
       return _.is_mr(args) ? f.apply(null, args) : f(args);
     };
-  _.String = _.S =
-    function() { return s.apply(null, [_.mr, _.pipe, {}].concat(_.toArray(arguments))); };
-
-  _.String$ = _.S$ =
-    function() { return s.apply(null, [_.mr, _.pipe, {}, '$'].concat(_.toArray(arguments))); };
-
-  _.string = _.s =
-    function(args) {
+  _.String = _.S = function() { return s.apply(null, [_.mr, _.pipe, {}].concat(_.toArray(arguments))); };
+  _.String$ = _.S$ = function() { return s.apply(null, [_.mr, _.pipe, {}, '$'].concat(_.toArray(arguments))); };
+  _.string = _.s = function(args) {
       var f = s.apply(null, [_.mr,  _.pipe, null].concat(_.rest(arguments)));
       return _.is_mr(args) ? f.apply(null, args) : f(args);
     };
-  _.string$ = _.s$ =
-    function(args) {
+  _.string$ = _.s$ = function(args) {
       var f = s.apply(null, [_.mr, _.pipe, null, '$'].concat(_.rest(arguments)));
       return _.is_mr(args) ? f.apply(null, args) : f(args);
     };
   _.Template.each = _.T.each = function() {
     var template = _.T.apply(null, arguments);
-
-    return function(data) { // ary, d1, d2
+    return function(data) {
       return _.map(_.to_mr(arguments), function(v, k, l, a, b) {
         return template.apply(null, arguments);
       }).join('');
     };
   };
-  _.template.each = _.t.each = function(data) { // _.mr(data...), var names, source...
-    var args = _.rest(arguments); // [var names, source...]
-
+  _.template.each = _.t.each = function(data) {
+    var args = _.rest(arguments);
     return _.map(data, function() {
       return _.t.apply(null, [_.to_mr(arguments)].concat(args));
     }).join('');
   };
   _.String.each = _.S.each = function() {
     var template = _.S.apply(null, arguments);
-
     return function(data) {
       return _.pipe(_.mr(_.to_mr(arguments)),
         _.partial(_.map, _, function(v, k, l, a, b) { return template.apply(null, arguments); }),
@@ -1479,71 +1464,36 @@
       )
     }
   };
-
   _.string.each = _.s.each = function(data) {
     var args = _.rest(arguments);
-
     return _.pipe(_.mr(data),
       _.partial(_.map, _, function() { return _.s.apply(null, [_.to_mr(arguments)].concat(args)); }),
       function(res) { return res.join(''); }
     );
   };
 
-  function number_of_tab(a) {
-    var snt = a.match(REG1)[0];
-    var tab_length = (snt.match(/\t/g) || []).length;
-    var space_length = snt.replace(/\t/g, "").length;
-    return space_length / TAB_SIZE + tab_length;
-  }
-
-  function s(convert, pipe, self, var_names/*, source...*/) {
-    var source = _.map(_.rest(arguments, 4), function(str_or_func) {
-      if (_.isString(str_or_func)) return str_or_func;
-      var key = _.uniqueId("func");
-      _._ts_storage[key] = str_or_func;
-      return '_._ts_storage.' + key;
-    }).join("");
-    return function(a) { // data...
-      return pipe == _.pipe ?
-        pipe(_.mr(source, var_names, arguments, self), remove_comment, convert, insert_datas1, insert_datas2, _.i) :
-        pipe(_.mr(source, var_names, arguments, self), remove_comment, convert, async_insert_datas1, async_insert_datas2, _.i);
-    }
-  }
-
   /* async */
-  _.async.Template = _.async.T =
-    function() { return s.apply(null, [convert_to_html, _.async.pipe, {}].concat(_.toArray(arguments))); };
+  _.async.Template = _.async.T = function() { return s.apply(null, [convert_to_html, _.async.pipe, {}].concat(_.toArray(arguments))); };
+  _.async.Template$ = _.async.T$ = function() { return s.apply(null, [convert_to_html, _.async.pipe, {}, '$'].concat(_.toArray(arguments))); };
+  _.async.template = _.async.t = function(args) {
+    var f = s.apply(null, [convert_to_html, _.async.pipe, null].concat(_.rest(arguments)));
+    return _.is_mr(args) ? f.apply(null, args) : f(args);
+  };
+  _.async.template$ = _.async.t$ = function(args) {
+    var f = s.apply(null, [convert_to_html, _.async.pipe, null, '$'].concat(_.rest(arguments)));
+    return _.is_mr(args) ? f.apply(null, args) : f(args);
+  };
+  _.async.String = _.async.S = function() { return s.apply(null, [_.mr, _.async.pipe, {}].concat(_.toArray(arguments))); };
+  _.async.String$ = _.async.S$ = function() { return s.apply(null, [_.mr, _.async.pipe, {}, '$'].concat(_.toArray(arguments))); };
 
-  _.async.Template$ = _.async.T$ =
-    function() { return s.apply(null, [convert_to_html, _.async.pipe, {}, '$'].concat(_.toArray(arguments))); };
-
-  _.async.template = _.async.t =
-    function(args) {
-      var f = s.apply(null, [convert_to_html, _.async.pipe, null].concat(_.rest(arguments)));
-      return _.is_mr(args) ? f.apply(null, args) : f(args);
-    };
-  _.async.template$ = _.async.t$ =
-    function(args) {
-      var f = s.apply(null, [convert_to_html, _.async.pipe, null, '$'].concat(_.rest(arguments)));
-      return _.is_mr(args) ? f.apply(null, args) : f(args);
-    };
-  _.async.String = _.async.S =
-    function() { return s.apply(null, [_.mr, _.async.pipe, {}].concat(_.toArray(arguments))); };
-
-  _.async.String$ = _.async.S$ =
-    function() { return s.apply(null, [_.mr, _.async.pipe, {}, '$'].concat(_.toArray(arguments))); };
-
-  _.async.string = _.async.s =
-    function(args) {
-      var f = s.apply(null, [_.mr,  _.async.pipe, null].concat(_.rest(arguments)));
-      return _.is_mr(args) ? f.apply(null, args) : f(args);
-    };
-  _.async.string$ = _.async.s$ =
-    function(args) {
-      var f = s.apply(null, [_.mr, _.async.pipe, null, '$'].concat(_.rest(arguments)));
-      return _.is_mr(args) ? f.apply(null, args) : f(args);
-    };
-
+  _.async.string = _.async.s = function(args) {
+    var f = s.apply(null, [_.mr,  _.async.pipe, null].concat(_.rest(arguments)));
+    return _.is_mr(args) ? f.apply(null, args) : f(args);
+  };
+  _.async.string$ = _.async.s$ = function(args) {
+    var f = s.apply(null, [_.mr, _.async.pipe, null, '$'].concat(_.rest(arguments)));
+    return _.is_mr(args) ? f.apply(null, args) : f(args);
+  };
   _.async.Template.each = _.async.T.each =
     function() {
       var template = _.async.T.apply(null, arguments);
@@ -1587,6 +1537,27 @@
         function(res) { return res.join(''); })
     };
 
+  function number_of_tab(a) {
+    var snt = a.match(REG1)[0];
+    var tab_length = (snt.match(/\t/g) || []).length;
+    var space_length = snt.replace(/\t/g, "").length;
+    return space_length / TAB_SIZE + tab_length;
+  }
+
+  function s(convert, pipe, self, var_names/*, source...*/) {
+    var source = _.map(_.rest(arguments, 4), function(str_or_func) {
+      if (_.isString(str_or_func)) return str_or_func;
+      var key = _.uniqueId("func");
+      _._ts_storage[key] = str_or_func;
+      return '_._ts_storage.' + key;
+    }).join("");
+    return function(a) { // data...
+      return pipe == _.pipe ?
+        pipe(_.mr(source, var_names, arguments, self), remove_comment, convert, insert_datas1, insert_datas2, _.i) :
+        pipe(_.mr(source, var_names, arguments, self), remove_comment, convert, async_insert_datas1, async_insert_datas2, _.i);
+    }
+  }
+
   function remove_comment(source, var_names, args, self) {
     return _.mr(source.replace(/\/\*(.*?)\*\//g, "").replace(REG2, ""), var_names, args, self);
   }
@@ -1607,7 +1578,6 @@
       ),
       function(s, vs) { return _.mr(map(vs, function(v, i) { return s[i] + v; }).join("") + s[s.length-1], var_names, args, self); });
   }
-
 
   function convert_to_html(source, var_names, args, self) {
     if (self && self.convert_to_html) return _.mr(self.convert_to_html, var_names, args, self);
