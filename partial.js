@@ -206,35 +206,6 @@
 
   _.async.pipe = function (v) { return async_pipe(void 0, v, arguments, 1); };
 
-  function _async_reduceRight(data, iteratee, memo, limiter) {
-    if (this != G) {
-      iteratee = iteratee.bind(this);
-      if (_.isFunction(limiter)) limiter = limiter.bind(this);
-    }
-
-    if (_.is_mr(data)) {
-      iteratee = Iter(iteratee, data, 3);
-      if (_.isFunction(limiter)) limiter = Iter(limiter, data, 3);
-      data = data[0];
-    }
-
-    var i = data.length, keys = _.isArrayLike(data) ? null : _.keys(data);
-    memo = (arguments.length > 2) ? memo : data[keys ? keys[--i] : --i];
-
-    if (limiter == 0 || _.isEmpty(data)) return _.async.pipe(memo);
-
-    return (function f(i, memo) {
-      if (--i == -1) return _.async.pipe(memo);
-      var args = keys ? _.mr(memo, data[keys[i]], keys[i], data) : _.mr(memo, data[i], i, data);
-
-      return _.async.pipe(args, iteratee).then(function(res) {
-        args[0] = res;
-        return (_.isFunction(limiter) ? limiter.apply(null, args) : (data.length - limiter) == i) ? res : f(i, res);
-      });
-    })(i, memo);
-  }
-
-
   function _async_reduce(data, iteratee, memo, limiter) {
     if (this != G) {
       iteratee = iteratee.bind(this);
@@ -259,6 +230,34 @@
       return _.async.pipe(args, iteratee).then(function(res) {
         args[0] = res; // iter 직후, limiter에서의 memo를 갱신시켜서 보내줘야 함
         return (_.isFunction(limiter) ? limiter.apply(null, args) : limiter == i+1) ? res : f(i, res); // f가 res를 안받아도 되나? - 한꺼풀 밖에다가
+      });
+    })(i, memo);
+  }
+
+  function _async_reduceRight(data, iteratee, memo, limiter) {
+    if (this != G) {
+      iteratee = iteratee.bind(this);
+      if (_.isFunction(limiter)) limiter = limiter.bind(this);
+    }
+
+    if (_.is_mr(data)) {
+      iteratee = Iter(iteratee, data, 3);
+      if (_.isFunction(limiter)) limiter = Iter(limiter, data, 3);
+      data = data[0];
+    }
+
+    var i = data.length, keys = _.isArrayLike(data) ? null : _.keys(data);
+    memo = (arguments.length > 2) ? memo : data[keys ? keys[--i] : --i];
+
+    if (limiter == 0 || _.isEmpty(data)) return _.async.pipe(memo);
+
+    return (function f(i, memo) {
+      if (--i == -1) return _.async.pipe(memo);
+      var args = keys ? _.mr(memo, data[keys[i]], keys[i], data) : _.mr(memo, data[i], i, data);
+
+      return _.async.pipe(args, iteratee).then(function(res) {
+        args[0] = res;
+        return (_.isFunction(limiter) ? limiter.apply(null, args) : (data.length - limiter) == i) ? res : f(i, res);
       });
     })(i, memo);
   }
@@ -1022,6 +1021,8 @@
   _.pluck = function(data, key) { return _.map(data, _(_.val, _,key))};
 
   _.max = function(data, iteratee) {
+    if (_.isEmpty(data)) return -Infinity;
+    iteratee = iteratee || _.i;
     if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 2); data = data[0]; }
     var tmp, cmp, res;
     if (_.isArrayLike(data)) {
@@ -1042,17 +1043,19 @@
   };
 
   _.min = function(data, iteratee) {
+    if (_.isEmpty(data)) return Infinity;
+    iteratee = iteratee || _.i;
     if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 2); data = data[0]; }
     var tmp, cmp, res;
     if (_.isArrayLike(data)) {
-      if (isNaN(tmp = iteratee(data[0], 0, data))) return -Infinity;
+      if (isNaN(tmp = iteratee(data[0], 0, data))) return Infinity;
       for (var i = 1, l = data.length; i < l; i++) {
         cmp = iteratee(data[i], i, data);
         if (cmp < tmp) { tmp = cmp; res = data[i]; }
       }
     } else {
       var keys = _.keys(data);
-      if (isNaN(tmp = iteratee(data[keys[0]], keys[0], data))) return -Infinity;
+      if (isNaN(tmp = iteratee(data[keys[0]], keys[0], data))) return Infinity;
       for (var i = 1, l = keys.length; i < l; i++) {
         cmp = iteratee(data[keys[i]], keys[i], data);
         if (cmp < tmp) { tmp = cmp; res = data[keys[i]]; }
@@ -1551,7 +1554,7 @@
       _._ts_storage[key] = str_or_func;
       return '_._ts_storage.' + key;
     }).join("");
-    return function(a) { // data...
+    return function(a) {
       return pipe == _.pipe ?
         pipe(_.mr(source, var_names, arguments, self), remove_comment, convert, insert_datas1, insert_datas2, _.i) :
         pipe(_.mr(source, var_names, arguments, self), remove_comment, convert, async_insert_datas1, async_insert_datas2, _.i);
