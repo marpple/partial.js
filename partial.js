@@ -1416,21 +1416,30 @@
 
   _.once = _.partial(_.before, 2);
 
-  /* if else */
-  // function IF(predicate, fn) {
-  //   var store = [fn ? [predicate, fn] : [I, predicate]];
-  //   return C.extend(IF, {
-  //     ELSEIF: function(predicate, fn) { return store.push(fn ? [predicate, fn] : [I, predicate]) && IF; },
-  //     ELSE: function(fn) { return store.push([J(true), fn]) && IF; }
-  //   });
-  //   function IF() {
-  //     var context = this, args = arguments;
-  //     return C(store, args, [
-  //       B.find(function(fnset, i, l, args) { return A(args, fnset[0], context); }),
-  //       function(fnset) { return fnset ? A(args, fnset[1], context) : void 0; }
-  //     ]);
-  //   }
-  // } F.IF = window.IF = IF;
+  _.If = function(predicate, fn) {
+    var is_async = false;
+    var store = [fn ? [ca(predicate), ca(fn)] : [I, ca(predicate)]];
+    return _.extend(If, {
+      else_if: elseIf,
+      elseIf: elseIf,
+      else: function(fn) { return store.push([_.constant(true), fn]) && If; }
+    });
+    function elseIf(predicate, fn) { return store.push(fn ? [ca(predicate), ca(fn)] : [I, ca(predicate)]) && If; }
+    function If() {
+      var context = this, args = arguments;
+      var wrap = is_async ? _.async : _.identity;
+      return (is_async ? pipec : _.async.pipec)(this, _.mr(store, args),
+        _(_.find, _, wrap(function(fnset, i, l, args) {
+          return fnset[0].apply(context, args);
+        })),
+        function(fnset) { return fnset ? fnset[1].apply(context, args) : void 0; });
+    }
+    function ca(fn) {
+      if (is_async) return fn;
+      is_async = fn._p_async || fn._p_cb;
+      return fn;
+    }
+  };
 
   // TDD
   // C.test = function(tests) {
