@@ -597,7 +597,7 @@
       var im_start = _.clone(start);
       return {
         start: im_start,
-        selected: _.reduce(selector.split(/\s*->\s*/), im_start, function(clone, key) {
+        selected: _.reduce(selector.split(/\s*->\s*/), function(clone, key) {
           return !key.match(/^\((.+)\)/) ? /*start*/(!key.match(/\[(.*)\]/) ? clone[key] = _.clone(clone[key]) : function(clone, numbers) {
             if (numbers.length > 2 || numbers.length < 1 || _.filter(numbers, [I, isNaN]).length) return ERR('[] selector in [num] or [num ~ num]');
             var s = numbers[0], e = numbers[1]; return !e ? clone[s] = _.clone(clone[s<0 ? clone.length+s : s]) : function(clone, oris) {
@@ -605,7 +605,7 @@
             }(clone, slice.call(clone, s<0 ? clone.length+s : s, e<0 ? clone.length+e : e + 1));
           }(clone, _.map(RegExp.$1.replace(/\s/g, '').split('~'), [I, parseInt])))/*end*/ :
             function(clone, ori) { return clone[clone.indexOf(ori)] = _.clone(ori); } (clone, _.find(clone, _.Lambda(RegExp.$1)))
-        })
+        }, im_start)
       };
     }, {
       set: function(start, selector, value) {
