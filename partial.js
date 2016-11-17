@@ -6,9 +6,9 @@
 // (c) 2015-2016 Marpple. MIT Licensed.
 !function(G) {
   var window = typeof window != 'object' ? G : window;
-  var ___ = window.___ = ___;
-  function __() { return __; }
+  window._ = _;
   window.__ == __;
+  window.___ = {};
 
   /* Partial */
   function _(fn) {
@@ -41,6 +41,7 @@
     while (i--) if (n_arg3[i] == _) n_arg3[i] = args2.pop();
     return args2.length ? _to_unde(n_args1, args2, n_arg3) : _to_unde(n_args1, n_arg3);
   }
+  function __() { return __; }
   _.right = function() {
     var len = --arguments.length, fn = arguments[len];
     delete arguments[len];
