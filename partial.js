@@ -6,8 +6,9 @@
 // (c) 2015-2016 Marpple. MIT Licensed.
 !function(G) {
   var window = typeof window != 'object' ? G : window;
-  window._ ? window.__ = _ : window._ = _;
   var ___ = window.___ = ___;
+  function __() { return __; }
+  window.__ == __;
 
   /* Partial */
   function _(fn) {
@@ -52,22 +53,22 @@
   _.mr = mr, _.to_mr = to_mr, _.is_mr = is_mr;
   function pipe(v) {
     var i = 0, f;
-    while (f = arguments[++i]) v = (v && v._mr) ? f.apply(undefined, v) : f(v);
+    while (f = arguments[++i]) v = (v && v._mr) ? f.apply(undefined, v) : v === __ ? f() : f(v);
     return v;
   }
   function pipec(self, v) {
     var i = 1, f;
-    while (f = arguments[++i]) v = (v && v._mr) ? f.apply(self, v) : f.call(self, v);
+    while (f = arguments[++i]) v = (v && v._mr) ? f.apply(self, v) : v === __ ? f.call(self) : f.call(self, v);
     return v;
   }
   function pipea(self, v, fs) {
     var i = 0, f;
-    while (f = fs[i++]) v = (v && v._mr) ? f.apply(self, v) : f.call(self, v);
+    while (f = fs[i++]) v = (v && v._mr) ? f.apply(self, v) : v === __ ? f.call(self) : f.call(self, v);
     return v;
   }
   function pipea2(v, fs) {
     var i = 0, f;
-    while (f = fs[i++]) v = (v && v._mr) ? f.apply(undefined, v) : f(v);
+    while (f = fs[i++]) v = (v && v._mr) ? f.apply(undefined, v) : v === __ ? f() : f(v);
     return v;
   }
   function mr() {
@@ -189,19 +190,21 @@
       do {
         if (i === args_len) return resolve ? resolve(fpro(res)) : setTimeout(function() { resolve && resolve(fpro(res)); }, 0);
         if (unpack_promise(res, c)) return;
-        if (!args[i]._p_cb && !args[i]._p_jcb) res = is_mr(res) ? _.Lambda(args[i++]).apply(self, res) : _.Lambda(args[i++]).call(self, res);
+        if (!args[i]._p_cb && !args[i]._p_jcb) res = is_mr(res) ? _.Lambda(args[i++]).apply(self, res) : res === __ ?
+          _.Lambda(args[i++]).call(self) : _.Lambda(args[i++]).call(self, res);
         else if (!args[i]._p_cb) is_mr(res) ?
-          _.Lambda(args[i++]).apply(self, (res[res.length++] = function() { res = to_mr(arguments); }) && res) :
-          _.Lambda(args[i++]).call(self, res, function() { res = to_mr(arguments); });
+          _.Lambda(args[i++]).apply(self, (res[res.length++] = function() { res = to_mr(arguments); }) && res) : res === __ ?
+            _.Lambda(args[i++]).call(self, function() { res = to_mr(arguments); }) :
+            _.Lambda(args[i++]).call(self, res, function() { res = to_mr(arguments); });
       } while (i == args_len || i < args_len && !args[i]._p_cb);
       if (unpack_promise(res, c)) return;
       is_mr(res) ?
-        _.Lambda(args[i++]).apply(self, (res[res.length++] = function() { c(to_mr(arguments)); }) && res) :
-        _.Lambda(args[i++]).call(self, res, function() { c(to_mr(arguments)); });
+        _.Lambda(args[i++]).apply(self, (res[res.length++] = function() { c(to_mr(arguments)); }) && res) : res === __ ?
+          _.Lambda(args[i++]).call(self, function() { c(to_mr(arguments)); }) :
+          _.Lambda(args[i++]).call(self, res, function() { c(to_mr(arguments)); });
     })(v);
     return promise;
   }
-
   function fpro(res) { return is_mr(res) && res.length == 1 ? res[0] : res; }
 
   _.async.pipe = function (v) { return async_pipe(void 0, v, arguments, 1); };
