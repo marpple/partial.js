@@ -1329,7 +1329,6 @@
 
   _.defer = _.partial(_.delay, _, 1);
 
-
   var now = Date.now || function () { return new Date().getTime(); }; // throttle, debounce
 
   _.throttle = function (func, wait, options) {
