@@ -599,11 +599,11 @@
         start: im_start,
         selected: _.reduce(selector.split(/\s*->\s*/), function(clone, key) {
           return !key.match(/^\((.+)\)/) ? /*start*/(!key.match(/\[(.*)\]/) ? clone[key] = _.clone(clone[key]) : function(clone, numbers) {
-            if (numbers.length > 2 || numbers.length < 1 || _.filter(numbers, [I, isNaN]).length) return ERR('[] selector in [num] or [num ~ num]');
+            if (numbers.length > 2 || numbers.length < 1 || _.filter(numbers, [_identity, isNaN]).length) return ERR('[] selector in [num] or [num ~ num]');
             var s = numbers[0], e = numbers[1]; return !e ? clone[s] = _.clone(clone[s<0 ? clone.length+s : s]) : function(clone, oris) {
               return each(oris, function(ori) { clone[clone.indexOf(ori)] = _.clone(ori); });
             }(clone, slice.call(clone, s<0 ? clone.length+s : s, e<0 ? clone.length+e : e + 1));
-          }(clone, _.map(RegExp.$1.replace(/\s/g, '').split('~'), [I, parseInt])))/*end*/ :
+          }(clone, _.map(RegExp.$1.replace(/\s/g, '').split('~'), [_identity, parseInt])))/*end*/ :
             function(clone, ori) { return clone[clone.indexOf(ori)] = _.clone(ori); } (clone, _.find(clone, _.Lambda(RegExp.$1)))
         }, im_start)
       };
@@ -1428,7 +1428,7 @@
       elseIf: elseIf,
       else: function(fn) { return store.push([_.constant(true), fn]) && If; }
     });
-    function elseIf(predicate, fn) { return store.push(fn ? [ca(predicate), ca(fn)] : [I, ca(predicate)]) && If; }
+    function elseIf(predicate, fn) { return store.push(fn ? [ca(predicate), ca(fn)] : [_.identity, ca(predicate)]) && If; }
     function If() {
       var context = this, args = arguments;
       var wrap = is_async ? _.async : _.identity;
