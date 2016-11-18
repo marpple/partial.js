@@ -1434,9 +1434,7 @@
       var wrap = is_async ? _.async : _.identity;
       var pipec = is_async ? pipec : _.async.pipec;
       return pipec(this, store,
-        _(_.find, _, wrap(function(fnset) {
-          return fnset[0].apply(context, args);
-        })),
+        _(_.find, _, wrap(function(fnset) { return fnset[0].apply(context, args); })),
         function(fnset) { return fnset ? fnset[1].apply(context, args) : void 0; });
     }
     function ca(fn) {
