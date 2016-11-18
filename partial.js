@@ -2,7 +2,7 @@
 // History - lmn.js -> lego.js -> L.js -> abc.js -> Partial.js
 // Project Lead - Indong Yoo
 // Maintainers - Piljung Park, Hanah Choi
-// Contributors - Joeun Ha, Byeongjin Kim, Hoonil Kim
+// Contributors - _.constantoeun Ha, Byeongjin Kim, Hoonil Kim
 // (c) 2015-2016 Marpple. MIT Licensed.
 !function(G) {
   var window = typeof window != 'object' ? G : window;
@@ -97,7 +97,7 @@
 
   // _.Tap = function() {
     // var fns = C.toArray(arguments);
-    // return function() { return A(arguments, fns.concat([J(arguments), to_mr]), this); };
+    // return function() { return A(arguments, fns.concat([_.constant(arguments), to_mr]), this); };
   // };
 
   _.Tap = function(func) {
@@ -533,7 +533,7 @@
     return new_arr;
   }
   _.flatten = function (arr, noDeep, start) { return flat([], arr, noDeep, start); };
-  _.method = function(obj, method) { return obj[method].apply(obj, _.rest(arguments, 2)); };
+  _.m = _.method = function(obj, method) { return obj[method].apply(obj, _.rest(arguments, 2)); };
 
   /* mutable */
   _.set = function(obj, key, valueOrFunc) {
@@ -1422,7 +1422,7 @@
 
   _.If = function(predicate, fn) {
     var is_async = false;
-    var store = [fn ? [ca(predicate), ca(fn)] : [I, ca(predicate)]];
+    var store = [fn ? [ca(predicate), ca(fn)] : [_.identity, ca(predicate)]];
     return _.extend(If, {
       else_if: elseIf,
       elseIf: elseIf,
@@ -1432,8 +1432,9 @@
     function If() {
       var context = this, args = arguments;
       var wrap = is_async ? _.async : _.identity;
-      return (is_async ? pipec : _.async.pipec)(this, _.mr(store, args),
-        _(_.find, _, wrap(function(fnset, i, l, args) {
+      var pipec = is_async ? pipec : _.async.pipec;
+      return pipec(this, store,
+        _(_.find, _, wrap(function(fnset) {
           return fnset[0].apply(context, args);
         })),
         function(fnset) { return fnset ? fnset[1].apply(context, args) : void 0; });
@@ -1446,19 +1447,19 @@
   };
 
   // TDD
-  // C.test = function(tests) {
-  //   var fails = J([]), all = J([]), fna = J([fails(), all()]);
-  //   return C([J('------------Start------------'), C.log, J(tests),
-  //     B.map(function(f, k) {
-  //       return IF([all, B.m('push', k + ' ----> success')])
-  //         .ELSE([fna, B.map([I, B.m('push', k + ' ----> fail')])])(f());
-  //     }),
-  //     J('------------Fail-------------'), C.log,
-  //     fails, B.each([I, C.error]),
-  //     J('------------All--------------'), C.log,
-  //     all, B.each([I, C.log]),
-  //     J('------------End--------------'), C.log]);
-  // };
+  _.test = function() {
+    var fails = _.constant([]), all = _.constant([]), fna = _.constant([fails(), all()]);
+    return _.async.pipe([_.constant('------------Start------------'), _.log, _.constant(arguments),
+      _(_.map, _, function(f, k) {
+        return _.If(_.async(all, _(_.m, _, 'push', k + ' ----> success')))
+          .else(_.async(fna, _(_.map, _, _.async(_.identity, _(_.m, _, 'push', k + ' ----> fail')))))(f());
+      }),
+      _.constant('------------Fail-------------'), _.log,
+      fails, _(_.each, _, _.async(_.identity, _.error)),
+      _.constant('------------All--------------'), _.log,
+      all, _(_.each, _, _.async(_.identity, _.log)),
+      _.constant('------------End--------------'), _.log]);
+  };
 
   /*
   * 템플릿 시작
