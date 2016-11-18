@@ -1282,7 +1282,7 @@
     function If() {
       var context = this, args = arguments;
       var wrap = is_async ? _.async : _.identity;
-      var pipec = is_async ? pipec : _.async.pipec;
+      var pipec = is_async ? _.async.pipec : _.pipec;
       return pipec(this, store,
         _(_.find, _, wrap(function(fnset) { return fnset[0].apply(context, args); })),
         function(fnset) { return fnset ? fnset[1].apply(context, args) : void 0; });
