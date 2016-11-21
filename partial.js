@@ -823,11 +823,9 @@
   };
 
   _.every = function(data, predicate) {
+    predicate = predicate || _.i;
     if (predicate._p_async || predicate._p_cb) return _async_every.apply(null, arguments);
-
-    if (this != _ && this != G) {
-      predicate = predicate.bind(this);
-    }
+    if (this != _ && this != G) { predicate = predicate.bind(this); }
 
     if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
     if (_.isArrayLike(data)) {
@@ -841,11 +839,9 @@
   };
 
   _.some = function(data, predicate) {
+    predicate = predicate || _.i;
     if (predicate._p_async || predicate._p_cb) return _async_some.apply(null, arguments);
-
-    if (this != _ && this != G) {
-      predicate = predicate.bind(this);
-    }
+    if (this != _ && this != G) { predicate = predicate.bind(this); }
 
     if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
     if (_.isArrayLike(data)) {
