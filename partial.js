@@ -374,7 +374,8 @@
   _.noop = function() {};
   _.this = function() { return this; };
   _.i = _.identity = function(v) { return v; };
-  _.args0 = _.identity;
+  _.args = function() { return arguments; },
+    _.args0 = _.identity;
   _.args1 = function() { return arguments[1]; };
   _.args2 = function() { return arguments[2]; };
   _.args3 = function() { return arguments[3]; };
@@ -1153,14 +1154,21 @@
 
   _.spread = function(args) {
     var fns = _.rest(arguments, 1), res = [], tmp;
-    for (var i = 0, fl = fns.length, al = args.length; i < fl && i < al; i++) {
-      tmp = _.is_mr(args[i]) ? (fns[i] || _.i).apply(null, args[i]) : (fns[i] || _.i)(args[i]);
+    for (var i = 0, fl = fns.length, al = args.length; i < fl || i < al; i++) {
+      tmp = _.is_mr(args[i]) ? (fns[i] || _.i).apply(null, args[i]) : (fns[i] || _.i).call(null, args[i]);
       if (_.is_mr(tmp))
         for (var j = 0, l = tmp.length; j < l; j++) res.push(tmp[j]);
       else
         res.push(tmp);
     }
     return _.to_mr(res);
+  };
+
+  _.Spread = function() {
+    var fns = _.toArray(arguments);
+    return function() {
+      return _.spread.apply(this, [_.to_mr(arguments)].concat(fns));
+    }
   };
 
   /* Functions */
