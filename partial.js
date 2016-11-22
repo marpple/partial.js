@@ -1796,7 +1796,9 @@
       return (is_init_cache || !_cache_val) ? (_box_cache[selector] = _data) : _cache_val;
     }
     function make_selector(el) {
-      return _.isString(el) ? el : (_.isArrayLike(el) ? el[0] : el).getAttribute('box_selector');
+      return _.isString(el) ? el : _.isArray(el) ? map(el, function(val) {
+        return (_.isString(val) ? val : (_.isArrayLike(val) ? val[0] : val).getAttribute('box_selector'));
+      }).join('->') : (_.isArrayLike(el) ? el[0] : el).getAttribute('box_selector');
     }
   };
 
