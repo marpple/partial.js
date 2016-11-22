@@ -108,8 +108,8 @@
   function ithis(self, args) { return { parent: self, args: args }; }
 
   // _.Tap = function() {
-    // var fns = C.toArray(arguments);
-    // return function() { return A(arguments, fns.concat([_.constant(arguments), to_mr]), this); };
+  // var fns = C.toArray(arguments);
+  // return function() { return A(arguments, fns.concat([_.constant(arguments), to_mr]), this); };
   // };
 
   _.Tap = function(func) {
@@ -207,14 +207,14 @@
           _.Lambda(args[i++]).call(self) : _.Lambda(args[i++]).call(self, res);
         else if (!args[i]._p_cb) is_mr(res) ?
           _.Lambda(args[i++]).apply(self, (res[res.length++] = function() { res = to_mr(arguments); }) && res) : res === __ ?
-            _.Lambda(args[i++]).call(self, function() { res = to_mr(arguments); }) :
-            _.Lambda(args[i++]).call(self, res, function() { res = to_mr(arguments); });
+          _.Lambda(args[i++]).call(self, function() { res = to_mr(arguments); }) :
+          _.Lambda(args[i++]).call(self, res, function() { res = to_mr(arguments); });
       } while (i == args_len || i < args_len && !args[i]._p_cb);
       if (unpack_promise(res, c)) return;
       is_mr(res) ?
         _.Lambda(args[i++]).apply(self, (res[res.length++] = function() { c(to_mr(arguments)); }) && res) : res === __ ?
-          _.Lambda(args[i++]).call(self, function() { c(to_mr(arguments)); }) :
-          _.Lambda(args[i++]).call(self, res, function() { c(to_mr(arguments)); });
+        _.Lambda(args[i++]).call(self, function() { c(to_mr(arguments)); }) :
+        _.Lambda(args[i++]).call(self, res, function() { c(to_mr(arguments)); });
     })(v);
     return promise;
   }
@@ -401,6 +401,7 @@
       return (obj = obj[keys[i]]) ? li == i ? obj : v(obj, i + 1, keys, li) : li == i ? obj : void 0;
     })(obj, 0, keys = key.split('.'), keys.length - 1);
   };
+  _.property = function(key) { return _(_.val, _, key); };
 
   // <respect _>
   each(['Arguments', 'Function', 'String', 'Number', 'Date', 'RegExp', 'Error'], function(name) {
@@ -1308,8 +1309,8 @@
   };
 
   /*
-  * 템플릿 시작
-  * */
+   * 템플릿 시작
+   * */
   var TAB_SIZE;
   var REG1, REG2, REG3, REG4 = {}, REG5, REG6, REG7, REG8;
   function s_matcher(length, key, re, source, var_names, self) {
@@ -1348,23 +1349,23 @@
   _.Template = _.T = function() { return s.apply(null, [convert_to_html, _.pipe, {}].concat(_.toArray(arguments))); };
   _.Template$ = _.T$ = function() { return s.apply(null, [convert_to_html, _.pipe, {}, '$'].concat(_.toArray(arguments))); };
   _.template = _.t = function(args) {
-      var f = s.apply(null, [convert_to_html, _.pipe, null].concat(_.rest(arguments)));
-      return _.is_mr(args) ? f.apply(null, args) : f(args);
-    };
+    var f = s.apply(null, [convert_to_html, _.pipe, null].concat(_.rest(arguments)));
+    return _.is_mr(args) ? f.apply(null, args) : f(args);
+  };
   _.template$ = _.t$ = function(args) {
-      var f = s.apply(null, [convert_to_html, _.pipe, null, '$'].concat(_.rest(arguments)));
-      return _.is_mr(args) ? f.apply(null, args) : f(args);
-    };
+    var f = s.apply(null, [convert_to_html, _.pipe, null, '$'].concat(_.rest(arguments)));
+    return _.is_mr(args) ? f.apply(null, args) : f(args);
+  };
   _.String = _.S = function() { return s.apply(null, [_.mr, _.pipe, {}].concat(_.toArray(arguments))); };
   _.String$ = _.S$ = function() { return s.apply(null, [_.mr, _.pipe, {}, '$'].concat(_.toArray(arguments))); };
   _.string = _.s = function(args) {
-      var f = s.apply(null, [_.mr,  _.pipe, null].concat(_.rest(arguments)));
-      return _.is_mr(args) ? f.apply(null, args) : f(args);
-    };
+    var f = s.apply(null, [_.mr,  _.pipe, null].concat(_.rest(arguments)));
+    return _.is_mr(args) ? f.apply(null, args) : f(args);
+  };
   _.string$ = _.s$ = function(args) {
-      var f = s.apply(null, [_.mr, _.pipe, null, '$'].concat(_.rest(arguments)));
-      return _.is_mr(args) ? f.apply(null, args) : f(args);
-    };
+    var f = s.apply(null, [_.mr, _.pipe, null, '$'].concat(_.rest(arguments)));
+    return _.is_mr(args) ? f.apply(null, args) : f(args);
+  };
   _.Template.each = _.T.each = function() {
     var template = _.T.apply(null, arguments);
     return function(data) {
@@ -1489,8 +1490,8 @@
   function s_exec(re, wrap, matcher, source, var_names, args, self) {
     var s = source.split(re);
     return _.mr(map(map(matcher(re, source, var_names, self), function(func) {
-      return pipe(func.apply(null, args), wrap, return_check);
-    }), function(v, i) { return s[i] + v; }).join("") + s[s.length-1], var_names, args, self);
+        return pipe(func.apply(null, args), wrap, return_check);
+      }), function(v, i) { return s[i] + v; }).join("") + s[s.length-1], var_names, args, self);
   }
 
   function async_s_exec(re, wrap, matcher, source, var_names, args, self) {
@@ -1569,8 +1570,8 @@
   function end_tag(tag) { return '</' + tag + '>'; }
   function return_check(val) { return (val == null || val == void 0) ? '' : val; }
   /*
-  * 템플릿 끝
-  * */
+   * 템플릿 끝
+   * */
   /* mutable */
   function _set(obj, key, valueOrFunc) {
     if (!_.isFunction(valueOrFunc)) return _.mr(obj[key] = valueOrFunc, key, obj);
