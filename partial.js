@@ -6,7 +6,7 @@
 // (c) 2015-2016 Marpple. MIT Licensed.
 !function(G) {
   var window = typeof window != 'object' ? G : window;
-  window._ = _;
+  window._p = window._ = _;
   window.__ == __;
   window.___ = {};
 
