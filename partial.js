@@ -48,6 +48,8 @@
     return fn.apply(this == _ ? null : this, arguments);
   };
   _.righta = function(args, fn) { return fn.apply(this == _ ? null : this, args); };
+  var bind = Function.prototype.bind;
+  _.bind = function(func) { return bind.apply(func, _.rest(arguments)); };
 
   /* Pipeline */
   _.pipe = pipe, _.pipec = pipec, _.pipea = pipea, _.pipea2 = pipea2;
