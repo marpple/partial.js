@@ -1855,4 +1855,4 @@
       }));
     }
   }(_, {});
-}(typeof global == 'object' && global.global == global && (global.G = global) || window);
+}(typeof global == 'object' && global.global == global && (global.G = global) || (window.G = window));
