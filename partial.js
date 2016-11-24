@@ -413,6 +413,7 @@
     var type = typeof obj;
     return type === 'function' || type === 'object' && !!obj;
   };
+  _.isUndefined = function(v) { return v === undefined; };
   _.has = function(obj, key) {
     return obj != null && obj.hasOwnProperty(key);
   };
