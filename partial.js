@@ -6,7 +6,7 @@
 // (c) 2015-2016 Marpple. MIT Licensed.
 !function(G) {
   var window = typeof window != 'object' ? G : window;
-  window._ = _;
+  window._p = window._ = _;
   window.__ == __;
   window.___ = {};
 
@@ -48,6 +48,8 @@
     return fn.apply(this == _ ? null : this, arguments);
   };
   _.righta = function(args, fn) { return fn.apply(this == _ ? null : this, args); };
+  var bind = Function.prototype.bind;
+  _.bind = function(func) { return bind.apply(func, _.rest(arguments)); };
 
   /* Pipeline */
   _.pipe = pipe, _.pipec = pipec, _.pipea = pipea, _.pipea2 = pipea2;
@@ -106,8 +108,8 @@
   function ithis(self, args) { return { parent: self, args: args }; }
 
   // _.Tap = function() {
-    // var fns = C.toArray(arguments);
-    // return function() { return A(arguments, fns.concat([_.constant(arguments), to_mr]), this); };
+  // var fns = C.toArray(arguments);
+  // return function() { return A(arguments, fns.concat([_.constant(arguments), to_mr]), this); };
   // };
 
   _.Tap = function(func) {
@@ -205,14 +207,14 @@
           _.Lambda(args[i++]).call(self) : _.Lambda(args[i++]).call(self, res);
         else if (!args[i]._p_cb) is_mr(res) ?
           _.Lambda(args[i++]).apply(self, (res[res.length++] = function() { res = to_mr(arguments); }) && res) : res === __ ?
-            _.Lambda(args[i++]).call(self, function() { res = to_mr(arguments); }) :
-            _.Lambda(args[i++]).call(self, res, function() { res = to_mr(arguments); });
+          _.Lambda(args[i++]).call(self, function() { res = to_mr(arguments); }) :
+          _.Lambda(args[i++]).call(self, res, function() { res = to_mr(arguments); });
       } while (i == args_len || i < args_len && !args[i]._p_cb);
       if (unpack_promise(res, c)) return;
       is_mr(res) ?
         _.Lambda(args[i++]).apply(self, (res[res.length++] = function() { c(to_mr(arguments)); }) && res) : res === __ ?
-          _.Lambda(args[i++]).call(self, function() { c(to_mr(arguments)); }) :
-          _.Lambda(args[i++]).call(self, res, function() { c(to_mr(arguments)); });
+        _.Lambda(args[i++]).call(self, function() { c(to_mr(arguments)); }) :
+        _.Lambda(args[i++]).call(self, res, function() { c(to_mr(arguments)); });
     })(v);
     return promise;
   }
@@ -372,7 +374,8 @@
   _.noop = function() {};
   _.this = function() { return this; };
   _.i = _.identity = function(v) { return v; };
-  _.args0 = _.identity;
+  _.args = function() { return arguments; },
+    _.args0 = _.identity;
   _.args1 = function() { return arguments[1]; };
   _.args2 = function() { return arguments[2]; };
   _.args3 = function() { return arguments[3]; };
@@ -399,6 +402,7 @@
       return (obj = obj[keys[i]]) ? li == i ? obj : v(obj, i + 1, keys, li) : li == i ? obj : void 0;
     })(obj, 0, keys = key.split('.'), keys.length - 1);
   };
+  _.property = function(key) { return _(_.val, _, key); };
 
   // <respect _>
   each(['Arguments', 'Function', 'String', 'Number', 'Date', 'RegExp', 'Error'], function(name) {
@@ -1150,14 +1154,21 @@
 
   _.spread = function(args) {
     var fns = _.rest(arguments, 1), res = [], tmp;
-    for (var i = 0, fl = fns.length, al = args.length; i < fl && i < al; i++) {
-      tmp = _.is_mr(args[i]) ? (fns[i] || _.i).apply(null, args[i]) : (fns[i] || _.i)(args[i]);
+    for (var i = 0, fl = fns.length, al = args.length; i < fl || i < al; i++) {
+      tmp = _.is_mr(args[i]) ? (fns[i] || _.i).apply(null, args[i]) : (fns[i] || _.i).call(null, args[i]);
       if (_.is_mr(tmp))
         for (var j = 0, l = tmp.length; j < l; j++) res.push(tmp[j]);
       else
         res.push(tmp);
     }
     return _.to_mr(res);
+  };
+
+  _.Spread = function() {
+    var fns = _.toArray(arguments);
+    return function() {
+      return _.spread.apply(this, [_.to_mr(arguments)].concat(fns));
+    }
   };
 
   /* Functions */
@@ -1306,8 +1317,8 @@
   };
 
   /*
-  * 템플릿 시작
-  * */
+   * 템플릿 시작
+   * */
   var TAB_SIZE;
   var REG1, REG2, REG3, REG4 = {}, REG5, REG6, REG7, REG8;
   function s_matcher(length, key, re, source, var_names, self) {
@@ -1346,23 +1357,23 @@
   _.Template = _.T = function() { return s.apply(null, [convert_to_html, _.pipe, {}].concat(_.toArray(arguments))); };
   _.Template$ = _.T$ = function() { return s.apply(null, [convert_to_html, _.pipe, {}, '$'].concat(_.toArray(arguments))); };
   _.template = _.t = function(args) {
-      var f = s.apply(null, [convert_to_html, _.pipe, null].concat(_.rest(arguments)));
-      return _.is_mr(args) ? f.apply(null, args) : f(args);
-    };
+    var f = s.apply(null, [convert_to_html, _.pipe, null].concat(_.rest(arguments)));
+    return _.is_mr(args) ? f.apply(null, args) : f(args);
+  };
   _.template$ = _.t$ = function(args) {
-      var f = s.apply(null, [convert_to_html, _.pipe, null, '$'].concat(_.rest(arguments)));
-      return _.is_mr(args) ? f.apply(null, args) : f(args);
-    };
+    var f = s.apply(null, [convert_to_html, _.pipe, null, '$'].concat(_.rest(arguments)));
+    return _.is_mr(args) ? f.apply(null, args) : f(args);
+  };
   _.String = _.S = function() { return s.apply(null, [_.mr, _.pipe, {}].concat(_.toArray(arguments))); };
   _.String$ = _.S$ = function() { return s.apply(null, [_.mr, _.pipe, {}, '$'].concat(_.toArray(arguments))); };
   _.string = _.s = function(args) {
-      var f = s.apply(null, [_.mr,  _.pipe, null].concat(_.rest(arguments)));
-      return _.is_mr(args) ? f.apply(null, args) : f(args);
-    };
+    var f = s.apply(null, [_.mr,  _.pipe, null].concat(_.rest(arguments)));
+    return _.is_mr(args) ? f.apply(null, args) : f(args);
+  };
   _.string$ = _.s$ = function(args) {
-      var f = s.apply(null, [_.mr, _.pipe, null, '$'].concat(_.rest(arguments)));
-      return _.is_mr(args) ? f.apply(null, args) : f(args);
-    };
+    var f = s.apply(null, [_.mr, _.pipe, null, '$'].concat(_.rest(arguments)));
+    return _.is_mr(args) ? f.apply(null, args) : f(args);
+  };
   _.Template.each = _.T.each = function() {
     var template = _.T.apply(null, arguments);
     return function(data) {
@@ -1487,8 +1498,8 @@
   function s_exec(re, wrap, matcher, source, var_names, args, self) {
     var s = source.split(re);
     return _.mr(map(map(matcher(re, source, var_names, self), function(func) {
-      return pipe(func.apply(null, args), wrap, return_check);
-    }), function(v, i) { return s[i] + v; }).join("") + s[s.length-1], var_names, args, self);
+        return pipe(func.apply(null, args), wrap, return_check);
+      }), function(v, i) { return s[i] + v; }).join("") + s[s.length-1], var_names, args, self);
   }
 
   function async_s_exec(re, wrap, matcher, source, var_names, args, self) {
@@ -1567,8 +1578,8 @@
   function end_tag(tag) { return '</' + tag + '>'; }
   function return_check(val) { return (val == null || val == void 0) ? '' : val; }
   /*
-  * 템플릿 끝
-  * */
+   * 템플릿 끝
+   * */
   /* mutable */
   function _set(obj, key, valueOrFunc) {
     if (!_.isFunction(valueOrFunc)) return _.mr(obj[key] = valueOrFunc, key, obj);
@@ -1794,7 +1805,9 @@
       return (is_init_cache || !_cache_val) ? (_box_cache[selector] = _data) : _cache_val;
     }
     function make_selector(el) {
-      return _.isString(el) ? el : (_.isArrayLike(el) ? el[0] : el).getAttribute('box_selector');
+      return _.isString(el) ? el : _.isArray(el) ? map(el, function(val) {
+        return (_.isString(val) ? val : (_.isArrayLike(val) ? val[0] : val).getAttribute('box_selector'));
+      }).join('->') : (_.isArrayLike(el) ? el[0] : el).getAttribute('box_selector');
     }
   };
 
