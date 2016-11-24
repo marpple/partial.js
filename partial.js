@@ -389,7 +389,7 @@
   _.nnot = function(v) { return !!v; };
   _.log = window.console && window.console.log ? console.log.bind ? console.log.bind(console) : function() { console.log.apply(console, arguments); } : _.i;
   _.loge = window.console && window.console.error ? console.error.bind ? console.error.bind(console) : function() { console.error.apply(console, arguments); } : _.i;
-  _.Hi = _.Tap(_.log);
+  _.hi = _.Tap(_.log);
 
   _.f = function(nodes) {
     var f = _.val(G, nodes);
