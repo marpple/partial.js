@@ -49,7 +49,12 @@
   };
   _.righta = function(args, fn) { return fn.apply(this == _ ? null : this, args); };
   var bind = Function.prototype.bind;
-  _.bind = function(func) { return bind.apply(func, _.rest(arguments)); };
+  _.bind = function(fn) {
+    var f = bind.apply(fn, _.rest(arguments));
+    f._p_async = fn._p_async;
+    f._p_cb = fn._p_cb;
+    return f;
+  };
 
   /* Pipeline */
   _.pipe = pipe, _.pipec = pipec, _.pipea = pipea, _.pipea2 = pipea2;
@@ -223,8 +228,8 @@
   _.async.pipe = function (v) { return async_pipe(void 0, v, arguments, 1); };
 
   function _async_reduce(data, iteratee, memo, limiter) {
-    if (this != G) {
-      iteratee = iteratee.bind(this);
+    if (this != G && this != _) {
+      iteratee = _.bind(iteratee, this);
       if (_.isFunction(limiter)) limiter = limiter.bind(this);
     }
 
@@ -252,7 +257,7 @@
 
   function _async_reduceRight(data, iteratee, memo, limiter) {
     if (this != G) {
-      iteratee = iteratee.bind(this);
+      iteratee = _.bind(iteratee, this);
       if (_.isFunction(limiter)) limiter = limiter.bind(this);
     }
 
@@ -574,7 +579,7 @@
     if (iteratee._p_async || iteratee._p_cb) return _async_each.apply(null, arguments);
 
     if (this != _ && this != G) {
-      iteratee = iteratee.bind(this);
+      iteratee = _.bind(iteratee, this);
       if (_.isFunction(limiter)) limiter = limiter.bind(this);
     }
 
@@ -611,7 +616,7 @@
     if (iteratee._p_async || iteratee._p_cb) return _async_map.apply(null, arguments);
 
     if (this != _ && this != G) {
-      iteratee = iteratee.bind(this);
+      iteratee = _.bind(iteratee, this);
       if (_.isFunction(limiter)) limiter = limiter.bind(this);
     }
 
@@ -648,7 +653,7 @@
     if (iteratee._p_async || iteratee._p_cb) return _async_reduce.apply(this, arguments);
 
     if (this != _ && this != G) {
-      iteratee = iteratee.bind(this);
+      iteratee = _.bind(iteratee, this);
       if (_.isFunction(limiter)) limiter = limiter.bind(this);
     }
 
@@ -685,7 +690,7 @@
     if (iteratee._p_async || iteratee._p_cb) return _async_reduceRight.apply(this, arguments);
 
     if (this != _ && this != G) {
-      iteratee = iteratee.bind(this);
+      iteratee = _.bind(iteratee, this);
       if (_.isFunction(limiter)) limiter = limiter.bind(this);
     }
 
@@ -722,7 +727,7 @@
     if (predicate._p_async || predicate._p_cb) return _async_find.apply(null, arguments);
 
     if (this != _ && this != G) {
-      predicate = predicate.bind(this);
+      predicate = _.bind(predicate, this);
     }
 
     if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
@@ -740,7 +745,7 @@
     if (predicate._p_async || predicate._p_cb) return _async_filter.apply(null, arguments);
 
     if (this != _ && this != G) {
-      predicate = predicate.bind(this);
+      predicate = _.bind(predicate, this);
       if (_.isFunction(limiter)) limiter = limiter.bind(this);
     }
 
@@ -791,7 +796,7 @@
     if (predicate._p_async || predicate._p_cb) return _async_reject.apply(null, arguments);
 
     if (this != _ && this != G) {
-      predicate = predicate.bind(this);
+      predicate = _.bind(predicate, this);
       if (_.isFunction(limiter)) limiter = limiter.bind(this);
     }
 
@@ -836,7 +841,7 @@
   _.every = function(data, predicate) {
     predicate = predicate || _.i;
     if (predicate._p_async || predicate._p_cb) return _async_every.apply(null, arguments);
-    if (this != _ && this != G) { predicate = predicate.bind(this); }
+    if (this != _ && this != G) { predicate = _.bind(predicate, this); }
 
     if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
     if (_.isArrayLike(data)) {
@@ -852,7 +857,7 @@
   _.some = function(data, predicate) {
     predicate = predicate || _.i;
     if (predicate._p_async || predicate._p_cb) return _async_some.apply(null, arguments);
-    if (this != _ && this != G) { predicate = predicate.bind(this); }
+    if (this != _ && this != G) { predicate = _.bind(predicate, this); }
 
     if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
     if (_.isArrayLike(data)) {
