@@ -380,16 +380,16 @@
   _.this = function() { return this; };
   _.i = _.identity = function(v) { return v; };
   _.args = function() { return arguments; },
-    _.args0 = _.identity;
+  _.args0 = _.identity;
   _.args1 = function() { return arguments[1]; };
   _.args2 = function() { return arguments[2]; };
   _.args3 = function() { return arguments[3]; };
   _.args4 = function() { return arguments[4]; };
   _.args5 = function() { return arguments[5]; };
-  _.Always = _.always = _.constant = function(v) { return function() { return v; }; };
-  _.true = _.Always(true);
-  _.false = _.Always(false);
-  _.null = _.Always(null);
+  _.always = _.constant = function(v) { return function() { return v; }; };
+  _.true = _.constant(true);
+  _.false = _.constant(false);
+  _.null = _.constant(null);
   _.not = function(v) { return !v; };
   _.nnot = function(v) { return !!v; };
   _.log = window.console && window.console.log ? console.log.bind ? console.log.bind(console) : function() { console.log.apply(console, arguments); } : _.i;
