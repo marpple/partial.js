@@ -493,7 +493,13 @@
     return true;
   };
 
-  _.is_empty = _.isEmpty = function(obj) { return !(obj && obj.length) };
+  //_.is_empty = _.isEmpty = function(obj) { return !(obj && obj.length) };
+  _.isEmpty = function (obj) {
+    if (obj == null) return true;
+    if (_.isArrayLike(obj) && (_.isArray(obj) || _.isString(obj) || _.isArguments(obj))) return obj.length === 0;
+    return _.keys(obj).length === 0;
+  };
+
   _.is_arguments = _.isArguments = function(obj) { return !!(obj && obj.callee) };
   _.is_element = _.isElement = function(obj) { return !!(obj && obj.nodeType === 1) };
   _.is_equal = _.isEqual = function(a, b) {
