@@ -1494,7 +1494,7 @@
       if (_.isString(str_or_func)) return str_or_func;
       var key = _.uniqueId("func");
       _._ts_storage[key] = str_or_func;
-      return '_._ts_storage.' + key;
+      return '_p._ts_storage.' + key;
     }).join("");
     return function(a) {
       return pipe == _.pipe ?
