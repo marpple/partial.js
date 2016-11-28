@@ -380,7 +380,7 @@
   _.this = function() { return this; };
   _.i = _.identity = function(v) { return v; };
   _.args = function() { return arguments; },
-  _.args0 = _.identity;
+    _.args0 = _.identity;
   _.args1 = function() { return arguments[1]; };
   _.args2 = function() { return arguments[2]; };
   _.args3 = function() { return arguments[3]; };
@@ -1660,7 +1660,7 @@
       start: im_start,
       selected: _.reduce(selector.split(/\s*->\s*/), function(clone, key) {
         return !key.match(/^\((.+)\)/) ? /*start*/(!key.match(/\[(.*)\]/) ? clone[key] = _.clone(clone[key]) : function(clone, numbers) {
-          if (numbers.length > 2 || numbers.length < 1 || _.filter(numbers, _.Pipe(_.identity, isNaN)).length) return ERR('[] selector in [num] or [num ~ num]');
+          if (numbers.length > 2 || numbers.length < 1 || _.filter(numbers, _.Pipe(_.identity, isNaN)).length) return _.Err('[] selector in [num] or [num ~ num]');
           var s = numbers[0], e = numbers[1]; return !e ? clone[s] = _.clone(clone[s<0 ? clone.length+s : s]) : function(clone, oris) {
             return each(oris, function(ori) { clone[clone.indexOf(ori)] = _.clone(ori); });
           }(clone, slice.call(clone, s<0 ? clone.length+s : s, e<0 ? clone.length+e : e + 1));
