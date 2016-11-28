@@ -7,7 +7,7 @@
 !function(G) {
   var window = typeof window != 'object' ? G : window;
   window._ = window._p = _;
-  window.__ == __;
+  window.__ = __;
   window.___ = {};
 
   /* Partial */
