@@ -7,7 +7,7 @@
 !function(G) {
   var window = typeof window != 'object' ? G : window;
   window._ = window._p = _;
-  window.__ == __;
+  window.__ = __;
   window.___ = {};
 
   /* Partial */
@@ -143,11 +143,7 @@
   //   });
   // };
 
-  _.Err = function() {};
-  // function isERR(err) {
-  //   err = is_mr(err) ? err[0] : err;
-  //   return err && err.constructor == Error && err._ABC_is_err;
-  // }
+  _.Err = function(message) { return new Error(message); };
 
   _.async = function() {
     var fs = arguments;
@@ -173,6 +169,31 @@
   };
   _.async.pipea2 = function(v, fs) {
     return async_pipe(void 0, v, fs, 0);
+  };
+  _.async2 = function() {
+    var fs = arguments;
+    var f = function() {
+      return this == undefined ? _.async2.pipea2(to_mr(arguments), fs) : _.async2.pipea(this, to_mr(arguments), fs);
+    };
+    f._p_async = true;
+    return f;
+  };
+  _.async2.Pipe = _.async2;
+  _.async2.Indent = function() {
+    var fs = arguments;
+    return function() { return _.async2.pipea(ithis(this, arguments), to_mr(arguments), fs); }
+  };
+  _.async2.pipe = function (v) {
+    return async_pipe2(void 0, v, arguments, 1);
+  };
+  _.async2.pipec = function(self, v) {
+    return async_pipe2(self, v, arguments, 2);
+  };
+  _.async2.pipea = function(self, v, fs) {
+    return async_pipe2(self, v, fs, 0);
+  };
+  _.async2.pipea2 = function(v, fs) {
+    return async_pipe2(void 0, v, fs, 0);
   };
   _.cb = _.callback = _.async.callback = _.async.cb = function(f) {
     f._p_cb = true;
@@ -201,6 +222,36 @@
       })(i) : u(i + 1, res, length, has_promise);
     })(0, (res = is_r ? res : [res]), res.length, false);
   }
+
+  function async_pipe2(self, v, args, i) {
+    var args_len = args.length, resolve = null, promise;
+    function cp() { return has_promise() ? new Promise(function(rs) { resolve = rs; }) : { then: function(rs) { resolve = rs; } }; };
+    return (function c(res) {
+      do {
+        if (i === args_len)
+          return promise ? (resolve ? resolve(fpro(res)) : setTimeout(function() { resolve && resolve(fpro(res)); }, 0)) : res;
+
+        if (unpack_promise(res, c)) return promise || (promise = cp());
+
+        if (!args[i]._p_cb && !args[i]._p_jcb) res = is_mr(res) ? _.Lambda(args[i++]).apply(self, res) : res === __ ?
+          _.Lambda(args[i++]).call(self) : _.Lambda(args[i++]).call(self, res);
+        else if (!args[i]._p_cb) is_mr(res) ?
+          _.Lambda(args[i++]).apply(self, (res[res.length++] = function() { res = to_mr(arguments); }) && res) : res === __ ?
+          _.Lambda(args[i++]).call(self, function() { res = to_mr(arguments); }) :
+          _.Lambda(args[i++]).call(self, res, function() { res = to_mr(arguments); });
+      } while (i == args_len || i < args_len && !args[i]._p_cb);
+
+      if (unpack_promise(res, c)) return promise || (promise = cp());
+
+      is_mr(res) ?
+        _.Lambda(args[i++]).apply(self, (res[res.length++] = function() { c(to_mr(arguments)); }) && res) : res === __ ?
+        _.Lambda(args[i++]).call(self, function() { c(to_mr(arguments)); }) :
+        _.Lambda(args[i++]).call(self, res, function() { c(to_mr(arguments)); });
+
+      return promise || (promise = cp());
+    })(v);
+  }
+
   function async_pipe(self, v, args, i) {
     var args_len = args.length, resolve = null;
     var promise = has_promise() ? new Promise(function(rs) { resolve = rs; }) : { then: function(rs) { resolve = rs; } };
@@ -380,7 +431,7 @@
   _.this = function() { return this; };
   _.i = _.identity = function(v) { return v; };
   _.args = function() { return arguments; },
-  _.args0 = _.identity;
+    _.args0 = _.identity;
   _.args1 = function() { return arguments[1]; };
   _.args2 = function() { return arguments[2]; };
   _.args3 = function() { return arguments[3]; };
@@ -886,6 +937,17 @@
 
   _.pluck = function(data, key) { return _.map(data, _(_.val, _,key))};
 
+  _.deep_pluck = _.deepPluck = function(data, keys) {
+    keys = keys.split('.');
+    var new_keys;
+    return _.flatten(_.map(_.isArray(data) ? data : [data], function(val) {
+      var current = val;
+      var i = -1;
+      while (++i < keys.length && _.isObject(current) && !_.isArray(current)) current = current[keys[i]];
+      return i < keys.length && _.isObject(current) ? _.deep_pluck(current, new_keys || (new_keys = _.rest(keys, i).join('.'))) : current;
+    }));
+  };
+
   _.max = function(data, iteratee) {
     if (_.isEmpty(data)) return -Infinity;
     iteratee = iteratee || _.i;
@@ -1155,11 +1217,10 @@
   _.all = function(args) {
     var res = [], tmp;
     for (var i = 1, l = arguments.length; i < l; i++) {
-      tmp = _.is_mr(args) ? arguments[i].apply(null, args) : arguments[i](args);
-      if (_.is_mr(tmp))
-        for (var j = 0, l = tmp.length; j < l; j++) res.push(tmp[j]);
-      else
-        res.push(tmp);
+      tmp = _.is_mr(args) ?
+        arguments[i].apply(this == _ ? null : this, args) : arguments[i].call(this == _ ? null : this, args);
+      if (_.is_mr(tmp)) for (var j = 0, l = tmp.length; j < l; j++) res.push(tmp[j]);
+      else res.push(tmp);
     }
     return _.to_mr(res);
   };
@@ -1167,13 +1228,19 @@
   _.spread = function(args) {
     var fns = _.rest(arguments, 1), res = [], tmp;
     for (var i = 0, fl = fns.length, al = args.length; i < fl || i < al; i++) {
-      tmp = _.is_mr(args[i]) ? (fns[i] || _.i).apply(null, args[i]) : (fns[i] || _.i).call(null, args[i]);
-      if (_.is_mr(tmp))
-        for (var j = 0, l = tmp.length; j < l; j++) res.push(tmp[j]);
-      else
-        res.push(tmp);
+      tmp = _.is_mr(args[i]) ?
+        (fns[i] || _.i).apply(this == _ ? null : this, args[i]) : (fns[i] || _.i).call(this == _ ? null : this, args[i]);
+      if (_.is_mr(tmp)) for (var j = 0, l = tmp.length; j < l; j++) res.push(tmp[j]);
+      else res.push(tmp);
     }
     return _.to_mr(res);
+  };
+
+  _.All = function() {
+    var fns = _.toArray(arguments);
+    return function() {
+      return _.all.apply(this, [_.to_mr(arguments)].concat(fns));
+    }
   };
 
   _.Spread = function() {
@@ -1660,7 +1727,7 @@
       start: im_start,
       selected: _.reduce(selector.split(/\s*->\s*/), function(clone, key) {
         return !key.match(/^\((.+)\)/) ? /*start*/(!key.match(/\[(.*)\]/) ? clone[key] = _.clone(clone[key]) : function(clone, numbers) {
-          if (numbers.length > 2 || numbers.length < 1 || _.filter(numbers, _.Pipe(_.identity, isNaN)).length) return ERR('[] selector in [num] or [num ~ num]');
+          if (numbers.length > 2 || numbers.length < 1 || _.filter(numbers, _.Pipe(_.identity, isNaN)).length) return _.Err('[] selector in [num] or [num ~ num]');
           var s = numbers[0], e = numbers[1]; return !e ? clone[s] = _.clone(clone[s<0 ? clone.length+s : s]) : function(clone, oris) {
             return each(oris, function(ori) { clone[clone.indexOf(ori)] = _.clone(ori); });
           }(clone, slice.call(clone, s<0 ? clone.length+s : s, e<0 ? clone.length+e : e + 1));
