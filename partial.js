@@ -584,6 +584,8 @@
   try { var has_lambda = true; eval('a=>a'); } catch (err) { var has_lambda = false; }
   function Lambda(str) {
     if (typeof str !== 'string') return str;
+    str = str.replace(/\*\*/g, '"');
+    str = str.replace(/\*/g, "'");
     if (Lambda[str]) return Lambda[str];
     if (!str.match(/=>/)) return Lambda[str] = new Function('$', 'return (' + str + ')');
     if (has_lambda) return Lambda[str] = eval(str); // es6 lambda
@@ -1687,12 +1689,12 @@
 
   /* mutable/immutable with selector */
   _.sel = _.select = function(start, selector) {
-    return _.reduce(selector.split(/\s*->\s*/), function (mem, key) {
-      return !key.match(/^\((.+)\)/) ? !key.match(/\[(.*)\]/) ? mem[key] : function(mem, numbers) {
-        if (numbers.length > 2 || numbers.length < 1 || _.filter(numbers, function(v) { return isNaN(v); }).length) return _.Err('[] selector in [num] or [num ~ num]');
-        var s = numbers[0], e = numbers[1]; return !e ? mem[s<0 ? mem.length+s : s] : slice.call(mem, s<0 ? mem.length+s : s, e<0 ? mem.length+e : e + 1);
-      }(mem, _.map(RegExp.$1.replace(/\s/g, '').split('~'), _.parseInt)) : _.find(mem, _.Lambda(RegExp.$1));
-    }, start);
+    return selector && _.reduce(selector.split(/\s*->\s*/), function (mem, key) {
+        return !key.match(/^\((.+)\)/) ? !key.match(/\[(.*)\]/) ? mem[key] : function(mem, numbers) {
+          if (numbers.length > 2 || numbers.length < 1 || _.filter(numbers, function(v) { return isNaN(v); }).length) return _.Err('[] selector in [num] or [num ~ num]');
+          var s = numbers[0], e = numbers[1]; return !e ? mem[s<0 ? mem.length+s : s] : slice.call(mem, s<0 ? mem.length+s : s, e<0 ? mem.length+e : e + 1);
+        }(mem, _.map(RegExp.$1.replace(/\s/g, '').split('~'), _.parseInt)) : _.find(mem, _.Lambda(RegExp.$1));
+      }, start);
   };
 
   _.extend(_, {
