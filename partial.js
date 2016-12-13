@@ -8,7 +8,7 @@
   var window = typeof window != 'object' ? G : window;
   window._ = window._p = _;
   window.__ = __;
-  window.___ = {};
+  window.___ = ___;
 
   /* Partial */
   function _(fn) {
@@ -41,7 +41,6 @@
     while (i--) if (n_arg3[i] == _) n_arg3[i] = args2.pop();
     return args2.length ? _to_unde(n_args1, args2, n_arg3) : _to_unde(n_args1, n_arg3);
   }
-  function __() { return __; }
   _.right = function() {
     var len = --arguments.length, fn = arguments[len];
     delete arguments[len];
@@ -57,27 +56,22 @@
   };
 
   /* Pipeline */
-  _.pipe = function(v) {
-    if (this != _ && this != window) return pipea(this, v, arguments, 1);
+  _.go = function(v) {
+    if (this != _ && this != window) return goapply(this, v, arguments, 1);
     var i = 0, f;
-    while (f = arguments[++i]) v = (v && v._mr) ? f.apply(undefined, v) : v === __ ? f() : f(v);
+    while (f = arguments[++i]) v = f == __ && ++i ? __ : (v && v._mr) ? f.apply(undefined, v) : v === __ ? f() : f(v);
     return v;
   };
-  _.pipec = pipec, _.pipea = pipea, _.pipea2 = pipea2;
   _.mr = mr, _.to_mr = to_mr, _.is_mr = is_mr, _.mr_cat = mr_cat;
-  function pipec(self, v) {
-    var i = 1, f;
-    while (f = arguments[++i]) v = (v && v._mr) ? f.apply(self, v) : v === __ ? f.call(self) : f.call(self, v);
-    return v;
-  }
-  function pipea(self, v, fs, start) {
+  function goapply(self, v, fs, start) {
     var i = (start || 0), f;
-    while (f = fs[i++]) v = (v && v._mr) ? f.apply(self, v) : v === __ ? f.call(self) : f.call(self, v);
+    while (f = fs[i++])
+      v = f == __ && ++i ? __ :  (v && v._mr) ? f.apply(self, v) : v === __ ? f.call(self) : f.call(self, v);
     return v;
   }
-  function pipea2(v, fs) {
+  function goapply2(v, fs) {
     var i = 0, f;
-    while (f = fs[i++]) v = (v && v._mr) ? f.apply(undefined, v) : v === __ ? f() : f(v);
+    while (f = fs[i++]) f == __ && ++i ? __ :  v = (v && v._mr) ? f.apply(undefined, v) : v === __ ? f() : f(v);
     return v;
   }
   function mr() {
@@ -100,21 +94,19 @@
   }
   function is_mr(v) { return v && v._mr; }
 
-  _.Pipe = function() {
+  _.pipe = __;
+  function __() {
     var fs = arguments;
     return function() {
-      return this == window ? pipea2(to_mr(arguments), fs) : pipea(this, to_mr(arguments), fs);
+      return this == window ? goapply2(to_mr(arguments), fs) : goapply(this, to_mr(arguments), fs);
     }
-  };
-  _.Indent = function() {
+  }
+
+  _.indent = ___;
+  function ___() {
     var fs = arguments;
-    return function() { return pipea(ithis(this, arguments), to_mr(arguments), fs); }
-  };
-  _.indent = function(v) {
-    var i = 0, self = ithis(this, v), f;
-    while (f = arguments[++i]) v = (v && v._mr) ? f.apply(self, v) : v === __ ? f.call(self) : f.call(self, v);
-    return v;
-  };
+    return function() { return goapply(ithis(this, arguments), to_mr(arguments), fs); }
+  }
   function ithis(self, args) { return { parent: self, args: args }; }
 
   _.tap = _.Tap = function(func) {
@@ -128,7 +120,6 @@
     }
   };
 
-
   _.wait = function(time) {
     return _.callback(function() {
       var args = arguments, cb = args[args.length-1];
@@ -139,63 +130,38 @@
 
   _.Err = function(message) { return new Error(message); };
 
-  _.async = function() {
+  _.go.async = function(v) {
+    return pipe_async(_.go == this ? null : this, v, arguments, 1);
+  };
+  __.async = function() {
     var fs = arguments;
     var f = function() {
-      return this == window ? _.async.pipea2(to_mr(arguments), fs) : _.async.pipea(this, to_mr(arguments), fs);
+      return pipe_async(this, to_mr(arguments), fs, 0);
     };
     f._p_async = true;
     return f;
   };
-  _.async.Pipe = _.async;
-  _.async.Indent = function() {
+  _.async = __.async;
+  _.pipe.async = __.async;
+  ___.async = _.indent.async = function() {
     var fs = arguments;
-    return function() { return _.async.pipea(ithis(this, arguments), to_mr(arguments), fs); }
+    return function() { return pipe_async(ithis(this, arguments), to_mr(arguments), fs, 0); }
   };
-  _.async.indent = function(v) {
-    return async_pipe(ithis(this, v), v, arguments, 1);
-  };
-  _.async.pipe = function (v) {
-    return async_pipe(this, v, arguments, 1);
-  };
-  _.async.pipec = function(self, v) {
-    return async_pipe(self, v, arguments, 2);
-  };
-  _.async.pipea = function(self, v, fs) {
-    return async_pipe(self, v, fs, 0);
-  };
-  _.async.pipea2 = function(v, fs) {
-    return async_pipe(this, v, fs, 0);
-  };
-  _.async2 = function() {
+  __.async2 = function() {
     var fs = arguments;
     var f = function() {
-      return this == window ? _.async2.pipea2(to_mr(arguments), fs) : _.async2.pipea(this, to_mr(arguments), fs);
+      return pipe_async2(this, to_mr(arguments), fs, 0);
     };
     f._p_async = true;
     return f;
   };
-  _.async2.Pipe = _.async2;
-  _.async2.Indent = function() {
+  _.async2 = __.async2;
+  _.pipe.async2 = __.async2;
+  ___.async2 = _.indent.async2 = function() {
     var fs = arguments;
-    return function() { return _.async2.pipea(ithis(this, arguments), to_mr(arguments), fs); }
+    return function() { return pipe_async2(ithis(this, arguments), to_mr(arguments), fs, 0); }
   };
-  _.async.indent = function(v) {
-    return async_pipe2(ithis(this, v), v, arguments, 1);
-  };
-  _.async2.pipe = function (v) {
-    return async_pipe2(this, v, arguments, 1);
-  };
-  _.async2.pipec = function(self, v) {
-    return async_pipe2(self, v, arguments, 2);
-  };
-  _.async2.pipea = function(self, v, fs) {
-    return async_pipe2(self, v, fs, 0);
-  };
-  _.async2.pipea2 = function(v, fs) {
-    return async_pipe2(this, v, fs, 0);
-  };
-  _.cb = _.callback = _.async.callback = _.async.cb = function(f) {
+  _.cb = _.callback = function(f) {
     f._p_cb = true;
     return f;
   };
@@ -206,10 +172,9 @@
       args.length--;
       var self = ithis(this, args);
       self.return = cb;
-      async_pipe2(self, to_mr(v), fs, 1);
+      pipe_async(self, to_mr(args), fs, 1);
     });
   };
-
 
   function has_promise() { return has_promise.__cache || (has_promise.__cache = !!_.val(window, 'Promise.prototype.then')); }
   function maybe_promise(res) { return _.isObject(res) && res.then && _.isFunction(res.then); }
@@ -230,46 +195,48 @@
     })(0, (res = is_r ? res : [res]), res.length, false);
   }
 
-  function async_pipe2(self, v, args, i) {
-    var args_len = args.length, resolve = null, promise;
+  function pipe_async2(self, v, fs, i) {
+    var args_len = fs.length, resolve = null, promise;
     function cp() { return has_promise() ? new Promise(function(rs) { resolve = rs; }) : { then: function(rs) { resolve = rs; } }; };
     return (function c(res) {
       do {
         if (i === args_len)
           return promise ? (resolve ? resolve(fpro(res)) : setTimeout(function() { resolve && resolve(fpro(res)); }, 0)) : res;
         if (unpack_promise(res, c)) return promise || (promise = cp());
-        if (!args[i]._p_cb) res = is_mr(res) ? _.lambda(args[i++]).apply(self, res) : res === __ ?
-          _.lambda(args[i++]).call(self) : _.lambda(args[i++]).call(self, res);
-      } while (i == args_len || i < args_len && !args[i]._p_cb);
+        if (fs[i] == __ && i++) res = __;
+        if (!fs[i]._p_cb) res = is_mr(res) ? _.lambda(fs[i++]).apply(self, res) : res === __ ?
+          _.lambda(fs[i++]).call(self) : _.lambda(fs[i++]).call(self, res);
+      } while (i == args_len || i < args_len && !fs[i]._p_cb);
       if (unpack_promise(res, c)) return promise || (promise = cp());
       is_mr(res) ?
-        _.lambda(args[i++]).apply(self, (res[res.length++] = function() { c(to_mr(arguments)); }) && res) : res === __ ?
-        _.lambda(args[i++]).call(self, function() { c(to_mr(arguments)); }) :
-        _.lambda(args[i++]).call(self, res, function() { c(to_mr(arguments)); });
+        _.lambda(fs[i++]).apply(self, (res[res.length++] = function() { c(to_mr(arguments)); }) && res) : res === __ ?
+        _.lambda(fs[i++]).call(self, function() { c(to_mr(arguments)); }) :
+        _.lambda(fs[i++]).call(self, res, function() { c(to_mr(arguments)); });
       return promise || (promise = cp());
     })(v);
   }
-  function async_pipe(self, v, args, i) {
-    var args_len = args.length, resolve = null;
+  function pipe_async(self, v, fs, i) {
+    var args_len = fs.length, resolve = null;
     var promise = has_promise() ? new Promise(function(rs) { resolve = rs; }) : { then: function(rs) { resolve = rs; } };
     (function c(res) {
       do {
         if (i === args_len) return resolve ? resolve(fpro(res)) : setTimeout(function() { resolve && resolve(fpro(res)); }, 0);
         if (unpack_promise(res, c)) return;
-        if (!args[i]._p_cb) res = is_mr(res) ? _.lambda(args[i++]).apply(self, res) : res === __ ?
-          _.lambda(args[i++]).call(self) : _.lambda(args[i++]).call(self, res);
-      } while (i == args_len || i < args_len && !args[i]._p_cb);
+        if (fs[i] == __ && i++) res = __;
+        if (!fs[i]._p_cb) res = is_mr(res) ? _.lambda(fs[i++]).apply(self, res) : res === __ ?
+          _.lambda(fs[i++]).call(self) : _.lambda(fs[i++]).call(self, res);
+      } while (i == args_len || i < args_len && !fs[i]._p_cb);
       if (unpack_promise(res, c)) return;
       is_mr(res) ?
-        _.lambda(args[i++]).apply(self, (res[res.length++] = function() { c(to_mr(arguments)); }) && res) : res === __ ?
-        _.lambda(args[i++]).call(self, function() { c(to_mr(arguments)); }) :
-        _.lambda(args[i++]).call(self, res, function() { c(to_mr(arguments)); });
+        _.lambda(fs[i++]).apply(self, (res[res.length++] = function() { c(to_mr(arguments)); }) && res) : res === __ ?
+        _.lambda(fs[i++]).call(self, function() { c(to_mr(arguments)); }) :
+        _.lambda(fs[i++]).call(self, res, function() { c(to_mr(arguments)); });
     })(v);
     return promise;
   }
   function fpro(res) { return is_mr(res) && res.length == 1 ? res[0] : res; }
 
-  function _async_reduce(data, iteratee, memo, limiter) {
+  function _reduce_async(data, iteratee, memo, limiter) {
     if (this != G && this != _) {
       iteratee = _.bind(iteratee, this);
       if (_.isFunction(limiter)) limiter = limiter.bind(this);
@@ -284,20 +251,20 @@
     var i = -1, keys = _.isArrayLike(data) ? null : _.keys(data);
     memo = (arguments.length > 2) ? memo : data[keys ? keys[++i] : ++i];
 
-    if (limiter == 0 || _.isEmpty(data)) return _.async.pipe(memo);
+    if (limiter == 0 || _.isEmpty(data)) return _.go.async(memo);
 
     return (function f(i, memo) {
-      if (++i == (keys || data).length) return _.async.pipe(memo);
+      if (++i == (keys || data).length) return _.go.async(memo);
       var args = keys ? _.mr(memo, data[keys[i]], keys[i], data) : _.mr(memo, data[i], i, data);
 
-      return _.async.pipe(args, iteratee).then(function(res) {
+      return _.go.async(args, iteratee).then(function(res) {
         args[0] = res; // iter 직후, limiter에서의 memo를 갱신시켜서 보내줘야 함
         return (_.isFunction(limiter) ? limiter.apply(null, args) : limiter == i+1) ? res : f(i, res); // f가 res를 안받아도 되나? - 한꺼풀 밖에다가
       });
     })(i, memo);
   }
 
-  function _async_reduceRight(data, iteratee, memo, limiter) {
+  function _reduce_right_async(data, iteratee, memo, limiter) {
     if (this != G) {
       iteratee = _.bind(iteratee, this);
       if (_.isFunction(limiter)) limiter = limiter.bind(this);
@@ -312,13 +279,13 @@
     var i = data.length, keys = _.isArrayLike(data) ? null : _.keys(data);
     memo = (arguments.length > 2) ? memo : data[keys ? keys[--i] : --i];
 
-    if (limiter == 0 || _.isEmpty(data)) return _.async.pipe(memo);
+    if (limiter == 0 || _.isEmpty(data)) return _.go.async(memo);
 
     return (function f(i, memo) {
-      if (--i == -1) return _.async.pipe(memo);
+      if (--i == -1) return _.go.async(memo);
       var args = keys ? _.mr(memo, data[keys[i]], keys[i], data) : _.mr(memo, data[i], i, data);
 
-      return _.async.pipe(args, iteratee).then(function(res) {
+      return _.go.async(args, iteratee).then(function(res) {
         args[0] = res;
         return (_.isFunction(limiter) ? limiter.apply(null, args) : (data.length - limiter) == i) ? res : f(i, res);
       });
@@ -332,85 +299,85 @@
     }
   }
 
-  function _async_each(data, iteratee, limiter) {
-    return _async_reduce.call(
+  function _each_async(data, iteratee, limiter) {
+    return _reduce_async.call(
       this,
       data, //data
       function(memo) { //iteratee
-        return _.async.pipe(_.to_mr(_.rest(arguments)), iteratee, function() { return memo; });
+        return _.go.async(_.to_mr(_.rest(arguments)), iteratee, function() { return memo; });
       },
       _.is_mr(data) ? data[0] : data, //memo
       _limiter(limiter) //limiter
     );
   }
 
-  function _async_map(data, iteratee, limiter) {
-    return _async_reduce.call(
+  function _map_async(data, iteratee, limiter) {
+    return _reduce_async.call(
       this,
       data, //data
       function(memo) { //iteratee
-        return _.async.pipe(_.to_mr(_.rest(arguments)), iteratee, function(v) { memo.push(v); return memo; });
+        return _.go.async(_.to_mr(_.rest(arguments)), iteratee, function(v) { memo.push(v); return memo; });
       },
       [], //memo
       _limiter(limiter) // limiter
     );
   }
 
-  function _async_filter(data, iteratee, limiter) {
-    return _async_reduce.call(
+  function _filter_async(data, iteratee, limiter) {
+    return _reduce_async.call(
       this,
       data, //data
       function(memo, val) { //iteratee
-        return _.async.pipe(_.to_mr(_.rest(arguments)), iteratee, function(v) { if (v) memo.push(val); return memo; });
+        return _.go.async(_.to_mr(_.rest(arguments)), iteratee, function(v) { if (v) memo.push(val); return memo; });
       },
       [], //memo
       _limiter(limiter) // limiter
     );
   }
 
-  function _async_reject(data, iteratee, limiter) {
-    return _async_reduce.call(
+  function _reject_async(data, iteratee, limiter) {
+    return _reduce_async.call(
       this,
       data, //data
       function(memo, val) { //iteratee
-        return _.async.pipe(_.to_mr(_.rest(arguments)), iteratee, function(v) { if(!v) memo.push(val); return memo; });
+        return _.go.async(_.to_mr(_.rest(arguments)), iteratee, function(v) { if(!v) memo.push(val); return memo; });
       },
       [], //memo
       _limiter(limiter) // limiter
     );
   }
 
-  function _async_find(data, iteratee) {
+  function _find_async(data, iteratee) {
     var tmp = false;
-    return _async_reduce.call(
+    return _reduce_async.call(
       this,
       data, //data
       function(memo, val) { //iteratee
-        return _.async.pipe(_.to_mr(_.rest(arguments)), iteratee, function(res) { if (res) { tmp = true; return val; } return memo; }); // undefined
+        return _.go.async(_.to_mr(_.rest(arguments)), iteratee, function(res) { if (res) { tmp = true; return val; } return memo; }); // undefined
       },
       undefined, //memo
       function() { return tmp === true; }
     );
   }
 
-  function _async_every(data, iteratee) {
-    return _async_reduce.call(
+  function _every_async(data, iteratee) {
+    return _reduce_async.call(
       this,
       data, //data
       function(memo, val) { //iteratee
-        return _.async.pipe(_.to_mr(_.rest(arguments)), iteratee);
+        return _.go.async(_.to_mr(_.rest(arguments)), iteratee);
       },
       true, //memo
       _.negate(_.identity) //limiter
     );
   }
 
-  function _async_some(data, iteratee) {
-    return _async_reduce.call(
+  function _some_async(data, iteratee) {
+    return _reduce_async.call(
       this,
       data, //data
       function(memo, val) { //iteratee
-        return _.async.pipe(_.to_mr(_.rest(arguments)), iteratee);
+        return _.go.async(_.to_mr(_.rest(arguments)), iteratee);
       },
       false, //memo
       _.identity //limiter
@@ -619,8 +586,9 @@
     f._p_async = iter._p_async, f._p_cb = iter._p_cb;
     return f;
   }
-  _.each = function(data, iteratee, limiter) {
-    if (iteratee._p_async || iteratee._p_cb) return _async_each.apply(null, arguments);
+  _.each = function f(data, iteratee, limiter) {
+    if (arguments.length == 1) return _(f, _, data);
+    if (iteratee._p_async || iteratee._p_cb) return _each_async.apply(null, arguments);
 
     if (this != _ && this != G) {
       iteratee = _.bind(iteratee, this);
@@ -656,8 +624,9 @@
     return data;
   };
 
-  _.map = function(data, iteratee, limiter) {
-    if (iteratee._p_async || iteratee._p_cb) return _async_map.apply(null, arguments);
+  _.map = function f(data, iteratee, limiter) {
+    if (arguments.length == 1) return _(f, _, data);
+    if (iteratee._p_async || iteratee._p_cb) return _map_async.apply(null, arguments);
 
     if (this != _ && this != G) {
       iteratee = _.bind(iteratee, this);
@@ -693,8 +662,9 @@
     return res;
   };
 
-  _.reduce = function(data, iteratee, memo, limiter) {
-    if (iteratee._p_async || iteratee._p_cb) return _async_reduce.apply(this, arguments);
+  _.reduce = function f(data, iteratee, memo, limiter) {
+    if (arguments.length == 1) return _(f, _, data);
+    if (iteratee._p_async || iteratee._p_cb) return _reduce_async.apply(this, arguments);
 
     if (this != _ && this != G) {
       iteratee = _.bind(iteratee, this);
@@ -730,8 +700,9 @@
     return res;
   };
 
-  _.reduceRight = _.reduce_right = function(data, iteratee, memo, limiter) {
-    if (iteratee._p_async || iteratee._p_cb) return _async_reduceRight.apply(this, arguments);
+  _.reduceRight = _.reduce_right = function f(data, iteratee, memo, limiter) {
+    if (arguments.length == 1) return _(f, _, data);
+    if (iteratee._p_async || iteratee._p_cb) return _reduce_right_async.apply(this, arguments);
 
     if (this != _ && this != G) {
       iteratee = _.bind(iteratee, this);
@@ -767,8 +738,9 @@
     return res;
   };
 
-  _.find = function(data, predicate) { // find에는 limiter가 없다.
-    if (predicate._p_async || predicate._p_cb) return _async_find.apply(null, arguments);
+  _.find = function f(data, predicate) {
+    if (arguments.length == 1) return _(f, _, data);
+    if (predicate._p_async || predicate._p_cb) return _find_async.apply(null, arguments);
 
     if (this != _ && this != G) {
       predicate = _.bind(predicate, this);
@@ -785,8 +757,9 @@
     }
   };
 
-  _.filter = function(data, predicate, limiter) {
-    if (predicate._p_async || predicate._p_cb) return _async_filter.apply(null, arguments);
+  _.filter = function f(data, predicate, limiter) {
+    if (arguments.length == 1) return _(f, _, data);
+    if (predicate._p_async || predicate._p_cb) return _filter_async.apply(null, arguments);
 
     if (this != _ && this != G) {
       predicate = _.bind(predicate, this);
@@ -832,12 +805,19 @@
     return res;
   };
 
-  _.where = function(list, attrs) { return _.filter(list, function(obj) { return _.is_match(obj, attrs) })};
+  _.where = function(list, attrs) {
+    if (arguments.length == 1) return _.filter(function(obj) { return _.is_match(obj, attrs) });
+    return _.filter(list, function(obj) { return _.is_match(obj, attrs) });
+  };
 
-  _.findWhere = _.find_where = function(list, attrs) { return _.find(list, function(obj) { return _.is_match(obj, attrs) }); };
+  _.findWhere = _.find_where = function(list, attrs) {
+    if (arguments.length == 1) return _.find(function(obj) { return _.is_match(obj, attrs) });
+    return _.find(list, function(obj) { return _.is_match(obj, attrs) });
+  };
 
-  _.reject = function(data, predicate, limiter) {
-    if (predicate._p_async || predicate._p_cb) return _async_reject.apply(null, arguments);
+  _.reject = function f(data, predicate, limiter) {
+    if (arguments.length == 1) return _(f, _, data);
+    if (predicate._p_async || predicate._p_cb) return _reject_async.apply(null, arguments);
 
     if (this != _ && this != G) {
       predicate = _.bind(predicate, this);
@@ -882,9 +862,11 @@
     return res;
   };
 
-  _.every = function(data, predicate) {
+  _.every = function f(data, predicate) {
+    if (arguments.length == 1 && _.isFunction(data)) return _(f, _, data);
+
     predicate = predicate || _.i;
-    if (predicate._p_async || predicate._p_cb) return _async_every.apply(null, arguments);
+    if (predicate._p_async || predicate._p_cb) return _every_async.apply(null, arguments);
     if (this != _ && this != G) { predicate = _.bind(predicate, this); }
 
     if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
@@ -898,9 +880,11 @@
     return true;
   };
 
-  _.some = function(data, predicate) {
+  _.some = function f(data, predicate) {
+    if (arguments.length == 1 && _.isFunction(data)) return _(f, _, data);
+
     predicate = predicate || _.i;
-    if (predicate._p_async || predicate._p_cb) return _async_some.apply(null, arguments);
+    if (predicate._p_async || predicate._p_cb) return _some_async.apply(null, arguments);
     if (this != _ && this != G) { predicate = _.bind(predicate, this); }
 
     if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
@@ -941,7 +925,9 @@
     }));
   };
 
-  _.max = function(data, iteratee) {
+  _.max = function f(data, iteratee) {
+    if (arguments.length == 1 && _.isFunction(data)) return _(f, _, data);
+
     if (_.isEmpty(data)) return -Infinity;
     iteratee = iteratee || _.i;
     if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 2); data = data[0]; }
@@ -963,7 +949,9 @@
     return res;
   };
 
-  _.min = function(data, iteratee) {
+  _.min = function f(data, iteratee) {
+    if (arguments.length == 1 && _.isFunction(data)) return _(f, _, data);
+
     if (_.isEmpty(data)) return Infinity;
     iteratee = iteratee || _.i;
     if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 2); data = data[0]; }
@@ -986,9 +974,11 @@
   };
 
   // <respect _>
-  _.sortBy = _.sort_by = function(obj, iteratee) {
-    if (_.is_mr(obj)) { iteratee = Iter(iteratee, obj, 2); obj = obj[0]; }
-    return _.pluck(_.map(obj, function(value, index, list) {
+  _.sortBy = _.sort_by = function f(data, iteratee) {
+    if (arguments.length == 1) return _(f, _, data);
+
+    if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 2); data = data[0]; }
+    return _.pluck(_.map(data, function(value, index, list) {
       return { value: value, index: index, criteria: iteratee(value, index, list) };
     }).sort(function(left, right) {
       var a = left.criteria, b = right.criteria;
@@ -1001,21 +991,27 @@
   };
   // </respect _>
 
-  _.groupBy = _.group_by = function(data, iteratee) {
+  _.groupBy = _.group_by = function f(data, iteratee) {
+    if (arguments.length == 1) return _(f, _, data);
+
     if (_.isString(iteratee)) iteratee = _(_.val, _, iteratee);
     var res = {}, arr = _.map(data, iteratee);
     for (var i = 0, l = arr.length; i < l ; i++) { _.has(res, arr[i]) ? res[arr[i]].push(data[i]) : (res[arr[i]] = [data[i]]) }
     return res;
   };
 
-  _.indexBy = _.index_by = function(data, iteratee) {
+  _.indexBy = _.index_by = function f(data, iteratee) {
+    if (arguments.length == 1) return _(f, _, data);
+
     if (_.isString(iteratee)) iteratee = _(_.val, _, iteratee);
     var res = {}, arr = _.map(data, iteratee);
     for (var i = 0, l = arr.length; i < l; i++) { res[arr[i]] = data[i]; }
     return res;
   };
 
-  _.countBy = _.count_by = function(data, iteratee) {
+  _.countBy = _.count_by = function f(data, iteratee) {
+    if (arguments.length == 1) return _(f, _, data);
+
     if (_.isString(iteratee)) iteratee = _(_.val, _, iteratee);
     var res = {}, arr = _.map(data, iteratee);
     for (var i = 0, l = arr.length; i < l; i++) { res[arr[i]]++ || (res[arr[i]] = 1); }
@@ -1084,7 +1080,9 @@
     });
   };
 
-  _.uniq = function(arr, iteratee) {
+  _.uniq = function f(arr, iteratee) {
+    if (arguments.length == 1) return _(f, _, data);
+
     var res = [], tmp = [], cmp = iteratee ? _.map(arr, iteratee) : arr;
     for (var i = 0, l = arr.length; i < l; i++)
       if (tmp.indexOf(cmp[i]) == -1) { tmp.push(cmp[i]); res.push(arr[i]); }
@@ -1117,27 +1115,31 @@
     return -1;
   };
 
-  _.sortedIndex = _.sorted_idx = _.sorted_i = function(ary, obj, iteratee) {
+  _.sortedIndex = _.sorted_idx = _.sorted_i = function f(data, obj, iteratee) {
+    if (_.isFunction(data)) return _(f, _, _, data);
+
     var value = iteratee(obj);
-    var low = 0, high = getLength(ary);
+    var low = 0, high = getLength(data);
     while (low < high) {
       var mid = Math.floor((low + high) / 2);
-      if (iteratee(ary[mid]) < value) low = mid + 1; else high = mid;
+      if (iteratee(data[mid]) < value) low = mid + 1; else high = mid;
     }
     return low;
   };
 
-  _.find_i = _.find_idx = _.findIndex = function(ary, predicate) {
-    if (_.is_mr(ary)) { predicate = Iter(predicate, ary, 2); ary = ary[0]; }
-    for (var i = 0, l = ary.length; i < l; i++)
-      if (predicate(ary[i], i, ary)) return i;
+  _.find_i = _.find_idx = _.findIndex = function f(data, predicate) {
+    if (arguments.length == 1) return _(f, _, data);
+    if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
+    for (var i = 0, l = data.length; i < l; i++)
+      if (predicate(data[i], i, data)) return i;
     return -1;
   };
 
-  _.findLastIndex = _.find_last_idx = _.find_last_i = function(ary, predicate) {
-    if (_.is_mr(ary)) { predicate = Iter(predicate, ary, 2); ary = ary[0]; }
-    for(var i = ary.length; i >= 0; i--) {
-      if (predicate(ary[i], i, ary)) return i;
+  _.findLastIndex = _.find_last_idx = _.find_last_i = function f(data, predicate) {
+    if (arguments.length == 1) return _(f, _, data);
+    if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
+    for(var i = data.length; i >= 0; i--) {
+      if (predicate(data[i], i, data)) return i;
     }
   };
 
@@ -1151,11 +1153,13 @@
   };
 
   /* Object */
-  _.mapObject = _.map_object = function(obj, iteratee) {
-    if (_.is_mr(obj)) { iteratee = Iter(iteratee, obj, 2); obj = obj[0]; }
+  _.mapObject = _.map_object = function f(data, iteratee) {
+    if (arguments.length == 1) return _(f, _, data);
+
+    if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 2); data = data[0]; }
     var res = {};
-    for (var keys = _.keys(obj), i = 0, l = keys.length; i < l; i++) {
-      res[keys[i]] = iteratee(obj[keys[i]], keys[i], obj);
+    for (var keys = _.keys(data), i = 0, l = keys.length; i < l; i++) {
+      res[keys[i]] = iteratee(data[keys[i]], keys[i], data);
     }
     return res;
   };
@@ -1174,13 +1178,17 @@
     return res;
   };
 
-  _.find_k = _.find_key = _.findKey = function(obj, predicate) {
-    if (_.is_mr(obj)) { predicate = Iter(predicate, obj, 2); obj = obj[0]; }
-    for (var keys = _.keys(obj), key, i = 0, l = keys.length; i < l; i++)
-      if (predicate(obj[key = keys[i]], key, obj)) return key;
+  _.find_k = _.find_key = _.findKey = function f(data, predicate) {
+    if (arguments.length == 1) return _(f, _, data);
+
+    if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
+    for (var keys = _.keys(data), key, i = 0, l = keys.length; i < l; i++)
+      if (predicate(data[key = keys[i]], key, data)) return key;
   };
 
-  _.pick = function(obj, iteratee) {
+  _.pick = function f(obj, iteratee) {
+    if (arguments.length == 1) return _(f, _, obj);
+
     var res = {};
     if (_.isString(iteratee)) {
       for (var keys = _.rest(arguments), i = 0, l = keys.length; i < l; i++)
@@ -1193,7 +1201,9 @@
     return res;
   };
 
-  _.omit = function(obj, iteratee) {
+  _.omit = function f(obj, iteratee) {
+    if (arguments.length == 1) return _(f, _, data);
+
     var res = {};
     if (_.isString(iteratee)) {
       var oKeys = _.keys(obj), keys = _.rest(arguments);
@@ -1207,7 +1217,7 @@
     return res;
   };
 
-  _.all = function(args) {
+  _.all2 = function(args) {
     var res = [], tmp;
     for (var i = 1, l = arguments.length; i < l; i++) {
       tmp = _.is_mr(args) ?
@@ -1218,7 +1228,7 @@
     return _.to_mr(res);
   };
 
-  _.spread = function(args) {
+  _.spread2 = function(args) {
     var fns = _.rest(arguments, 1), res = [], tmp;
     for (var i = 0, fl = fns.length, al = args.length; i < fl || i < al; i++) {
       tmp = _.is_mr(args[i]) ?
@@ -1229,17 +1239,17 @@
     return _.to_mr(res);
   };
 
-  _.All = function() {
+  _.all = _.All = function() {
     var fns = _.toArray(arguments);
     return function() {
-      return _.all.apply(this, [_.to_mr(arguments)].concat(fns));
+      return _.all2.apply(this, [_.to_mr(arguments)].concat(fns));
     }
   };
 
-  _.Spread = function() {
+  _.spread = _.Spread = function() {
     var fns = _.toArray(arguments);
     return function() {
-      return _.spread.apply(this, [_.to_mr(arguments)].concat(fns));
+      return _.spread2.apply(this, [_.to_mr(arguments)].concat(fns));
     }
   };
 
@@ -1276,9 +1286,9 @@
       if (!timeout) context = args = null;
     };
     return function () {
-      var now = now();
-      if (!previous && options.leading === false) previous = now;
-      var remaining = wait - (now - previous);
+      var now2 = now();
+      if (!previous && options.leading === false) previous = now2;
+      var remaining = wait - (now2 - previous);
       context = this;
       args = arguments;
       if (remaining <= 0 || remaining > wait) {
@@ -1286,7 +1296,7 @@
           clearTimeout(timeout);
           timeout = null;
         }
-        previous = now;
+        previous = now2;
         result = func.apply(context, args);
         if (!timeout) context = args = null;
       } else if (!timeout && options.trailing !== false) {
@@ -1360,9 +1370,9 @@
     function elseIf(predicate, fn) { return store.push(fn ? [ca(predicate), ca(fn)] : [_.identity, ca(predicate)]) && If; }
     function If() {
       var context = this, args = arguments;
-      var wrap = is_async ? _.async : _.identity;
-      var pipec = is_async ? _.async.pipec : _.pipec;
-      return pipec(this, store,
+      var wrap = is_async ? __.async : _.identity;
+      var go = is_async ? _.go.async : _.go;
+      return go.call(this, store,
         _(_.find, _, wrap(function(fnset) { return fnset[0].apply(context, args); })),
         function(fnset) { return fnset ? fnset[1].apply(context, args) : void 0; });
     }
@@ -1376,15 +1386,15 @@
   // TDD
   _.test = function() {
     var fails = _.constant([]), all = _.constant([]), fna = _.constant([fails(), all()]);
-    return _.async.pipe([_.constant('------------Start------------'), _.log, _.constant(arguments),
+    return _.go.async([_.constant('------------Start------------'), _.log, _.constant(arguments),
       _(_.map, _, function(f, k) {
-        return _.If(_.async(all, _(_.m, _, 'push', k + ' ----> success')))
-          .else(_.async(fna, _(_.map, _, _.async(_.identity, _(_.m, _, 'push', k + ' ----> fail')))))(f());
+        return _.If(__.async(all, _(_.m, _, 'push', k + ' ----> success')))
+          .else(__.async(fna, _(_.map, _, __.async(_.identity, _(_.m, _, 'push', k + ' ----> fail')))))(f());
       }),
       _.constant('------------Fail-------------'), _.log,
-      fails, _(_.each, _, _.async(_.identity, _.error)),
+      fails, _(_.each, _, __.async(_.identity, _.error)),
       _.constant('------------All--------------'), _.log,
-      all, _(_.each, _, _.async(_.identity, _.log)),
+      all, _(_.each, _, __.async(_.identity, _.log)),
       _.constant('------------End--------------'), _.log]);
   };
 
@@ -1426,26 +1436,26 @@
   _._ts_storage = {};
 
   /* sync */
-  _.template = _.t = _.Template = _.T =
-    function() { return s.apply(null, [convert_to_html, _.pipe, {}].concat(_.toArray(arguments))); };
-  _.template$ = _.t$ = _.Template$ = _.T$ =
-    function() { return s.apply(null, [convert_to_html, _.pipe, {}, '$'].concat(_.toArray(arguments))); };
+  _.template = _.t =
+    function() { return s.apply(null, [convert_to_html, _.go, {}].concat(_.toArray(arguments))); };
+  _.template$ = _.t$ =
+    function() { return s.apply(null, [convert_to_html, _.go, {}, '$'].concat(_.toArray(arguments))); };
 
-  _.string = _.s = _.String = _.S = function() { return s.apply(null, [_.mr, _.pipe, {}].concat(_.toArray(arguments))); };
-  _.string$ = _.s$ = _.String$ = _.S$ = function() { return s.apply(null, [_.mr, _.pipe, {}, '$'].concat(_.toArray(arguments))); };
+  _.string = _.s = function() { return s.apply(null, [_.mr, _.go, {}].concat(_.toArray(arguments))); };
+  _.string$ = _.s$ = function() { return s.apply(null, [_.mr, _.go, {}, '$'].concat(_.toArray(arguments))); };
 
-  _.template.each = _.t.each = _.Template.each = _.T.each = function() {
-    var template = _.T.apply(null, arguments);
+  _.template.each = _.t.each = function() {
+    var template = _.t.apply(null, arguments);
     return function(data) {
       return _.map(_.to_mr(arguments), function(v, k, l, a, b) {
         return template.apply(null, arguments);
       }).join('');
     };
   };
-  _.string.each = _.s.each = _.String.each = _.S.each = function() {
-    var template = _.S.apply(null, arguments);
+  _.string.each = _.s.each = function() {
+    var template = _.s.apply(null, arguments);
     return function(data) {
-      return _.pipe(_.mr(_.to_mr(arguments)),
+      return _.go(_.mr(_.to_mr(arguments)),
         _.partial(_.map, _, function(v, k, l, a, b) { return template.apply(null, arguments); }),
         function(res) { return res.join(''); }
       )
@@ -1453,34 +1463,34 @@
   };
 
   /* async */
-  _.async.template = _.async.t = _.async.Template = _.async.T =
-    function() { return s.apply(null, [convert_to_html, _.async.pipe, {}].concat(_.toArray(arguments))); };
-  _.async.template$ = _.async.t$ = _.async.Template$ = _.async.T$ =
-    function() { return s.apply(null, [convert_to_html, _.async.pipe, {}, '$'].concat(_.toArray(arguments))); };
+  _.template.async = _.t.async =
+    function() { return s.apply(null, [convert_to_html, _.go.async, {}].concat(_.toArray(arguments))); };
+  _.template$.async = _.t$.async =
+    function() { return s.apply(null, [convert_to_html, _.go.async, {}, '$'].concat(_.toArray(arguments))); };
 
-  _.async.string = _.async.s = _.async.String = _.async.S =
-    function() { return s.apply(null, [_.mr, _.async.pipe, {}].concat(_.toArray(arguments))); };
-  _.async.string$ = _.async.s$ = _.async.String$ = _.async.S$ =
-    function() { return s.apply(null, [_.mr, _.async.pipe, {}, '$'].concat(_.toArray(arguments))); };
+  _.string.async = _.s.async =
+    function() { return s.apply(null, [_.mr, _.go.async, {}].concat(_.toArray(arguments))); };
+  _.string$.async = _.s$.async =
+    function() { return s.apply(null, [_.mr, _.go.async, {}, '$'].concat(_.toArray(arguments))); };
 
-  _.async.template.each = _.async.t.each = _.async.Template.each = _.async.T.each =
+  _.template.each.async = _.t.each.async =
     function() {
-      var template = _.async.T.apply(null, arguments);
+      var template = _.t.async.apply(null, arguments);
       return function() {
-        return _.async.pipe(_.mr(_.to_mr(arguments)),
-          _.partial(_.map, _, _.async(function() {
+        return _.go.async(_.mr(_.to_mr(arguments)),
+          _.partial(_.map, _, __.async(function() {
             return template.apply(null, arguments);
           })),
           function(res) { return res.join(''); }
         )
       }
     };
-  _.async.string.each = _.async.s.each = _.async.String.each = _.async.S.each =
+  _.string.each.async = _.s.each.async =
     function() {
-      var string = _.async.S.apply(null, arguments);
+      var string = _.s.async.apply(null, arguments);
       return function() {
-        return _.async.pipe(_.mr(_.to_mr(arguments)),
-          _.partial(_.map, _, _.async(function() {
+        return _.go.async(_.mr(_.to_mr(arguments)),
+          _.partial(_.map, _, __.async(function() {
             return string.apply(null, arguments);
           })),
           function(res) { return res.join(''); }
@@ -1495,7 +1505,7 @@
     return space_length / TAB_SIZE + tab_length;
   }
 
-  function s(convert, pipe, self, var_names/*, source...*/) {
+  function s(convert, go, self, var_names/*, source...*/) {
     var source = _.map(_.rest(arguments, 4), function(str_or_func) {
       if (_.isString(str_or_func)) return str_or_func;
       var key = _.uniqueId("func");
@@ -1503,9 +1513,9 @@
       return '_p._ts_storage.' + key;
     }).join("");
     return function(a) {
-      return pipe == _.pipe ?
-        pipe(_.mr(source, var_names, arguments, self), remove_comment, convert, insert_datas1, insert_datas2, _.i) :
-        pipe(_.mr(source, var_names, arguments, self), remove_comment, convert, async_insert_datas1, async_insert_datas2, _.i);
+      return go == _.go ?
+        go(_.mr(source, var_names, arguments, self), remove_comment, convert, insert_datas1, insert_datas2, _.i) :
+        go(_.mr(source, var_names, arguments, self), remove_comment, convert, async_insert_datas1, async_insert_datas2, _.i);
     }
   }
 
@@ -1516,15 +1526,15 @@
   function s_exec(re, wrap, matcher, source, var_names, args, self) {
     var s = source.split(re);
     return _.mr(map(map(matcher(re, source, var_names, self), function(func) {
-        return _.pipe(func.apply(null, args), wrap, return_check);
+        return _.go(func.apply(null, args), wrap, return_check);
       }), function(v, i) { return s[i] + v; }).join("") + s[s.length-1], var_names, args, self);
   }
 
   function async_s_exec(re, wrap, matcher, source, var_names, args, self) {
-    return _.async.pipe(
+    return _.go.async(
       _.mr(source.split(re),
-        _.map(matcher(re, source, var_names, self), _.async(function(func) {
-          return _.async.pipe(func.apply(null, args), wrap, return_check);
+        _.map(matcher(re, source, var_names, self), __.async(function(func) {
+          return _.go.async(func.apply(null, args), wrap, return_check);
         }))
       ),
       function(s, vs) { return _.mr(map(vs, function(v, i) { return s[i] + v; }).join("") + s[s.length-1], var_names, args, self); });
@@ -1601,7 +1611,7 @@
   /* mutable */
   function _set(obj, key, valueOrFunc) {
     if (!_.isFunction(valueOrFunc)) return _.mr(obj[key] = valueOrFunc, key, obj);
-    return _.async.pipe(_.mr(obj, key), valueOrFunc, function(_value) { return _.mr(obj[key] = _value, key, obj) });
+    return _.go.async(_.mr(obj, key), valueOrFunc, function(_value) { return _.mr(obj[key] = _value, key, obj) });
   }
   function _unset(obj, key) { var val = obj[key]; delete obj[key]; return _.mr(val, key, obj); }
   function _remove(arr, remove) { return _.mr(remove, _.removeByIndex(arr, arr.indexOf(remove)), arr); }
@@ -1609,11 +1619,11 @@
   function _shift(arr) { return _.mr(arr.shift(), 0, arr); }
   function _push(arr, itemOrFunc) {
     if (!_.isFunction(itemOrFunc)) return _.mr(itemOrFunc, arr.push(itemOrFunc), arr);
-    return _.async.pipe(arr, itemOrFunc, function(_item) { return _.mr(_item, arr.push(_item), arr); });
+    return _.go.async(arr, itemOrFunc, function(_item) { return _.mr(_item, arr.push(_item), arr); });
   }
   function _unshift(arr, itemOrFunc) {
     if (!_.isFunction(itemOrFunc)) return _.mr(itemOrFunc, arr.unshift(itemOrFunc), arr);
-    return _.async.pipe(arr, itemOrFunc, function(_item) { return _.mr(_item, arr.unshift(_item), arr); });
+    return _.go.async(arr, itemOrFunc, function(_item) { return _.mr(_item, arr.unshift(_item), arr); });
   }
   _.removeByIndex = function(arr, from) {
     if (from !== -1) {
