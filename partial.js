@@ -1024,11 +1024,12 @@
   };
 
   _.shuffle = function(data) {
-    var list = _.isArray(data) ? data : _.values(data);
-    for (var i = 0, len = list.length; i< len; i++) {
-      var rand_i = random(0, len);
+    var list = _.isArray(data) ? data.slice() : _.values(data);
+    var i = -1, rand_i, rand_data, len = list.length;
+    while(++i < len) {
+      rand_i = random(0, len);
       if (i!=rand_i) {
-        var rand_data = list[rand_i];
+        rand_data = list[rand_i];
         list[rand_i] = list[i];
         list[i] = rand_data;
       }
