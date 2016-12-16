@@ -447,8 +447,7 @@
   };
   _.toArray = _.to_array = _.toArray = function(obj) {
     if (!obj) return [];
-    if (_.isArray(obj)) return slice.call(obj);
-    return _.values(obj);
+    return _.isArray(obj) ? slice.call(obj) : _.values(obj);
   };
   _.object = function(list, values) {
     for (var result = {}, i = 0, length = list.length; i < length; i++) {
@@ -1024,17 +1023,13 @@
   };
 
   _.shuffle = function(data) {
-    var list = _.isArray(data) ? data.slice() : _.values(data);
-    var i = -1, rand_i, rand_data, len = list.length;
-    while(++i < len) {
-      rand_i = random(0, len);
-      if (i!=rand_i) {
-        rand_data = list[rand_i];
-        list[rand_i] = list[i];
-        list[i] = rand_data;
-      }
+    var arr = _.toArray(data), res = Array(arr.length);
+    res[0] = arr[0];
+    for (var i = 1, l = arr.length, r; i < l; i++) {
+      r = random(0, i+1);
+      res[i] = res[r]; res[r] = arr[i];
     }
-    return list;
+    return res;
   };
 
   function random(start, end) { return Math.floor(Math.random() * (start - end)) + end;  }
