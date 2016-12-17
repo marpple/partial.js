@@ -12,7 +12,7 @@
 
   /* Partial */
   function _(fn) {
-    fn = lambda(fn);
+    if (_.isString(fn)) return _.method.apply(null, arguments);
     var args1 = [], args3, len = arguments.length, ___idx = len;
     for (var i = 1; i < len; i++) {
       var arg = arguments[i];
@@ -916,7 +916,9 @@
     });
   };
 
-  _.pluck = function(data, key) { return _.map(data, _(_.val, _,key))};
+  _.pluck = function f(data, key) {
+    return arguments.length == 1 ? _(f, _, data) : _.map(data, _(_.val, _,key));
+  };
 
   _.deep_pluck = _.deepPluck = function(data, keys) {
     keys = keys.split('.');
