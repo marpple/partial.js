@@ -388,8 +388,8 @@
   _.noop = function() {};
   _.this = function() { return this; };
   _.i = _.identity = function(v) { return v; };
-  _.args = function() { return arguments; },
-    _.args0 = _.identity;
+  _.args = function() { return arguments; };
+  _.args0 = _.identity;
   _.args1 = function() { return arguments[1]; };
   _.args2 = function() { return arguments[2]; };
   _.args3 = function() { return arguments[3]; };
@@ -412,6 +412,7 @@
       && function() { return (f || (f = _.val(G, nodes))).apply(this, arguments); }
   };
   _.val = function(obj, key, keys) {
+    if (arguments.length == 1) return _.property(obj);
     return (function v(obj, i, keys, li) {
       return (obj = obj[keys[i]]) ? li == i ? obj : v(obj, i + 1, keys, li) : li == i ? obj : void 0;
     })(obj, 0, keys = key.split('.'), keys.length - 1);
@@ -437,7 +438,8 @@
     return typeof length == 'number' && length >= 0 && length <= MAX_ARRAY_INDEX;
   };
   var slice = Array.prototype.slice;
-  _.rest = function(array, n, guard) {
+  _.rest = function f(array, n, guard) {
+    if (_.isNumber(array)) return _(f, _, array);
     return slice.call(array, n == null || guard ? 1 : n);
   };
   _.values = function(obj) {
