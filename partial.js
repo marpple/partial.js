@@ -1582,7 +1582,7 @@
     return _.mr(self ? self.convert_to_html = ary.join("") : ary.join(""), var_names, args, self);
   }
   function line(source, tag_stack) {
-    source = source.replace(REG8, "\n").replace(/^ */, "");
+    source = source.replace(REG8, "\n").replace(/^[ \t]*/, "");
     return source.match(/^[\[.#\w\-]/) ? source.replace(/^(\[.*\]|\{.*?\}|\S)+ ?/, function(str) {
         return start_tag(str, tag_stack);
       }) : source;
