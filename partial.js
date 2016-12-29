@@ -59,19 +59,19 @@
   _.go = function(v) {
     if (this != _ && this != window) return goapply(this, v, arguments, 1);
     var i = 0, f;
-    while (f = arguments[++i]) v = f == __ && ++i ? __ : (v && v._mr) ? f.apply(undefined, v) : v === __ ? f() : f(v);
+    while (f = arguments[++i]) v = f == __ ? __ : (v && v._mr) ? f.apply(undefined, v) : v === __ ? f() : f(v);
     return v;
   };
   _.mr = mr, _.to_mr = to_mr, _.is_mr = is_mr, _.mr_cat = mr_cat;
   function goapply(self, v, fs, start) {
     var i = (start || 0), f;
     while (f = fs[i++])
-      v = f == __ && ++i ? __ :  (v && v._mr) ? f.apply(self, v) : v === __ ? f.call(self) : f.call(self, v);
+      v = f == __ ? __ :  (v && v._mr) ? f.apply(self, v) : v === __ ? f.call(self) : f.call(self, v);
     return v;
   }
   function goapply2(v, fs) {
     var i = 0, f;
-    while (f = fs[i++]) f == __ && ++i ? __ :  v = (v && v._mr) ? f.apply(undefined, v) : v === __ ? f() : f(v);
+    while (f = fs[i++]) v = f == __ ? __ : (v && v._mr) ? f.apply(undefined, v) : v === __ ? f() : f(v);
     return v;
   }
   function mr() {
