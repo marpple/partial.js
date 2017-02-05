@@ -55,23 +55,50 @@
     return f;
   };
 
+
   /* Pipeline */
   _.go = function(v) {
     if (this != _ && this != window) return goapply(this, v, arguments, 1);
     var i = 0, f;
-    while (f = arguments[++i]) v = f == __ ? __ : (v && v._mr) ? f.apply(undefined, v) : v === __ ? f() : f(v);
+    while (f = arguments[++i]) {
+      if (f == __) v = __;
+      else if (f._p_cb) return go_async(null, v, arguments, i);
+      else if (!v) v = f(v);
+      else if (v._mr) {
+        if (maybe_promise_mr(v)) return go_async(null, v, arguments, i);
+        v = f.apply(undefined, v);
+      } else if (v.then && _.isFunction(v.then)) return go_async(null, v, arguments, i);
+      else v = v === __ ? f() : f(v);
+    }
     return v;
   };
   _.mr = mr, _.to_mr = to_mr, _.is_mr = is_mr, _.mr_cat = mr_cat;
   function goapply(self, v, fs, start) {
     var i = (start || 0), f;
-    while (f = fs[i++])
-      v = f == __ ? __ :  (v && v._mr) ? f.apply(self, v) : v === __ ? f.call(self) : f.call(self, v);
+    while (f = fs[i++]) {
+      if (f == __) v = __;
+      else if (f._p_cb) return go_async(self, v, fs, i-1);
+      else if (!v) v = f.call(self, v);
+      else if (v._mr) {
+        if (maybe_promise_mr(v)) return go_async(self, v, fs, i-1);
+        v = f.apply(self, v);
+      } else if (v.then && _.isFunction(v.then)) return go_async(self, v, fs, i-1);
+      else v = v === __ ? f.call(self) : f.call(self, v);
+    }
     return v;
   }
   function goapply2(v, fs) {
     var i = 0, f;
-    while (f = fs[i++]) v = f == __ ? __ : (v && v._mr) ? f.apply(undefined, v) : v === __ ? f() : f(v);
+    while (f = fs[i++]) {
+      if (f == __) v = __;
+      else if (f._p_cb) return go_async(null, v, fs, i-1);
+      else if (!v) v = f(v);
+      else if (v._mr) {
+        if (maybe_promise_mr(v)) return go_async(null, v, fs, i-1);
+        v = f.apply(undefined, v);
+      } else if (v.then && _.isFunction(v.then)) return go_async(null, v, fs, i-1);
+      else v = v === __ ? f() : f(v);
+    }
     return v;
   }
   function mr() {
@@ -131,12 +158,12 @@
   _.Err = function(message) { return new Error(message); };
 
   _.go.async = function(v) {
-    return pipe_async(_.go == this ? null : this, v, arguments, 1);
+    return go_async(_.go == this ? null : this, v, arguments, 1);
   };
   __.async = function() {
     var fs = arguments;
     var f = function() {
-      return pipe_async(this, to_mr(arguments), fs, 0);
+      return go_async(this, to_mr(arguments), fs, 0);
     };
     f._p_async = true;
     return f;
@@ -145,25 +172,17 @@
   _.pipe.async = __.async;
   ___.async = _.indent.async = function() {
     var fs = arguments;
-    return function() { return pipe_async(ithis(this, arguments), to_mr(arguments), fs, 0); }
+    return function() { return go_async(ithis(this, arguments), to_mr(arguments), fs, 0); }
   };
-  __.async2 = function() {
-    var fs = arguments;
-    var f = function() {
-      return pipe_async2(this, to_mr(arguments), fs, 0);
-    };
-    f._p_async = true;
-    return f;
-  };
+  __.async2 = _.pipe;
   _.async2 = __.async2;
   _.pipe.async2 = __.async2;
-  ___.async2 = _.indent.async2 = function() {
-    var fs = arguments;
-    return function() { return pipe_async2(ithis(this, arguments), to_mr(arguments), fs, 0); }
-  };
+  ___.async2 = _.indent;
   _.cb = _.callback = function(f) {
-    f._p_cb = true;
-    return f;
+    return __.async.apply(null, map(arguments, function(f) {
+      f._p_cb = true;
+      return f;
+    }));
   };
   _.boomerang = function() {
     var fs = arguments;
@@ -172,12 +191,21 @@
       args.length--;
       var self = ithis(this, args);
       self.return = cb;
-      pipe_async(self, to_mr(args), fs, 1);
+      go_async(self, to_mr(args), fs, 1);
     });
   };
 
   function has_promise() { return has_promise.__cache || (has_promise.__cache = !!_.val(window, 'Promise.prototype.then')); }
-  function maybe_promise(res) { return _.isObject(res) && res.then && _.isFunction(res.then); }
+  function maybe_promise(res) {
+    return res && res.then && _.isFunction(res.then);
+  }
+  function maybe_promise_mr(mr) {
+    var res, i = mr.length;
+    while (i--) {
+      res = mr[i];
+      if (res && res.then && _.isFunction(res.then)) return true;
+    }
+  }
   function unpack_promise(res, callback) {
     var is_r = is_mr(res);
     return (function u(i, res, length, has_promise) {
@@ -195,27 +223,7 @@
     })(0, (res = is_r ? res : [res]), res.length, false);
   }
 
-  function pipe_async2(self, v, fs, i) {
-    var args_len = fs.length, resolve = null, promise;
-    function cp() { return has_promise() ? new Promise(function(rs) { resolve = rs; }) : { then: function(rs) { resolve = rs; } }; };
-    return (function c(res) {
-      do {
-        if (i === args_len)
-          return promise ? (resolve ? resolve(fpro(res)) : setTimeout(function() { resolve && resolve(fpro(res)); }, 0)) : res;
-        if (unpack_promise(res, c)) return promise || (promise = cp());
-        if (fs[i] == __ && i++) res = __;
-        if (!fs[i]._p_cb) res = is_mr(res) ? _.lambda(fs[i++]).apply(self, res) : res === __ ?
-          _.lambda(fs[i++]).call(self) : _.lambda(fs[i++]).call(self, res);
-      } while (i == args_len || i < args_len && !fs[i]._p_cb);
-      if (unpack_promise(res, c)) return promise || (promise = cp());
-      is_mr(res) ?
-        _.lambda(fs[i++]).apply(self, (res[res.length++] = function() { c(to_mr(arguments)); }) && res) : res === __ ?
-        _.lambda(fs[i++]).call(self, function() { c(to_mr(arguments)); }) :
-        _.lambda(fs[i++]).call(self, res, function() { c(to_mr(arguments)); });
-      return promise || (promise = cp());
-    })(v);
-  }
-  function pipe_async(self, v, fs, i) {
+  function go_async(self, v, fs, i) {
     var args_len = fs.length, resolve = null;
     var promise = has_promise() ? new Promise(function(rs) { resolve = rs; }) : { then: function(rs) { resolve = rs; } };
     (function c(res) {
@@ -236,154 +244,6 @@
   }
   function fpro(res) { return is_mr(res) && res.length == 1 ? res[0] : res; }
 
-  function _reduce_async(data, iteratee, memo, limiter) {
-    if (this != G && this != _) {
-      iteratee = _.bind(iteratee, this);
-      if (_.isFunction(limiter)) limiter = limiter.bind(this);
-    }
-
-    if (_.is_mr(data)) {
-      iteratee = Iter(iteratee, data, 3);
-      if (_.isFunction(limiter)) limiter = Iter(limiter, data, 3);
-      data = data[0];
-    }
-
-    var i = -1, keys = _.isArrayLike(data) ? null : _.keys(data);
-    memo = (arguments.length > 2) ? memo : data[keys ? keys[++i] : ++i];
-
-    if (limiter == 0 || _.isEmpty(data)) return _.go.async(memo);
-
-    return (function f(i, memo) {
-      if (++i == (keys || data).length) return _.go.async(memo);
-      var args = keys ? _.mr(memo, data[keys[i]], keys[i], data) : _.mr(memo, data[i], i, data);
-
-      return _.go.async(args, iteratee).then(function(res) {
-        args[0] = res; // iter 직후, limiter에서의 memo를 갱신시켜서 보내줘야 함
-        return (_.isFunction(limiter) ? limiter.apply(null, args) : limiter == i+1) ? res : f(i, res); // f가 res를 안받아도 되나? - 한꺼풀 밖에다가
-      });
-    })(i, memo);
-  }
-
-  function _reduce_right_async(data, iteratee, memo, limiter) {
-    if (this != G) {
-      iteratee = _.bind(iteratee, this);
-      if (_.isFunction(limiter)) limiter = limiter.bind(this);
-    }
-
-    if (_.is_mr(data)) {
-      iteratee = Iter(iteratee, data, 3);
-      if (_.isFunction(limiter)) limiter = Iter(limiter, data, 3);
-      data = data[0];
-    }
-
-    var i = data.length, keys = _.isArrayLike(data) ? null : _.keys(data);
-    memo = (arguments.length > 2) ? memo : data[keys ? keys[--i] : --i];
-
-    if (limiter == 0 || _.isEmpty(data)) return _.go.async(memo);
-
-    return (function f(i, memo) {
-      if (--i == -1) return _.go.async(memo);
-      var args = keys ? _.mr(memo, data[keys[i]], keys[i], data) : _.mr(memo, data[i], i, data);
-
-      return _.go.async(args, iteratee).then(function(res) {
-        args[0] = res;
-        return (_.isFunction(limiter) ? limiter.apply(null, args) : (data.length - limiter) == i) ? res : f(i, res);
-      });
-    })(i, memo);
-  }
-
-  function _limiter(limiter) {
-    if (!_.isFunction(limiter)) return limiter;
-    return function() {
-      return limiter.apply(null, _.rest(arguments));
-    }
-  }
-
-  function _each_async(data, iteratee, limiter) {
-    return _reduce_async.call(
-      this,
-      data, //data
-      function(memo) { //iteratee
-        return _.go.async(_.to_mr(_.rest(arguments)), iteratee, function() { return memo; });
-      },
-      _.is_mr(data) ? data[0] : data, //memo
-      _limiter(limiter) //limiter
-    );
-  }
-
-  function _map_async(data, iteratee, limiter) {
-    return _reduce_async.call(
-      this,
-      data, //data
-      function(memo) { //iteratee
-        return _.go.async(_.to_mr(_.rest(arguments)), iteratee, function(v) { memo.push(v); return memo; });
-      },
-      [], //memo
-      _limiter(limiter) // limiter
-    );
-  }
-
-  function _filter_async(data, iteratee, limiter) {
-    return _reduce_async.call(
-      this,
-      data, //data
-      function(memo, val) { //iteratee
-        return _.go.async(_.to_mr(_.rest(arguments)), iteratee, function(v) { if (v) memo.push(val); return memo; });
-      },
-      [], //memo
-      _limiter(limiter) // limiter
-    );
-  }
-
-  function _reject_async(data, iteratee, limiter) {
-    return _reduce_async.call(
-      this,
-      data, //data
-      function(memo, val) { //iteratee
-        return _.go.async(_.to_mr(_.rest(arguments)), iteratee, function(v) { if(!v) memo.push(val); return memo; });
-      },
-      [], //memo
-      _limiter(limiter) // limiter
-    );
-  }
-
-  function _find_async(data, iteratee) {
-    var tmp = false;
-    return _reduce_async.call(
-      this,
-      data, //data
-      function(memo, val) { //iteratee
-        return _.go.async(_.to_mr(_.rest(arguments)), iteratee, function(res) { if (res) { tmp = true; return val; } return memo; }); // undefined
-      },
-      undefined, //memo
-      function() { return tmp === true; }
-    );
-  }
-
-  function _every_async(data, iteratee) {
-    return _reduce_async.call(
-      this,
-      data, //data
-      function(memo, val) { //iteratee
-        return _.go.async(_.to_mr(_.rest(arguments)), iteratee);
-      },
-      true, //memo
-      _.negate(_.identity) //limiter
-    );
-  }
-
-  function _some_async(data, iteratee) {
-    return _reduce_async.call(
-      this,
-      data, //data
-      function(memo, val) { //iteratee
-        return _.go.async(_.to_mr(_.rest(arguments)), iteratee);
-      },
-      false, //memo
-      _.identity //limiter
-    );
-  }
-
   /* Ice cream */
   _.noop = function() {};
   _.this = function() { return this; };
@@ -395,7 +255,7 @@
   _.args3 = function() { return arguments[3]; };
   _.args4 = function() { return arguments[4]; };
   _.args5 = function() { return arguments[5]; };
-  _.always = _.constant = function(v) { return function() { return v; }; };
+  _.c = _.always = _.constant = function(v) { return function() { return v; }; };
   _.true = _.constant(true);
   _.false = _.constant(false);
   _.null = _.constant(null);
@@ -579,8 +439,8 @@
     ].concat(_.rest(arguments)));
   };
   /* Collections */
-  function Iter(iter, args, rnum) {
-    for (var args2 = [], i = 0, l = args.length; i < l; i++) args2[i+rnum] = args[i];
+  function Iter(iter, args, rnum, start) {
+    for (var args2 = [], i = 0, l = args.length; i < l-start; i++) args2[i+rnum] = args[i+start];
     if (iter._p_cb) args2.length++;
     var f = function() {
       args2[0] = arguments[0];
@@ -592,174 +452,188 @@
     f._p_async = iter._p_async, f._p_cb = iter._p_cb;
     return f;
   }
-  _.each = function f(data, iteratee, limiter) {
+
+  var _each_async = function f(data, iter, keys, mp, i) {
+    return _.go(mp, function() {
+      var key = keys ? keys[i] : i;
+      return (keys || data).length == i ? data : f(data, iter, keys, iter(data[key], key, data), ++i);
+    });
+  };
+
+  _.each = function f(data, iteratee) {
     if (arguments.length == 1) return _(f, _, data);
-    if (iteratee._p_async || iteratee._p_cb) return _each_async.apply(null, arguments);
+    if (this != _ && this != G) iteratee = _.bind(iteratee, this);
+    if (arguments.length > 2) iteratee = Iter(iteratee, arguments, 2, 2);
+    var keys = _.isArrayLike(data) ? null : _.keys(data);
+    if (iteratee._p_async || iteratee._p_cb) return _each_async(data, iteratee, keys, null, 0);
 
-    if (this != _ && this != G) {
-      iteratee = _.bind(iteratee, this);
-      if (_.isFunction(limiter)) limiter = limiter.bind(this);
-    }
-
-    if (_.is_mr(data)) {
-      iteratee = Iter(iteratee, data, 2);
-      if (_.isFunction(limiter)) limiter = Iter(limiter, data, 3);
-      data = data[0];
-    }
-
-    if (_.isFunction(limiter)) {
-      if (_.isArrayLike(data))
-        for (var i = 0, l = data.length; i < l; i++) {
-          iteratee(data[i], i, data);
-          if (limiter(data[i], i, data)) break;
-        }
-      else
-        for (var keys = _.keys(data), i = 0, l = keys.length; i < l; i++) {
-          iteratee(data[keys[i]], keys[i], data);
-          if (limiter(data[keys[i]], keys[i], data)) break;
-        }
+    if (keys) {
+      if (!keys.length) return data;
+      var mp = iteratee(data[keys[0]], keys[0], data);
+      if (mp && (mp._mr ? maybe_promise_mr(mp) : mp.then && _.isFunction(mp.then)))
+        return _each_async(data, iteratee, keys, mp, 1);
+      for (var i = 1, l = keys.length; i < l; i++)
+        iteratee(data[keys[i]], keys[i], data);
     } else {
-      if (limiter == 0) return data;
-      if (_.isArrayLike(data))
-        for (var i = 0, l = limiter || data.length; i < l; i++)
-          iteratee(data[i], i, data);
-      else
-        for (var keys = _.keys(data), i = 0, l = limiter || keys.length; i < l; i++)
-          iteratee(data[keys[i]], keys[i], data);
+      if (!data.length) return data;
+      var mp = iteratee(data[0], 0, data);
+      if (mp && (mp._mr ? maybe_promise_mr(mp) : mp.then && _.isFunction(mp.then)))
+        return _each_async(data, iteratee, null, mp, 1);
+      for (var i = 1, l = data.length; i < l; i++)
+        iteratee(data[i], i, data);
     }
+
     return data;
   };
 
-  _.map = function f(data, iteratee, limiter) {
+  var _map_async = function f(data, iter, keys, mp, i, result) {
+    return _.go(mp, function(val) {
+      if (i - 1 > -1) result[i-1] = val;
+      var key = keys ? keys[i] : i;
+      return (keys || data).length == i ? result : f(data, iter, keys, iter(data[key], key, data), ++i, result);
+    });
+  };
+
+  _.map = function f(data, iteratee) {
     if (arguments.length == 1) return _(f, _, data);
-    if (iteratee._p_async || iteratee._p_cb) return _map_async.apply(null, arguments);
+    if (this != _ && this != G) iteratee = _.bind(iteratee, this);
+    if (arguments.length > 2) iteratee = Iter(iteratee, arguments, 2, 2);
+    var keys = _.isArrayLike(data) ? null : _.keys(data);
+    if (iteratee._p_async || iteratee._p_cb) return _map_async(data, iteratee, keys, null, 0, []);
 
-    if (this != _ && this != G) {
-      iteratee = _.bind(iteratee, this);
-      if (_.isFunction(limiter)) limiter = limiter.bind(this);
-    }
+    var res = [];
 
-    if (_.is_mr(data)) {
-      iteratee = Iter(iteratee, data, 2);
-      if (_.isFunction(limiter)) limiter = Iter(limiter, data, 3);
-      data = data[0];
-    }
-
-    if (limiter && _.isFunction(limiter)) {
-      if (_.isArrayLike(data))
-        for (var i = 0, res = [], l = data.length; i < l; i++) {
-          res.push(iteratee(data[i], i, data));
-          if (limiter(data[i], i, data)) break;
-        }
-      else
-        for (var i = 0, res = [], keys = _.keys(data), l = keys.length; i < l; i++) {
-          res.push(iteratee(data[keys[i]], keys[i], data));
-          if (limiter(data[keys[i]], keys[i], data)) break;
-        }
+    if (keys) {
+      if (!keys.length) return data;
+      var mp = iteratee(data[keys[0]], keys[0], data);
+      if (mp && (mp._mr ? maybe_promise_mr(mp) : mp.then && _.isFunction(mp.then)))
+        return _map_async(data, iteratee, keys, mp, 1, res);
+      res[0] = mp;
+      for (var i = 1, l = keys.length; i < l; i++)
+        res[i] = iteratee(data[keys[i]], keys[i], data);
     } else {
-      if (limiter == 0) return [];
-      if (_.isArrayLike(data))
-        for (var i = 0, l = limiter || data.length, res = Array(l); i < l; i++)
-          res[i] = iteratee(data[i], i, data);
-      else
-        for (var i = 0, keys = _.keys(data), l = limiter || keys.length, res = Array(l); i < l; i++)
-          res[i] = iteratee(data[keys[i]], keys[i], data);
+      if (!data.length) return data;
+      var mp = iteratee(data[0], 0, data);
+      if (mp && (mp._mr ? maybe_promise_mr(mp) : mp.then && _.isFunction(mp.then)))
+        return _map_async(data, iteratee, null, mp, 1, res);
+      res[0] = mp;
+      for (var i = 1, l = data.length; i < l; i++)
+        res[i] = iteratee(data[i], i, data);
     }
+
     return res;
   };
 
-  _.reduce = function f(data, iteratee, memo, limiter) {
-    if (arguments.length == 1) return _(f, _, data);
-    if (iteratee._p_async || iteratee._p_cb) return _reduce_async.apply(this, arguments);
-
-    if (this != _ && this != G) {
-      iteratee = _.bind(iteratee, this);
-      if (_.isFunction(limiter)) limiter = limiter.bind(this);
-    }
-
-    if (_.is_mr(data)) {
-      iteratee = Iter(iteratee, data, 3);
-      if (_.isFunction(limiter)) limiter = Iter(limiter, data, 3);
-      data = data[0];
-    }
-
-    if (limiter && _.isFunction(limiter)) {
-      if (_.isArrayLike(data))
-        for (var i = 0, res = (arguments.length > 2 ? memo : data[i++]), l = data.length; i < l; i++) {
-          res = iteratee(res, data[i], i, data);
-          if (limiter(res, data[i], i, data)) break;
-        }
-      else
-        for (var i = 0, keys = _.keys(data), res = (arguments.length > 2 ? memo : data[keys[i++]]), l = keys.length; i < l; i++) {
-          res = iteratee(res, data[keys[i]], i, data);
-          if (limiter(res, data[keys[i]], keys[i], data)) break;
-        }
-    } else {
-      if (limiter == 0) return void 0;
-      if (_.isArrayLike(data))
-        for (var i = 0, res = (arguments.length > 2 ? memo : data[i++]), l = limiter || data.length; i < l; i++)
-          res = iteratee(res, data[i], i, data);
-      else
-        for (var i = 0, keys = _.keys(data), res = (arguments.length > 2 ? memo : data[keys[i++]]), l = limiter || keys.length; i < l; i++)
-          res = iteratee(res, data[keys[i]], keys[i], data);
-    }
-    return res;
+  var _reduce_async = function f(data, iter, keys, mp, i) {
+    return _.go(mp, function(memo) {
+      var key = keys ? keys[i] : i;
+      return (keys || data).length == i ? memo : f(data, iter, keys, iter(memo, data[key], key, data), ++i);
+    });
   };
 
-  _.reduceRight = _.reduce_right = function f(data, iteratee, memo, limiter) {
+  _.reduce = function f(data, iteratee, memo) {
     if (arguments.length == 1) return _(f, _, data);
-    if (iteratee._p_async || iteratee._p_cb) return _reduce_right_async.apply(this, arguments);
+    if (this != _ && this != G) iteratee = _.bind(iteratee, this);
+    if (arguments.length > 3) iteratee = Iter(iteratee, arguments, 3, 3);
+    var keys = _.isArrayLike(data) ? null : _.keys(data);
+    var i = 0;
+    if (iteratee._p_async || iteratee._p_cb)
+      return _reduce_async(data, iteratee, keys, arguments.length > 2 ? memo : keys ? data[keys[i++]] : data[i++], i);
 
-    if (this != _ && this != G) {
-      iteratee = _.bind(iteratee, this);
-      if (_.isFunction(limiter)) limiter = limiter.bind(this);
-    }
-
-    if (_.is_mr(data)) {
-      iteratee = Iter(iteratee, data, 3);
-      if (_.isFunction(limiter)) limiter = Iter(limiter, data, 3);
-      data = data[0];
-    }
-
-    if (limiter && _.isFunction(limiter)) {
-      if (_.isArrayLike(data))
-        for (var i = data.length - 1, res = (arguments.length > 2 ? memo : data[i--]); i >= 0; i--) {
-          res = iteratee(res, data[i], i, data);
-          if (limiter(res, data[i], i, data)) break;
-        }
-      else
-        for (var keys = _.keys(data), i = keys.length - 1, res = (arguments.length > 2 ? memo : data[keys[i--]]); i >= 0; i--) {
-          res = iteratee(res, data[keys[i]], i, data);
-          if (limiter(res, data[keys[i]], keys[i], data)) break;
-        }
+    if (keys) {
+      memo = arguments.length > 2 ? memo : data[keys[i++]];
+      var l = keys.length;
+      if (!l) return memo;
+      memo = iteratee(memo, data[keys[i]], keys[i], data);
+      if (memo && (memo._mr ? maybe_promise_mr(memo) : memo.then && _.isFunction(memo.then)))
+        return _reduce_async(data, iteratee, keys, memo, i+1);
+      for (; i < l; i++)
+        memo = iteratee(memo, data[keys[i]], keys[i], data);
     } else {
-      if (limiter == 0) return void 0;
-      if (_.isArrayLike(data))
-        for (var i = data.length - 1, res = (arguments.length > 2 ? memo : data[i--]), end = (data.length - limiter) || 0; i >= end; i--)
-          res = iteratee(res, data[i], i, data);
-      else
-        for (var keys = _.keys(data), i = keys.length - 1, res = (arguments.length > 2 ? memo : data[keys[i--]]), end = (data.length - limiter) || 0; i >= end; i--)
-          res = iteratee(res, data[keys[i]], keys[i], data);
+      memo = arguments.length > 2 ? memo : data[i++];
+      var l = data.length;
+      if (!l) return memo;
+      memo = iteratee(memo, data[i], i, data);
+      if (memo && (memo._mr ? maybe_promise_mr(memo) : memo.then && _.isFunction(memo.then)))
+        return _reduce_async(data, iteratee, null, memo, i+1);
+      for (; i < l; i++)
+        memo = iteratee(memo, data[i], i, data);
     }
-    return res;
+
+    return memo;
+  };
+
+  var _reduce_right_async = function f(data, iter, keys, mp, i) {
+    return _.go(mp, function(memo) {
+      var key = keys ? keys[i] : i;
+      return (keys || data).length == i ? memo : f(data, iter, keys, iter(memo, data[key], key, data), ++i);
+    });
+  };
+
+  _.reduceRight = _.reduce_right = function f(data, iteratee, memo) {
+    if (arguments.length == 1) return _(f, _, data);
+    if (this != _ && this != G) iteratee = _.bind(iteratee, this);
+    if (arguments.length > 3) iteratee = Iter(iteratee, arguments, 3, 3);
+    var keys = _.isArrayLike(data) ? null : _.keys(data);
+    if (iteratee._p_async || iteratee._p_cb) {
+      var i = (keys || data).length - 1;
+      return _reduce_right_async(data, iteratee, keys, arguments.length > 2 ? memo : keys ? data[keys[i--]] : data[i--], i);
+    }
+
+    if (keys) {
+      var i = keys.length - 1;
+      memo = arguments.length > 2 ? memo : data[keys[i--]];
+      if (!keys.length) return memo;
+      memo = iteratee(memo, data[keys[i]], keys[i], data);
+      if (memo && (memo._mr ? maybe_promise_mr(memo) : memo.then && _.isFunction(memo.then)))
+        return _reduce_async(data, iteratee, keys, memo, i+1);
+      for (; i > -1; i--)
+        memo = iteratee(memo, data[keys[i]], keys[i], data);
+    } else {
+      var i = data.length - 1;
+      memo = arguments.length > 2 ? memo : data[i--];
+      if (!data.length) return memo;
+      memo = iteratee(memo, data[i], i, data);
+      if (memo && (memo._mr ? maybe_promise_mr(memo) : memo.then && _.isFunction(memo.then)))
+        return _reduce_async(data, iteratee, null, memo, i+1);
+      for (; i > -1; i--)
+        memo = iteratee(memo, data[i], i, data);
+    }
+
+    return memo;
+  };
+
+  var _find_async = function f(data, predi, keys, mp, i) {
+    return _.go(mp, function(bool) {
+      var key = keys ? keys[i] : i;
+      if (bool) return data[keys ? keys[i-1] : i-1];
+      return (keys || data).length == i ? undefined : f(data, predi, keys, predi(data[key], key, data), ++i);
+    });
   };
 
   _.find = function f(data, predicate) {
     if (arguments.length == 1) return _(f, _, data);
-    if (predicate._p_async || predicate._p_cb) return _find_async.apply(null, arguments);
+    if (this != _ && this != G) predicate = _.bind(predicate, this);
+    if (arguments.length > 2) predicate = Iter(predicate, arguments, 2, 2);
+    var keys = _.isArrayLike(data) ? null : _.keys(data);
+    if (predicate._p_async || predicate._p_cb) return _find_async(data, predicate, keys, null, 0);
 
-    if (this != _ && this != G) {
-      predicate = _.bind(predicate, this);
-    }
-
-    if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
-
-    if (_.isArrayLike(data)) {
-      for (var i = 0, l = data.length; i < l; i++)
-        if (predicate(data[i], i, data)) return data[i];
-    } else {
-      for (var keys = _.keys(data), i = 0, l = keys.length; i < l; i++)
+    if (keys) {
+      if (!keys.length) return data;
+      var mp = predicate(data[keys[0]], keys[0], data);
+      if (mp && (mp._mr ? maybe_promise_mr(mp) : mp.then && _.isFunction(mp.then)))
+        return _find_async(data, predicate, keys, mp, 1);
+      else if (mp) return data[keys[0]];
+      for (var i = 1, l = keys.length; i < l; i++)
         if (predicate(data[keys[i]], keys[i], data)) return data[keys[i]];
+    } else {
+      if (!data.length) return data;
+      var mp = predicate(data[0], 0, data);
+      if (mp && (mp._mr ? maybe_promise_mr(mp) : mp.then && _.isFunction(mp.then)))
+        return _find_async(data, predicate, null, mp, 1);
+      else if (mp) return data[0];
+      for (var i = 1, l = data.length; i < l; i++)
+        if (predicate(data[i], i, data)) return data[i];
     }
   };
 
@@ -986,6 +860,7 @@
   _.sortBy = _.sort_by = function f(data, iteratee) {
     if (arguments.length == 1) return _(f, _, data);
 
+    if (_.isString(iteratee)) iteratee = _.val(iteratee);
     if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 2); data = data[0]; }
     return _.pluck(_.map(data, function(value, index, list) {
       return { value: value, index: index, criteria: iteratee(value, index, list) };
@@ -1203,13 +1078,13 @@
     if (arguments.length == 1) return _(f, _, obj);
 
     var res = {};
-    if (_.isString(iteratee)) {
-      for (var keys = _.rest(arguments), i = 0, l = keys.length; i < l; i++)
-        res[keys[i]] = obj[keys[i]];
-    } else {
+    if (_.isFunction(iteratee)) {
       if (_.is_mr(obj)) { iteratee = Iter(iteratee, obj, 2); obj = obj[0]; }
       for (var keys = _.keys(obj), i = 0, l = keys.length; i < l; i++)
         if (iteratee(obj[keys[i]], keys[i], obj)) res[keys[i]] = obj[keys[i]];
+    } else {
+      var keys = _.isArray(iteratee) ? iteratee : _.rest(arguments);
+      for (var i = 0, l = keys.length; i < l; i++) res[keys[i]] = obj[keys[i]];
     }
     return res;
   };

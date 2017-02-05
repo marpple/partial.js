@@ -373,6 +373,137 @@
     }
   ]));*/
 
+
+//  _.callback(function(next) {
+//    setTimeout(function() {
+//      next(10)
+//    })
+//  })().then(function(a) {
+//    console.log(a);
+//  });
+
+//  var add1 = function(v) { return v + 1; };
+//
+//  _.go(1,
+//    add1,
+//    function(a) {
+//      return new Promise(function(rs) {
+//        rs(a + 1);
+//      })
+//    },
+//    add1,
+//    add1,
+//    _.log);
+
+  /*var args = [0];
+  for (var i = 0; i < 10000; i++) {
+    args.push(_.identity);
+  }
+  console.time();
+  _.go2.apply(null, args);
+  console.timeEnd();*/
+
+  console.log = log;
+
+  _.go(
+    _.mr([1, 2, 3], 20),
+    _.each(log));
+
+  _.each([1, 2, 3], log, 20);
+
+  _.each([1,2,3], function(v) {
+    return new Promise(function(rs) {
+      setTimeout(function() {
+        console.log(v);
+        rs();
+      }, 1000)
+    });
+  }).then(function(data) {
+    console.log('end', data);
+  });
+
+  _.each({
+    a: 1,
+    b: 2,
+    c: 3
+  }, function(v) {
+    return new Promise(function(rs) {
+      setTimeout(function() {
+        console.log(v);
+        rs();
+      }, 1000)
+    });
+  }).then(function(data) {
+    console.log('end', data);
+  });
+
+
+  _.log('map', _.go(
+    _.mr([1, 2, 3], 20),
+    _.map(v => v * 3)));
+
+  _.log('map2', _.map([1, 2, 3], v => v * 4, 20));
+
+  _.map([1,2,3], function(v) {
+    return new Promise(function(rs) {
+      setTimeout(function() {
+        console.log(v);
+        rs(v * 2);
+      }, 1000)
+    });
+  }).then(function(data) {
+    console.log('map', data);
+  });
+
+  _.map({
+    a: 1,
+    b: 2,
+    c: 3
+  }, function(v) {
+    return new Promise(function(rs) {
+      setTimeout(function() {
+        console.log(v);
+        rs(v*2);
+      }, 1000)
+    });
+  }).then(function(data) {
+    console.log('map', data);
+  });
+
+
+  _.log('reduce', _.go(
+    _.mr([1, 2, 3], 20),
+    _.map(v => v * 3)));
+
+  _.log('map2', _.map([1, 2, 3], v => v * 4, 20));
+
+  _.map([1,2,3], function(v) {
+    return new Promise(function(rs) {
+      setTimeout(function() {
+        console.log(v);
+        rs(v * 2);
+      }, 1000)
+    });
+  }).then(function(data) {
+    console.log('map', data);
+  });
+
+  _.map({
+    a: 1,
+    b: 2,
+    c: 3
+  }, function(v) {
+    return new Promise(function(rs) {
+      setTimeout(function() {
+        console.log(v);
+        rs(v*2);
+      }, 1000)
+    });
+  }).then(function(data) {
+    console.log('map', data);
+  });
+
+
 </script>
 
 
