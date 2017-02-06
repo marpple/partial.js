@@ -193,6 +193,7 @@
       go_async(self, to_mr(args), fs, 1);
     });
   };
+
   _.branch = function() {
     var fs = arguments;
     return function() {
