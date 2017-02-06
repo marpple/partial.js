@@ -55,7 +55,6 @@
     return f;
   };
 
-
   /* Pipeline */
   _.go = function(v) {
     if (this != _ && this != window) return goapply(this, v, arguments, 1);
@@ -486,11 +485,11 @@
     return data;
   };
 
-  var _map_async = function f(data, iter, keys, mp, i, result) {
+  var _map_async = function f(data, iter, keys, mp, i, res) {
     return _.go(mp, function(val) {
-      if (i - 1 > -1) result[i-1] = val;
+      if (i - 1 > -1) res[i-1] = val;
       var key = keys ? keys[i] : i;
-      return (keys || data).length == i ? result : f(data, iter, keys, iter(data[key], key, data), ++i, result);
+      return (keys || data).length == i ? res : f(data, iter, keys, iter(data[key], key, data), ++i, res);
     });
   };
 
@@ -605,8 +604,8 @@
 
   var _find_async = function f(data, predi, keys, mp, i) {
     return _.go(mp, function(bool) {
-      var key = keys ? keys[i] : i;
       if (bool) return data[keys ? keys[i-1] : i-1];
+      var key = keys ? keys[i] : i;
       return (keys || data).length == i ? undefined : f(data, predi, keys, predi(data[key], key, data), ++i);
     });
   };
@@ -637,51 +636,38 @@
     }
   };
 
+  var _filter_async = function f(data, predi, keys, mp, i, res) {
+    return _.go(mp, function(bool) {
+      if (bool) res.push(data[keys ? keys[i-1] : i-1]);
+      var key = keys ? keys[i] : i;
+      return (keys || data).length == i ? undefined : f(data, predi, keys, predi(data[key], key, data), ++i, res);
+    });
+  };
+
   _.filter = function f(data, predicate, limiter) {
     if (arguments.length == 1) return _(f, _, data);
-    if (predicate._p_async || predicate._p_cb) return _filter_async.apply(null, arguments);
+    if (this != _ && this != G) predicate = _.bind(predicate, this);
+    if (arguments.length > 2) predicate = Iter(predicate, arguments, 2, 2);
+    var keys = _.isArrayLike(data) ? null : _.keys(data);
+    if (predicate._p_async || predicate._p_cb) return _filter_async(data, predicate, keys, null, 0, []);
 
-    if (this != _ && this != G) {
-      predicate = _.bind(predicate, this);
-      if (_.isFunction(limiter)) limiter = limiter.bind(this);
-    }
-
-    if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
-
-    if (!limiter) {
-      if (_.isArrayLike(data))
-        for (var i = 0, res = [], l = data.length; i < l; i++) {
-          if (predicate(data[i], i, data)) res.push(data[i]);
-        }
-      else
-        for (var keys = _.keys(data), i = 0, res = [], l = keys.length; i < l; i++) {
-          if (predicate(data[keys[i]], keys[i], data)) res.push(data[keys[i]]);
-        }
-    } else if (_.isFunction(limiter)) {
-      if (_.isArrayLike(data)) {
-        for (var i = 0, res = [], l = data.length; i < l; i++) {
-          if (predicate(data[i], i, data)) res.push(data[i]);
-          if (limiter(res, data[i], i, data)) break;
-        }
-      }
-      else
-        for (var i = 0, res = [], keys = _.keys(data), l = keys.length; i < l; i++) {
-          if (predicate(data[keys[i]], keys[i], data)) res.push(data[keys[i]]);
-          if (limiter(res, data[keys[i]], keys[i], data)) break;
-        }
+    var res = [];
+    if (keys) {
+      if (!keys.length) return data;
+      var mp = predicate(data[keys[0]], keys[0], data);
+      if (mp && (mp._mr ? maybe_promise_mr(mp) : mp.then && _.isFunction(mp.then)))
+        return _filter_async(data, predicate, keys, mp, 1, res);
+      for (var i = 1, l = keys.length; i < l; i++)
+        if (predicate(data[keys[i]], keys[i], data)) res.push(data[keys[i]]);
     } else {
-      if (limiter == 0) return [];
-      if (_.isArrayLike(data))
-        for (var i = 0, res = [], l = data.length; i < l; i++) {
-          if (predicate(data[i], i, data)) res.push(data[i]);
-          if (res.length == limiter) break;
-        }
-      else
-        for (var keys = _.keys(data), i = 0, res = [], l = keys.length; i < l; i++) {
-          if (predicate(data[keys[i]], keys[i], data)) res.push(data[keys[i]]);
-          if (res.length == limiter) break;
-        }
+      if (!data.length) return data;
+      var mp = predicate(data[0], 0, data);
+      if (mp && (mp._mr ? maybe_promise_mr(mp) : mp.then && _.isFunction(mp.then)))
+        return _filter_async(data, predicate, null, mp, 1, res);
+      for (var i = 1, l = data.length; i < l; i++)
+        if (predicate(data[i], i, data)) res.push(data[i]);
     }
+
     return res;
   };
 
@@ -695,86 +681,111 @@
     return _.find(list, function(obj) { return _.is_match(obj, attrs) });
   };
 
+  var _reject_async = function f(data, predi, keys, mp, i, res) {
+    return _.go(mp, function(bool) {
+      if (!bool) res.push(data[keys ? keys[i-1] : i-1]);
+      var key = keys ? keys[i] : i;
+      return (keys || data).length == i ? undefined : f(data, predi, keys, predi(data[key], key, data), ++i, res);
+    });
+  };
+
   _.reject = function f(data, predicate, limiter) {
     if (arguments.length == 1) return _(f, _, data);
-    if (predicate._p_async || predicate._p_cb) return _reject_async.apply(null, arguments);
+    if (this != _ && this != G) predicate = _.bind(predicate, this);
+    if (arguments.length > 2) predicate = Iter(predicate, arguments, 2, 2);
+    var keys = _.isArrayLike(data) ? null : _.keys(data);
+    if (predicate._p_async || predicate._p_cb) return _reject_async(data, predicate, keys, null, 0, []);
 
-    if (this != _ && this != G) {
-      predicate = _.bind(predicate, this);
-      if (_.isFunction(limiter)) limiter = limiter.bind(this);
-    }
-
-    if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
-
-    if (!limiter) {
-      if (_.isArrayLike(data))
-        for (var i = 0, res = [], l = data.length; i < l; i++) {
-          if (!predicate(data[i], i, data)) res.push(data[i]);
-        }
-      else
-        for (var keys = _.keys(data), i = 0, res = [], l = keys.length; i < l; i++) {
-          if (!predicate(data[keys[i]], keys[i], data)) res.push(data[keys[i]]);
-        }
-    } else if (_.isFunction(limiter)) {
-      if (_.isArrayLike(data))
-        for (var i = 0, res = [], l = data.length; i < l; i++) {
-          if (!predicate(data[i], i, data)) res.push(data[i]);
-          if (limiter(res, data[i], i, data)) break;
-        }
-      else
-        for (var i = 0, res = [], keys = _.keys(data), l = keys.length; i < l; i++) {
-          if (!predicate(data[keys[i]], keys[i], data)) res.push(data[keys[i]]);
-          if (limiter(res, data[keys[i]], keys[i], data)) break;
-        }
+    var res = [];
+    if (keys) {
+      if (!keys.length) return data;
+      var mp = predicate(data[keys[0]], keys[0], data);
+      if (mp && (mp._mr ? maybe_promise_mr(mp) : mp.then && _.isFunction(mp.then)))
+        return _reject_async(data, predicate, keys, mp, 1, res);
+      for (var i = 1, l = keys.length; i < l; i++)
+        if (!predicate(data[keys[i]], keys[i], data)) res.push(data[keys[i]]);
     } else {
-      if (limiter == 0) return [];
-      if (_.isArrayLike(data))
-        for (var i = 0, res = [], l = data.length; i < l; i++) {
-          if (!predicate(data[i], i, data)) res.push(data[i]);
-          if (res.length == limiter) break;
-        }
-      else
-        for (var keys = _.keys(data), i = 0, res = [], l = keys.length; i < l; i++) {
-          if (!predicate(data[keys[i]], keys[i], data)) res.push(data[keys[i]]);
-          if (res.length == limiter) break;
-        }
+      if (!data.length) return data;
+      var mp = predicate(data[0], 0, data);
+      if (mp && (mp._mr ? maybe_promise_mr(mp) : mp.then && _.isFunction(mp.then)))
+        return _reject_async(data, predicate, null, mp, 1, res);
+      for (var i = 1, l = data.length; i < l; i++)
+        if (!predicate(data[i], i, data)) res.push(data[i]);
     }
+
     return res;
+  };
+
+  var _every_async = function f(data, predi, keys, mp, i) {
+    return _.go(mp, function(bool) {
+      if (bool) return false;
+      var key = keys ? keys[i] : i;
+      return (keys || data).length == i ? true : f(data, predi, keys, predi(data[key], key, data), ++i);
+    });
   };
 
   _.every = function f(data, predicate) {
     if (arguments.length == 1 && _.isFunction(data)) return _(f, _, data);
-
     predicate = predicate || _.i;
-    if (predicate._p_async || predicate._p_cb) return _every_async.apply(null, arguments);
-    if (this != _ && this != G) { predicate = _.bind(predicate, this); }
+    if (this != _ && this != G) predicate = _.bind(predicate, this);
+    if (arguments.length > 2) predicate = Iter(predicate, arguments, 2, 2);
+    var keys = _.isArrayLike(data) ? null : _.keys(data);
+    if (predicate._p_async || predicate._p_cb) return _every_async(data, predicate, keys, null, 0);
 
-    if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
-    if (_.isArrayLike(data)) {
-      for (var i = 0, l = data.length; i < l; i++)
-        if (!predicate(data[i], i, data)) return false;
+    if (keys) {
+      if (!keys.length) return false;
+      var mp = predicate(data[keys[0]], keys[0], data);
+      if (mp && (mp._mr ? maybe_promise_mr(mp) : mp.then && _.isFunction(mp.then)))
+        return _every_async(data, predicate, keys, mp, 1);
+      else if (mp) return false;
+      for (var i = 1, l = keys.length; i < l; i++)
+        if (predicate(data[keys[i]], keys[i], data)) return false;
     } else {
-      for (var keys = _.keys(data), i = 0, l = keys.length; i < l; i++)
-        if (!predicate(data[keys[i]], keys[i], data)) return false;
+      if (!data.length) return false;
+      var mp = predicate(data[0], 0, data);
+      if (mp && (mp._mr ? maybe_promise_mr(mp) : mp.then && _.isFunction(mp.then)))
+        return _every_async(data, predicate, null, mp, 1);
+      else if (mp) return false;
+      for (var i = 1, l = data.length; i < l; i++)
+        if (predicate(data[i], i, data)) return false;
     }
     return true;
   };
 
+  var _some_async = function f(data, predi, keys, mp, i) {
+    return _.go(mp, function(bool) {
+      if (bool) return true;
+      var key = keys ? keys[i] : i;
+      return (keys || data).length == i ? false : f(data, predi, keys, predi(data[key], key, data), ++i);
+    });
+  };
+
   _.some = function f(data, predicate) {
     if (arguments.length == 1 && _.isFunction(data)) return _(f, _, data);
-
     predicate = predicate || _.i;
-    if (predicate._p_async || predicate._p_cb) return _some_async.apply(null, arguments);
-    if (this != _ && this != G) { predicate = _.bind(predicate, this); }
+    if (this != _ && this != G) predicate = _.bind(predicate, this);
+    if (arguments.length > 2) predicate = Iter(predicate, arguments, 2, 2);
+    var keys = _.isArrayLike(data) ? null : _.keys(data);
+    if (predicate._p_async || predicate._p_cb) return _some_async(data, predicate, keys, null, 0);
 
-    if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
-    if (_.isArrayLike(data)) {
-      for (var i = 0, l = data.length; i < l; i++)
-        if (predicate(data[i], i, data)) return true;
-    } else {
-      for (var keys = _.keys(data), i = 0, l = keys.length; i < l; i++)
+    if (keys) {
+      if (!keys.length) return true;
+      var mp = predicate(data[keys[0]], keys[0], data);
+      if (mp && (mp._mr ? maybe_promise_mr(mp) : mp.then && _.isFunction(mp.then)))
+        return _some_async(data, predicate, keys, mp, 1);
+      else if (mp) return true;
+      for (var i = 1, l = keys.length; i < l; i++)
         if (predicate(data[keys[i]], keys[i], data)) return true;
+    } else {
+      if (!data.length) return true;
+      var mp = predicate(data[0], 0, data);
+      if (mp && (mp._mr ? maybe_promise_mr(mp) : mp.then && _.isFunction(mp.then)))
+        return _some_async(data, predicate, null, mp, 1);
+      else if (mp) return true;
+      for (var i = 1, l = data.length; i < l; i++)
+        if (predicate(data[i], i, data)) return true;
     }
+
     return false;
   };
 
@@ -808,6 +819,7 @@
     }));
   };
 
+  // async not supported
   _.max = function f(data, iteratee) {
     if (arguments.length == 1 && _.isFunction(data)) return _(f, _, data);
 
@@ -832,6 +844,7 @@
     return res;
   };
 
+  // async not supported
   _.min = function f(data, iteratee) {
     if (arguments.length == 1 && _.isFunction(data)) return _(f, _, data);
 
@@ -856,7 +869,8 @@
     return res;
   };
 
-  // <respect _>
+  // async not supported
+  // <respect underscore.js>
   _.sortBy = _.sort_by = function f(data, iteratee) {
     if (arguments.length == 1) return _(f, _, data);
 
@@ -873,8 +887,9 @@
       return left.index - right.index;
     }), 'value');
   };
-  // </respect _>
+  // </respect>
 
+  // async not supported
   _.groupBy = _.group_by = function f(data, iteratee) {
     if (arguments.length == 1) return _(f, _, data);
 
@@ -884,6 +899,7 @@
     return res;
   };
 
+  // async not supported
   _.indexBy = _.index_by = function f(data, iteratee) {
     if (arguments.length == 1) return _(f, _, data);
 
@@ -893,6 +909,7 @@
     return res;
   };
 
+  // async not supported
   _.countBy = _.count_by = function f(data, iteratee) {
     if (arguments.length == 1) return _(f, _, data);
 
@@ -968,6 +985,7 @@
     });
   };
 
+  // async not supported
   _.uniq = function f(arr, iteratee) {
     if (arguments.length == 1) return _(f, _, data);
 
@@ -1003,6 +1021,7 @@
     return -1;
   };
 
+  // async not supported
   _.sortedIndex = _.sorted_idx = _.sorted_i = function f(data, obj, iteratee) {
     if (_.isFunction(data)) return _(f, _, _, data);
 
@@ -1015,6 +1034,7 @@
     return low;
   };
 
+  // async not supported
   _.find_i = _.find_idx = _.findIndex = function f(data, predicate) {
     if (arguments.length == 1) return _(f, _, data);
     if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
@@ -1023,6 +1043,7 @@
     return -1;
   };
 
+  // async not supported
   _.findLastIndex = _.find_last_idx = _.find_last_i = function f(data, predicate) {
     if (arguments.length == 1) return _(f, _, data);
     if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
@@ -1041,6 +1062,7 @@
   };
 
   /* Object */
+  // async not supported
   _.mapObject = _.map_object = function f(data, iteratee) {
     if (arguments.length == 1) return _(f, _, data);
 
@@ -1066,6 +1088,7 @@
     return res;
   };
 
+  // async not supported
   _.find_k = _.find_key = _.findKey = function f(data, predicate) {
     if (arguments.length == 1) return _(f, _, data);
 
@@ -1074,6 +1097,7 @@
       if (predicate(data[key = keys[i]], key, data)) return key;
   };
 
+  // async not supported
   _.pick = function f(obj, iteratee) {
     if (arguments.length == 1) return _(f, _, obj);
 
@@ -1089,6 +1113,7 @@
     return res;
   };
 
+  // async not supported
   _.omit = function f(obj, iteratee) {
     if (arguments.length == 1) return _(f, _, data);
 
@@ -1248,26 +1273,18 @@
   _.once = _.partial(_.before, 2);
 
   _.if = _.If = function(predicate, fn) {
-    var is_async = false;
-    var store = [fn ? [ca(predicate), ca(fn)] : [_.identity, ca(predicate)]];
+    var store = [fn ? [predicate, fn] : [_.identity, predicate]];
     return _.extend(If, {
       else_if: elseIf,
       elseIf: elseIf,
       else: function(fn) { return store.push([_.constant(true), fn]) && If; }
     });
-    function elseIf(predicate, fn) { return store.push(fn ? [ca(predicate), ca(fn)] : [_.identity, ca(predicate)]) && If; }
+    function elseIf(predicate, fn) { return store.push(fn ? [predicate, fn] : [_.identity, predicate]) && If; }
     function If() {
       var context = this, args = arguments;
-      var wrap = is_async ? __.async : _.identity;
-      var go = is_async ? _.go.async : _.go;
-      return go.call(this, store,
-        _(_.find, _, wrap(function(fnset) { return fnset[0].apply(context, args); })),
+      return _.go.call(this, store,
+        _(_.find, _, function(fnset) { return fnset[0].apply(context, args); }),
         function(fnset) { return fnset ? fnset[1].apply(context, args) : void 0; });
-    }
-    function ca(fn) {
-      if (is_async) return fn;
-      is_async = fn._p_async || fn._p_cb;
-      return fn;
     }
   };
 
