@@ -193,6 +193,14 @@
       go_async(self, to_mr(args), fs, 1);
     });
   };
+  _.branch = function() {
+    var fs = arguments;
+    return function() {
+      var args = _.to_mr(arguments);
+      goapply2(args, fs);
+      return args;
+    };
+  };
 
   function has_promise() { return has_promise.__cache || (has_promise.__cache = !!_.val(window, 'Promise.prototype.then')); }
   function maybe_promise(res) {
