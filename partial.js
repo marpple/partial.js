@@ -673,6 +673,7 @@
       var mp = predicate(data[0], 0, data);
       if (mp && (mp._mr ? maybe_promise_mr(mp) : mp.then && _.isFunction(mp.then)))
         return _filter_async(data, predicate, null, mp, 1, res);
+      else if (mp) res.push(data[0]);
       for (var i = 1, l = data.length; i < l; i++)
         if (predicate(data[i], i, data)) res.push(data[i]);
     }
@@ -718,6 +719,7 @@
       var mp = predicate(data[0], 0, data);
       if (mp && (mp._mr ? maybe_promise_mr(mp) : mp.then && _.isFunction(mp.then)))
         return _reject_async(data, predicate, null, mp, 1, res);
+      else if (!mp) res.push(data[0]);
       for (var i = 1, l = data.length; i < l; i++)
         if (!predicate(data[i], i, data)) res.push(data[i]);
     }
