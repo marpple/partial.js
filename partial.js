@@ -60,18 +60,26 @@
     if (this != _ && this != window) return goapply(this, v, arguments, 1);
     var i = 0, f;
     while (f = arguments[++i]) {
+
       if (f == __) v = __;
       else if (f._p_cb) return go_async(null, v, arguments, i);
       else if (!v) v = f(v);
       else if (v._mr) {
         if (maybe_promise_mr(v)) return go_async(null, v, arguments, i);
+        if (v._stop) return v.length == 1 ? v[0] : v._stop = false || v;
         v = f.apply(undefined, v);
       } else if (v.then && _.isFunction(v.then)) return go_async(null, v, arguments, i);
+      else if (v == _.stop) return v;
       else v = v === __ ? f() : f(v);
     }
     return v;
   };
   _.mr = mr, _.to_mr = to_mr, _.is_mr = is_mr, _.mr_cat = mr_cat;
+  _.stop = function() {
+    arguments._stop = true;
+    arguments._mr = true;
+    return arguments;
+  };
   function goapply(self, v, fs, start) {
     var i = (start || 0), f;
     while (f = fs[i++]) {
@@ -234,19 +242,24 @@
   function go_async(self, v, fs, i) {
     var args_len = fs.length, resolve = null;
     var promise = has_promise() ? new Promise(function(rs) { resolve = rs; }) : { then: function(rs) { resolve = rs; } };
-    (function c(res) {
+    (function c(v) {
       do {
-        if (i === args_len) return resolve ? resolve(fpro(res)) : setTimeout(function() { resolve && resolve(fpro(res)); }, 0);
-        if (unpack_promise(res, c)) return;
-        if (fs[i] == __ && i++) res = __;
-        if (!fs[i]._p_cb) res = is_mr(res) ? _.lambda(fs[i++]).apply(self, res) : res === __ ?
-          _.lambda(fs[i++]).call(self) : _.lambda(fs[i++]).call(self, res);
+        if (i === args_len) return resolve ? resolve(fpro(v)) : setTimeout(function() { resolve && resolve(fpro(v)); }, 0);
+        if (unpack_promise(v, c)) return;
+        if (fs[i] == __ && i++) v = __;
+        if (v && v._stop) {
+          i = args_len;
+          v = v.length == 1 ? v[0] : v._stop = false || v;
+          continue;
+        }
+        if (!fs[i]._p_cb) v = is_mr(v) ? _.lambda(fs[i++]).apply(self, v) : v === __ ?
+          _.lambda(fs[i++]).call(self) : _.lambda(fs[i++]).call(self, v);
       } while (i == args_len || i < args_len && !fs[i]._p_cb);
-      if (unpack_promise(res, c)) return;
-      is_mr(res) ?
-        _.lambda(fs[i++]).apply(self, (res[res.length++] = function() { c(to_mr(arguments)); }) && res) : res === __ ?
+      if (unpack_promise(v, c)) return;
+      is_mr(v) ?
+        _.lambda(fs[i++]).apply(self, (v[v.length++] = function() { c(to_mr(arguments)); }) && v) : v === __ ?
         _.lambda(fs[i++]).call(self, function() { c(to_mr(arguments)); }) :
-        _.lambda(fs[i++]).call(self, res, function() { c(to_mr(arguments)); });
+        _.lambda(fs[i++]).call(self, v, function() { c(to_mr(arguments)); });
     })(v);
     return promise;
   }
@@ -447,13 +460,15 @@
     ].concat(_.rest(arguments)));
   };
   /* Collections */
-  function Iter(iter, args, rnum, start) {
-    for (var args2 = [], i = 0, l = args.length; i < l-start; i++) args2[i+rnum] = args[i+start];
+  function Iter(iter, args, start) {
+    var args2 = [];
+    args2[start] = args[0];
+    for (var i = start, l = args.length; i < l; i++) args2[i+1] = args[i];
     if (iter._p_cb) args2.length++;
     var f = function() {
       args2[0] = arguments[0];
       args2[1] = arguments[1];
-      if (rnum === 3) args2[2] = arguments[2];
+      if (start === 3) args2[2] = arguments[2];
       if (iter._p_cb) args2[args2.length-1] = arguments[arguments.length-1];
       return iter.apply(null, args2);
     };
@@ -471,7 +486,7 @@
   _.each = function f(data, iteratee) {
     if (arguments.length == 1) return _(f, _, data);
     if (this != _ && this != G) iteratee = _.bind(iteratee, this);
-    if (arguments.length > 2) iteratee = Iter(iteratee, arguments, 2, 2);
+    if (arguments.length > 2) iteratee = Iter(iteratee, arguments, 2);
     var keys = _.isArrayLike(data) ? null : _.keys(data);
     if (iteratee._p_async || iteratee._p_cb) return _each_async(data, iteratee, keys, null, 0);
 
@@ -505,7 +520,7 @@
   _.map = function f(data, iteratee) {
     if (arguments.length == 1) return _(f, _, data);
     if (this != _ && this != G) iteratee = _.bind(iteratee, this);
-    if (arguments.length > 2) iteratee = Iter(iteratee, arguments, 2, 2);
+    if (arguments.length > 2) iteratee = Iter(iteratee, arguments, 2);
     var keys = _.isArrayLike(data) ? null : _.keys(data);
     if (iteratee._p_async || iteratee._p_cb) return _map_async(data, iteratee, keys, null, 0, []);
 
@@ -542,7 +557,7 @@
   _.reduce = function f(data, iteratee, memo) {
     if (arguments.length == 1) return _(f, _, data);
     if (this != _ && this != G) iteratee = _.bind(iteratee, this);
-    if (arguments.length > 3) iteratee = Iter(iteratee, arguments, 3, 3);
+    if (arguments.length > 3) iteratee = Iter(iteratee, arguments, 3);
     var keys = _.isArrayLike(data) ? null : _.keys(data);
     var i = 0;
     if (iteratee._p_async || iteratee._p_cb)
@@ -581,7 +596,7 @@
   _.reduceRight = _.reduce_right = function f(data, iteratee, memo) {
     if (arguments.length == 1) return _(f, _, data);
     if (this != _ && this != G) iteratee = _.bind(iteratee, this);
-    if (arguments.length > 3) iteratee = Iter(iteratee, arguments, 3, 3);
+    if (arguments.length > 3) iteratee = Iter(iteratee, arguments, 3);
     var keys = _.isArrayLike(data) ? null : _.keys(data);
     if (iteratee._p_async || iteratee._p_cb) {
       var i = (keys || data).length - 1;
@@ -622,7 +637,7 @@
   _.find = function f(data, predicate) {
     if (arguments.length == 1) return _(f, _, data);
     if (this != _ && this != G) predicate = _.bind(predicate, this);
-    if (arguments.length > 2) predicate = Iter(predicate, arguments, 2, 2);
+    if (arguments.length > 2) predicate = Iter(predicate, arguments, 2);
     var keys = _.isArrayLike(data) ? null : _.keys(data);
     if (predicate._p_async || predicate._p_cb) return _find_async(data, predicate, keys, null, 0);
 
@@ -656,7 +671,7 @@
   _.filter = function f(data, predicate, limiter) {
     if (arguments.length == 1) return _(f, _, data);
     if (this != _ && this != G) predicate = _.bind(predicate, this);
-    if (arguments.length > 2) predicate = Iter(predicate, arguments, 2, 2);
+    if (arguments.length > 2) predicate = Iter(predicate, arguments, 2);
     var keys = _.isArrayLike(data) ? null : _.keys(data);
     if (predicate._p_async || predicate._p_cb) return _filter_async(data, predicate, keys, null, 0, []);
 
@@ -702,7 +717,7 @@
   _.reject = function f(data, predicate, limiter) {
     if (arguments.length == 1) return _(f, _, data);
     if (this != _ && this != G) predicate = _.bind(predicate, this);
-    if (arguments.length > 2) predicate = Iter(predicate, arguments, 2, 2);
+    if (arguments.length > 2) predicate = Iter(predicate, arguments, 2);
     var keys = _.isArrayLike(data) ? null : _.keys(data);
     if (predicate._p_async || predicate._p_cb) return _reject_async(data, predicate, keys, null, 0, []);
 
@@ -739,7 +754,7 @@
     if (arguments.length == 1 && _.isFunction(data)) return _(f, _, data);
     predicate = predicate || _.i;
     if (this != _ && this != G) predicate = _.bind(predicate, this);
-    if (arguments.length > 2) predicate = Iter(predicate, arguments, 2, 2);
+    if (arguments.length > 2) predicate = Iter(predicate, arguments, 2);
     var keys = _.isArrayLike(data) ? null : _.keys(data);
     if (predicate._p_async || predicate._p_cb) return _every_async(data, predicate, keys, null, 0);
 
@@ -775,7 +790,7 @@
     if (arguments.length == 1 && _.isFunction(data)) return _(f, _, data);
     predicate = predicate || _.i;
     if (this != _ && this != G) predicate = _.bind(predicate, this);
-    if (arguments.length > 2) predicate = Iter(predicate, arguments, 2, 2);
+    if (arguments.length > 2) predicate = Iter(predicate, arguments, 2);
     var keys = _.isArrayLike(data) ? null : _.keys(data);
     if (predicate._p_async || predicate._p_cb) return _some_async(data, predicate, keys, null, 0);
 
@@ -836,7 +851,7 @@
 
     if (_.isEmpty(data)) return -Infinity;
     iteratee = iteratee || _.i;
-    if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 2); data = data[0]; }
+    if (arguments.length > 2) iteratee = Iter(iteratee, arguments, 2);
     var tmp, cmp, res;
     if (_.isArrayLike(data)) {
       if (isNaN(tmp = iteratee(data[0], 0, data))) return -Infinity;
@@ -861,7 +876,7 @@
 
     if (_.isEmpty(data)) return Infinity;
     iteratee = iteratee || _.i;
-    if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 2); data = data[0]; }
+    if (arguments.length > 2) iteratee = Iter(iteratee, arguments, 2);
     var tmp, cmp, res;
     if (_.isArrayLike(data)) {
       if (isNaN(tmp = iteratee(data[0], 0, data))) return Infinity;
@@ -886,7 +901,7 @@
     if (arguments.length == 1) return _(f, _, data);
 
     if (_.isString(iteratee)) iteratee = _.val(iteratee);
-    if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 2); data = data[0]; }
+    if (arguments.length > 2) iteratee = Iter(iteratee, arguments, 2);
     return _.pluck(_.map(data, function(value, index, list) {
       return { value: value, index: index, criteria: iteratee(value, index, list) };
     }).sort(function(left, right) {
@@ -905,8 +920,10 @@
     if (arguments.length == 1) return _(f, _, data);
 
     if (_.isString(iteratee)) iteratee = _(_.val, _, iteratee);
+    if (arguments.length > 2) iteratee = Iter(iteratee, arguments, 2);
     var res = {}, arr = _.map(data, iteratee);
-    for (var i = 0, l = arr.length; i < l ; i++) { _.has(res, arr[i]) ? res[arr[i]].push(data[i]) : (res[arr[i]] = [data[i]]) }
+    for (var i = 0, l = arr.length; i < l ; i++)
+      _.has(res, arr[i]) ? res[arr[i]].push(data[i]) : (res[arr[i]] = [data[i]]);
     return res;
   };
 
@@ -915,8 +932,9 @@
     if (arguments.length == 1) return _(f, _, data);
 
     if (_.isString(iteratee)) iteratee = _(_.val, _, iteratee);
+    if (arguments.length > 2) iteratee = Iter(iteratee, arguments, 2);
     var res = {}, arr = _.map(data, iteratee);
-    for (var i = 0, l = arr.length; i < l; i++) { res[arr[i]] = data[i]; }
+    for (var i = 0, l = arr.length; i < l; i++) res[arr[i]] = data[i];
     return res;
   };
 
@@ -925,8 +943,9 @@
     if (arguments.length == 1) return _(f, _, data);
 
     if (_.isString(iteratee)) iteratee = _(_.val, _, iteratee);
+    if (arguments.length > 2) iteratee = Iter(iteratee, arguments, 2);
     var res = {}, arr = _.map(data, iteratee);
-    for (var i = 0, l = arr.length; i < l; i++) { res[arr[i]]++ || (res[arr[i]] = 1); }
+    for (var i = 0, l = arr.length; i < l; i++) res[arr[i]]++ || (res[arr[i]] = 1);
     return res;
   };
 
@@ -1000,6 +1019,7 @@
   _.uniq = function f(arr, iteratee) {
     if (arguments.length == 1) return _(f, _, data);
 
+    if (arguments.length > 2) iteratee = Iter(iteratee, arguments, 2);
     var res = [], tmp = [], cmp = iteratee ? _.map(arr, iteratee) : arr;
     for (var i = 0, l = arr.length; i < l; i++)
       if (tmp.indexOf(cmp[i]) == -1) { tmp.push(cmp[i]); res.push(arr[i]); }
@@ -1048,7 +1068,7 @@
   // async not supported
   _.find_i = _.find_idx = _.findIndex = function f(data, predicate) {
     if (arguments.length == 1) return _(f, _, data);
-    if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
+    if (arguments.length > 2) predicate = Iter(predicate, arguments, 2);
     for (var i = 0, l = data.length; i < l; i++)
       if (predicate(data[i], i, data)) return i;
     return -1;
@@ -1057,7 +1077,7 @@
   // async not supported
   _.findLastIndex = _.find_last_idx = _.find_last_i = function f(data, predicate) {
     if (arguments.length == 1) return _(f, _, data);
-    if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
+    if (arguments.length > 2) predicate = Iter(predicate, arguments, 2);
     for(var i = data.length; i >= 0; i--) {
       if (predicate(data[i], i, data)) return i;
     }
@@ -1077,7 +1097,7 @@
   _.mapObject = _.map_object = function f(data, iteratee) {
     if (arguments.length == 1) return _(f, _, data);
 
-    if (_.is_mr(data)) { iteratee = Iter(iteratee, data, 2); data = data[0]; }
+    if (arguments.length > 2) iteratee = Iter(iteratee, arguments, 2);
     var res = {};
     for (var keys = _.keys(data), i = 0, l = keys.length; i < l; i++) {
       res[keys[i]] = iteratee(data[keys[i]], keys[i], data);
@@ -1103,7 +1123,7 @@
   _.find_k = _.find_key = _.findKey = function f(data, predicate) {
     if (arguments.length == 1) return _(f, _, data);
 
-    if (_.is_mr(data)) { predicate = Iter(predicate, data, 2); data = data[0]; }
+    if (arguments.length > 2) predicate = Iter(predicate, arguments, 2);
     for (var keys = _.keys(data), key, i = 0, l = keys.length; i < l; i++)
       if (predicate(data[key = keys[i]], key, data)) return key;
   };
@@ -1114,7 +1134,7 @@
 
     var res = {};
     if (_.isFunction(iteratee)) {
-      if (_.is_mr(obj)) { iteratee = Iter(iteratee, obj, 2); obj = obj[0]; }
+      if (arguments.length > 2) iteratee = Iter(iteratee, arguments, 2);
       for (var keys = _.keys(obj), i = 0, l = keys.length; i < l; i++)
         if (iteratee(obj[keys[i]], keys[i], obj)) res[keys[i]] = obj[keys[i]];
     } else {
@@ -1129,14 +1149,14 @@
     if (arguments.length == 1) return _(f, _, data);
 
     var res = {};
-    if (_.isString(iteratee)) {
+    if (_.isFunction(iteratee)) {
+      if (arguments.length > 2) iteratee = Iter(iteratee, arguments, 2);
+      for (var keys = _.keys(obj), i = 0, l = keys.length; i < l; i++)
+        if (!iteratee(obj[keys[i]], keys[i], obj)) res[keys[i]] = obj[keys[i]];
+    } else {
       var oKeys = _.keys(obj), keys = _.rest(arguments);
       for (var i = 0, l = oKeys.length; i < l; i++)
         if (keys.indexOf(oKeys[i]) == -1) res[oKeys[i]] = obj[oKeys[i]];
-    } else {
-      if (_.is_mr(obj)) { iteratee = Iter(iteratee, obj, 2); obj = obj[0]; }
-      for (var keys = _.keys(obj), i = 0, l = keys.length; i < l; i++)
-        if (!iteratee(obj[keys[i]], keys[i], obj)) res[keys[i]] = obj[keys[i]];
     }
     return res;
   };
