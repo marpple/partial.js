@@ -384,6 +384,8 @@
   //function times(len, func) { for (var i = 0; i < len; i++) func(i); }
   function times2(len, func) { for (var i = 1; i <= len; i++) func(i); }
 
+  _.times = function(len, iteratee) { for (var i = 0; i <= len; i++) iteratee(i); };
+
   /* is Series */
   _.is_array = _.isArray = Array.isArray;
   _.is_match = _.isMatch = function(obj, attrs) {
@@ -1184,17 +1186,17 @@
   };
 
   _.all = _.All = function() {
-    var fns = _.toArray(arguments);
-    return function() {
-      return _.all2.apply(this, [_.to_mr(arguments)].concat(fns));
-    }
+    var fns = _.last(arguments);
+    if (_.isArray(fns)) return _.all2.apply(this, [_.to_mr(_.initial(arguments))].concat(fns));
+    fns = _.toArray(arguments);
+    return function() { return _.all2.apply(this, [_.to_mr(arguments)].concat(fns)); };
   };
 
   _.spread = _.Spread = function() {
-    var fns = _.toArray(arguments);
-    return function() {
-      return _.spread2.apply(this, [_.to_mr(arguments)].concat(fns));
-    }
+    var fns = _.last(arguments);
+    if (_.isArray(fns)) return _.spread2.apply(this, [_.to_mr(_.initial(arguments))].concat(fns));
+    fns = _.toArray(arguments);
+    return function() { return _.spread2.apply(this, [_.to_mr(arguments)].concat(fns)); };
   };
 
   /* Functions */
