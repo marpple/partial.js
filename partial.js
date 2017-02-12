@@ -141,7 +141,7 @@
     var fs = arguments;
     return function() { return goapply(ithis(this, arguments), to_mr(arguments), fs); }
   }
-  function ithis(self, args) { return { parent: self, args: args }; }
+  function ithis(self, args) { return { parent: self, arguments: args }; }
 
   _.tap = _.Tap = function(func) {
     return function(arg) {
@@ -529,7 +529,7 @@
     var res = [];
 
     if (keys) {
-      if (!keys.length) return data;
+      if (!keys.length) return res;
       var mp = iteratee(data[keys[0]], keys[0], data);
       if (mp && (mp._mr ? maybe_promise_mr(mp) : mp.then && _.isFunction(mp.then)))
         return _map_async(data, iteratee, keys, mp, 1, res);
@@ -537,7 +537,7 @@
       for (var i = 1, l = keys.length; i < l; i++)
         res[i] = iteratee(data[keys[i]], keys[i], data);
     } else {
-      if (!data.length) return data;
+      if (!data.length) return res;
       var mp = iteratee(data[0], 0, data);
       if (mp && (mp._mr ? maybe_promise_mr(mp) : mp.then && _.isFunction(mp.then)))
         return _map_async(data, iteratee, null, mp, 1, res);
