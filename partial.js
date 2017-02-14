@@ -9,6 +9,8 @@
   window._ = window._p = _;
   window.__ = __;
   window.___ = ___;
+  window.G = window;
+  window.G.G = G;
 
   /* Partial */
   function _(fn) {
@@ -230,12 +232,12 @@
         return;
       }
       return maybe_promise(res[i]) && (has_promise = true) ? (function(i) {
-        res[i].then(function(v) {
-          res[i] = v;
-          u(i + 1, res, length, has_promise);
-        });
-        return true;
-      })(i) : u(i + 1, res, length, has_promise);
+          res[i].then(function(v) {
+            res[i] = v;
+            u(i + 1, res, length, has_promise);
+          });
+          return true;
+        })(i) : u(i + 1, res, length, has_promise);
     })(0, (res = is_r ? res : [res]), res.length, false);
   }
 
@@ -253,22 +255,24 @@
           continue;
         }
         if (!fs[i]._p_cb) v = is_mr(v) ? _.lambda(fs[i++]).apply(self, v) : v === __ ?
-          _.lambda(fs[i++]).call(self) : _.lambda(fs[i++]).call(self, v);
+            _.lambda(fs[i++]).call(self) : _.lambda(fs[i++]).call(self, v);
       } while (i == args_len || i < args_len && !fs[i]._p_cb);
       if (unpack_promise(v, c)) return;
       is_mr(v) ?
         _.lambda(fs[i++]).apply(self, (v[v.length++] = function() { c(to_mr(arguments)); }) && v) : v === __ ?
-        _.lambda(fs[i++]).call(self, function() { c(to_mr(arguments)); }) :
-        _.lambda(fs[i++]).call(self, v, function() { c(to_mr(arguments)); });
+          _.lambda(fs[i++]).call(self, function() { c(to_mr(arguments)); }) :
+          _.lambda(fs[i++]).call(self, v, function() { c(to_mr(arguments)); });
     })(v);
     return promise;
   }
   function fpro(res) { return is_mr(res) && res.length == 1 ? res[0] : res; }
 
+
   /* Ice cream */
   _.noop = function() {};
   _.this = function() { return this; };
-  _.i = _.identity = function(v) { return v; };
+  _.idtt = _.identity = function(v) { return v; };
+  _.i = _.i18n = _.idtt; // TODO
   _.args = function() { return arguments; };
   _.args0 = _.identity;
   _.args1 = function() { return arguments[1]; };
@@ -276,7 +280,7 @@
   _.args3 = function() { return arguments[3]; };
   _.args4 = function() { return arguments[4]; };
   _.args5 = function() { return arguments[5]; };
-  _.c = _.always = _.constant = function(v) { return function() { return v; }; };
+  _.a = _.c = _.always = _.constant = function(v) { return function() { return v; }; };
   _.true = _.constant(true);
   _.false = _.constant(false);
   _.null = _.constant(null);
@@ -569,20 +573,18 @@
       memo = arguments.length > 2 ? memo : data[keys[i++]];
       var l = keys.length;
       if (!l) return memo;
-      memo = iteratee(memo, data[keys[i]], keys[i], data);
+      memo = iteratee(memo, data[keys[i]], keys[i++], data);
       if (memo && (memo._mr ? maybe_promise_mr(memo) : memo.then && _.isFunction(memo.then)))
-        return _reduce_async(data, iteratee, keys, memo, i+1);
-      for (; i < l; i++)
-        memo = iteratee(memo, data[keys[i]], keys[i], data);
+        return _reduce_async(data, iteratee, keys, memo, i);
+      for (; i < l; i++) memo = iteratee(memo, data[keys[i]], keys[i], data);
     } else {
       memo = arguments.length > 2 ? memo : data[i++];
       var l = data.length;
       if (!l) return memo;
-      memo = iteratee(memo, data[i], i, data);
+      memo = iteratee(memo, data[i], i++, data);
       if (memo && (memo._mr ? maybe_promise_mr(memo) : memo.then && _.isFunction(memo.then)))
-        return _reduce_async(data, iteratee, null, memo, i+1);
-      for (; i < l; i++)
-        memo = iteratee(memo, data[i], i, data);
+        return _reduce_async(data, iteratee, null, memo, i);
+      for (; i < l; i++) memo = iteratee(memo, data[i], i, data);
     }
 
     return memo;
@@ -1385,9 +1387,9 @@
   _.template.each = _.t.each = function() {
     var template = _.t.apply(null, arguments);
     return function(data) {
-      return _.map(_.to_mr(arguments), function(v, k, l, a, b) {
+      return _.map.apply(null, [data].concat(function() {
         return template.apply(null, arguments);
-      }).join('');
+      }).concat(_.rest(arguments, 2))).join('');
     };
   };
   _.string.each = _.s.each = function() {
@@ -1510,8 +1512,8 @@
   function line(source, tag_stack) {
     source = source.replace(REG8, "\n").replace(/^[ \t]*/, "");
     return source.match(/^[\[.#\w\-]/) ? source.replace(/^(\[.*\]|\{.*?\}|\S)+ ?/, function(str) {
-      return start_tag(str, tag_stack);
-    }) : source;
+        return start_tag(str, tag_stack);
+      }) : source;
   }
   function push_in(ary, index, data) {
     var rest_ary = ary.splice(index);
@@ -1576,9 +1578,9 @@
   _.sel = _.select = function(start, selector) {
     return selector && _.reduce(selector.split(/\s*->\s*/), function (mem, key) {
         return !key.match(/^\((.+)\)/) ? !key.match(/\[(.*)\]/) ? mem[key] : function(mem, numbers) {
-          if (numbers.length > 2 || numbers.length < 1 || _.filter(numbers, function(v) { return isNaN(v); }).length) return _.Err('[] selector in [num] or [num ~ num]');
-          var s = numbers[0], e = numbers[1]; return !e ? mem[s<0 ? mem.length+s : s] : slice.call(mem, s<0 ? mem.length+s : s, e<0 ? mem.length+e : e + 1);
-        }(mem, _.map(RegExp.$1.replace(/\s/g, '').split('~'), _.parseInt)) : _.find(mem, _.lambda(RegExp.$1));
+              if (numbers.length > 2 || numbers.length < 1 || _.filter(numbers, function(v) { return isNaN(v); }).length) return _.Err('[] selector in [num] or [num ~ num]');
+              var s = numbers[0], e = numbers[1]; return !e ? mem[s<0 ? mem.length+s : s] : slice.call(mem, s<0 ? mem.length+s : s, e<0 ? mem.length+e : e + 1);
+            }(mem, _.map(RegExp.$1.replace(/\s/g, '').split('~'), _.parseInt)) : _.find(mem, _.lambda(RegExp.$1));
       }, start);
   };
 
@@ -1614,11 +1616,11 @@
       start: im_start,
       selected: _.reduce(selector.split(/\s*->\s*/), function(clone, key) {
         return !key.match(/^\((.+)\)/) ? /*start*/(!key.match(/\[(.*)\]/) ? clone[key] = _.clone(clone[key]) : function(clone, numbers) {
-          if (numbers.length > 2 || numbers.length < 1 || _.filter(numbers, _.Pipe(_.identity, isNaN)).length) return _.Err('[] selector in [num] or [num ~ num]');
-          var s = numbers[0], e = numbers[1]; return !e ? clone[s] = _.clone(clone[s<0 ? clone.length+s : s]) : function(clone, oris) {
-            return each(oris, function(ori) { clone[clone.indexOf(ori)] = _.clone(ori); });
-          }(clone, slice.call(clone, s<0 ? clone.length+s : s, e<0 ? clone.length+e : e + 1));
-        }(clone, map(RegExp.$1.replace(/\s/g, '').split('~'), _.Pipe(_.identity, parseInt))))/*end*/ :
+              if (numbers.length > 2 || numbers.length < 1 || _.filter(numbers, _.Pipe(_.identity, isNaN)).length) return _.Err('[] selector in [num] or [num ~ num]');
+              var s = numbers[0], e = numbers[1]; return !e ? clone[s] = _.clone(clone[s<0 ? clone.length+s : s]) : function(clone, oris) {
+                  return each(oris, function(ori) { clone[clone.indexOf(ori)] = _.clone(ori); });
+                }(clone, slice.call(clone, s<0 ? clone.length+s : s, e<0 ? clone.length+e : e + 1));
+            }(clone, map(RegExp.$1.replace(/\s/g, '').split('~'), _.Pipe(_.identity, parseInt))))/*end*/ :
           function(clone, ori) { return clone[clone.indexOf(ori)] = _.clone(ori); } (clone, _.find(clone, _.lambda(RegExp.$1)))
       }, im_start)
     };
@@ -1772,8 +1774,8 @@
     }
     function make_selector(el) {
       return _.isString(el) ? el : _.isArray(el) ? map(el, function(val) {
-        return (_.isString(val) ? val : (_.isArrayLike(val) ? val[0] : val).getAttribute('box_selector'));
-      }).join('->') : (_.isArrayLike(el) ? el[0] : el).getAttribute('box_selector');
+            return (_.isString(val) ? val : (_.isArrayLike(val) ? val[0] : val).getAttribute('box_selector'));
+          }).join('->') : (_.isArrayLike(el) ? el[0] : el).getAttribute('box_selector');
     }
   };
 
