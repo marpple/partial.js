@@ -572,7 +572,7 @@
     if (keys) {
       memo = arguments.length > 2 ? memo : data[keys[i++]];
       var l = keys.length;
-      if (!l) return memo;
+      if (!l || l==i) return memo;
       memo = iteratee(memo, data[keys[i]], keys[i++], data);
       if (memo && (memo._mr ? maybe_promise_mr(memo) : memo.then && _.isFunction(memo.then)))
         return _reduce_async(data, iteratee, keys, memo, i);
@@ -580,7 +580,7 @@
     } else {
       memo = arguments.length > 2 ? memo : data[i++];
       var l = data.length;
-      if (!l) return memo;
+      if (!l || l==i) return memo;
       memo = iteratee(memo, data[i], i++, data);
       if (memo && (memo._mr ? maybe_promise_mr(memo) : memo.then && _.isFunction(memo.then)))
         return _reduce_async(data, iteratee, null, memo, i);
@@ -610,21 +610,19 @@
     if (keys) {
       var i = keys.length - 1;
       memo = arguments.length > 2 ? memo : data[keys[i--]];
-      if (!keys.length) return memo;
-      memo = iteratee(memo, data[keys[i]], keys[i], data);
+      if (!keys.length || i==-1) return memo;
+      memo = iteratee(memo, data[keys[i]], keys[i--], data);
       if (memo && (memo._mr ? maybe_promise_mr(memo) : memo.then && _.isFunction(memo.then)))
-        return _reduce_async(data, iteratee, keys, memo, i+1);
-      for (; i > -1; i--)
-        memo = iteratee(memo, data[keys[i]], keys[i], data);
+        return _reduce_async(data, iteratee, keys, memo, i);
+      for (; i > -1; i--) memo = iteratee(memo, data[keys[i]], keys[i], data);
     } else {
       var i = data.length - 1;
       memo = arguments.length > 2 ? memo : data[i--];
-      if (!data.length) return memo;
-      memo = iteratee(memo, data[i], i, data);
+      if (!data.length || i==-1) return memo;
+      memo = iteratee(memo, data[i], i--, data);
       if (memo && (memo._mr ? maybe_promise_mr(memo) : memo.then && _.isFunction(memo.then)))
-        return _reduce_async(data, iteratee, null, memo, i+1);
-      for (; i > -1; i--)
-        memo = iteratee(memo, data[i], i, data);
+        return _reduce_async(data, iteratee, null, memo, i);
+      for (; i > -1; i--) memo = iteratee(memo, data[i], i, data);
     }
 
     return memo;
@@ -1387,18 +1385,19 @@
   _.template.each = _.t.each = function() {
     var template = _.t.apply(null, arguments);
     return function(data) {
+      var args = _.rest(arguments);
       return _.map.apply(null, [data].concat(function() {
-        return template.apply(null, arguments);
-      }).concat(_.rest(arguments, 2))).join('');
+        return template.apply(null, _.toArray(arguments).concat(args));
+      })).join('');
     };
   };
   _.string.each = _.s.each = function() {
-    var template = _.s.apply(null, arguments);
+    var string = _.s.apply(null, arguments);
     return function(data) {
-      return _.go(_.mr(_.to_mr(arguments)),
-        _.partial(_.map, _, function(v, k, l, a, b) { return template.apply(null, arguments); }),
-        function(res) { return res.join(''); }
-      )
+      var args = _.rest(arguments);
+      return _.map.apply(null, [data].concat(function() {
+        return string.apply(null, _.toArray(arguments).concat(args));
+      })).join('');
     }
   };
 
@@ -1416,25 +1415,43 @@
   _.template.each.async = _.t.each.async =
     function() {
       var template = _.t.async.apply(null, arguments);
-      return function() {
-        return _.go.async(_.mr(_.to_mr(arguments)),
+      return function(data) {
+        //return _.go.async(_.mr(_.to_mr(arguments)),
+        //  _.partial(_.map, _, __.async(function() {
+        //    return template.apply(null, arguments);
+        //  })),
+        //  function(res) { return res.join(''); }
+        //)
+
+        var args = _.rest(arguments);
+        return _.go.async(data,
           _.partial(_.map, _, __.async(function() {
-            return template.apply(null, arguments);
+            return template.apply(null, _.toArray(arguments).concat(args));
           })),
           function(res) { return res.join(''); }
         )
+
       }
     };
   _.string.each.async = _.s.each.async =
     function() {
       var string = _.s.async.apply(null, arguments);
       return function() {
-        return _.go.async(_.mr(_.to_mr(arguments)),
+        //return _.go.async(_.mr(_.to_mr(arguments)),
+        //  _.partial(_.map, _, __.async(function() {
+        //    return string.apply(null, arguments);
+        //  })),
+        //  function(res) { return res.join(''); }
+        //)
+
+        var args = _.rest(arguments);
+        return _.go.async(data,
           _.partial(_.map, _, __.async(function() {
-            return string.apply(null, arguments);
+            return string.apply(null, _.toArray(arguments).concat(args));
           })),
           function(res) { return res.join(''); }
         )
+
       }
     };
 
