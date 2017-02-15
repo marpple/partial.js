@@ -1416,13 +1416,6 @@
     function() {
       var template = _.t.async.apply(null, arguments);
       return function(data) {
-        //return _.go.async(_.mr(_.to_mr(arguments)),
-        //  _.partial(_.map, _, __.async(function() {
-        //    return template.apply(null, arguments);
-        //  })),
-        //  function(res) { return res.join(''); }
-        //)
-
         var args = _.rest(arguments);
         return _.go.async(data,
           _.partial(_.map, _, __.async(function() {
@@ -1430,20 +1423,12 @@
           })),
           function(res) { return res.join(''); }
         )
-
       }
     };
   _.string.each.async = _.s.each.async =
     function() {
       var string = _.s.async.apply(null, arguments);
-      return function() {
-        //return _.go.async(_.mr(_.to_mr(arguments)),
-        //  _.partial(_.map, _, __.async(function() {
-        //    return string.apply(null, arguments);
-        //  })),
-        //  function(res) { return res.join(''); }
-        //)
-
+      return function(data) {
         var args = _.rest(arguments);
         return _.go.async(data,
           _.partial(_.map, _, __.async(function() {
@@ -1451,7 +1436,6 @@
           })),
           function(res) { return res.join(''); }
         )
-
       }
     };
 
