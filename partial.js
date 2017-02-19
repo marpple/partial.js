@@ -1189,7 +1189,7 @@
       var predicate = p;
     }
     if (this != _ && this != G) predicate = _.bind(predicate, this);
-    
+
     for (var i = 0, l = data.length; i < l; i++)
       if (predicate(data[i], i, data)) return i;
     return -1;
@@ -1540,22 +1540,20 @@
   _.string = _.s = function() { return s.apply(null, [_.mr, _.go, {}].concat(_.toArray(arguments))); };
   _.string$ = _.s$ = function() { return s.apply(null, [_.mr, _.go, {}, '$'].concat(_.toArray(arguments))); };
 
-  _.teach = _.template.each = _.t.each = function() {
-    var template = _.t.apply(null, arguments);
-    return function(data) {
-      return _.go(arguments.length == 1 ?
-          _.map(data, template) : _.map.apply(null, _.to_array(arguments).concat(template)),
-        function(val) { return val.join(''); });
-    };
+  var teach = function(t) {
+    return function() {
+      var template = t.apply(null, arguments);
+      return function(data) {
+        return _.go(arguments.length == 1 ?
+            _.map(data, template) : _.map.apply(null, _.to_array(arguments).concat(template)),
+          function(val) { return val.join(''); });
+      };
+    }
   };
-  _.seach = _.string.each = _.s.each = function() {
-    var template = _.s.apply(null, arguments);
-    return function(data) {
-      return _.go(arguments.length == 1 ?
-          _.map(data, template) : _.map.apply(null, _.to_array(arguments).concat(template)),
-        function(val) { return val.join(''); });
-    };
-  };
+  _.teach = _.template.each = _.t.each = teach(_.t);
+  _.seach = _.string.each = _.t.seach = teach(_.s);
+  _.t$each = _.template$.each = _.t$.each = teach(_.t);
+  _.s$each = _.string$.each = _.t$.seach = teach(_.s);
 
   function number_of_tab(a) {
     var snt = a.match(REG1)[0];
