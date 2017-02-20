@@ -40,8 +40,12 @@
     while (++i < len) if (n_args1[i] == _) n_args1[i] = args2.shift();
     if (!args3) return _to_unde(n_args1, args2.length ? args2 : undefined);
     var n_arg3 = _.clone(args3), i = n_arg3.length;
-    while (i--) if (n_arg3[i] == _) n_arg3[i] = args2.pop();
-    return args2.length ? _to_unde(n_args1, args2, n_arg3) : _to_unde(n_args1, n_arg3);
+    if (args2.length) {
+      while (i--) if (n_arg3[i] == _) n_arg3[i] = args2.pop();
+      return _to_unde(n_args1, args2, n_arg3);
+    }
+    while (i-- && n_arg3[i] == _) n_arg3.pop();
+    return _to_unde(n_args1, n_arg3);
   }
   _.right = function() {
     var len = --arguments.length, fn = arguments[len];
@@ -147,7 +151,7 @@
   _.tap = _.Tap = function() {
     var func = __.apply(null, arguments);
     return function(arg) {
-      if (arguments.length > 1) arg = _.to_mr(arguments);
+      var arg = arguments.length > 1 ? _.to_mr(arguments) : arguments.length ? arguments[0] : __;
       return _.go.call(this, arg, func, _.c(arg));
     }
   };
@@ -572,8 +576,8 @@
   };
 
   _.reduce = function f(d, i, m) {
-    if (arguments.length == 1) return _(f, ___, d);
-    if (arguments.length > 2) {
+    if (arguments.length == 1) return _(f, _, ___, d, _);
+    if (arguments.length > 3) {
       var data = arguments[arguments.length-3];
       var iteratee = Iter(arguments, true);
       var memo = arguments[arguments.length-1];
@@ -616,9 +620,9 @@
     });
   };
 
-  _.reduceRight = _.reduce_right = function f(data, iteratee, memo) {
-    if (arguments.length == 1) return _(f, ___, d);
-    if (arguments.length > 2) {
+  _.reduceRight = _.reduce_right = function f(d, i, m) {
+    if (arguments.length == 1) return _(f, _, ___, d, _);
+    if (arguments.length > 3) {
       var data = arguments[arguments.length-3];
       var iteratee = Iter(arguments, true);
       var memo = arguments[arguments.length-1];
