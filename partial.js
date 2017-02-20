@@ -232,12 +232,12 @@
         return;
       }
       return maybe_promise(res[i]) && (has_promise = true) ? (function(i) {
-        res[i].then(function(v) {
-          res[i] = v;
-          u(i + 1, res, length, has_promise);
-        });
-        return true;
-      })(i) : u(i + 1, res, length, has_promise);
+          res[i].then(function(v) {
+            res[i] = v;
+            u(i + 1, res, length, has_promise);
+          });
+          return true;
+        })(i) : u(i + 1, res, length, has_promise);
     })(0, (res = is_r ? res : [res]), res.length, false);
   }
 
@@ -255,13 +255,13 @@
           continue;
         }
         if (!fs[i]._p_cb) v = is_mr(v) ? _.lambda(fs[i++]).apply(self, v) : v === __ ?
-          _.lambda(fs[i++]).call(self) : _.lambda(fs[i++]).call(self, v);
+            _.lambda(fs[i++]).call(self) : _.lambda(fs[i++]).call(self, v);
       } while (i == args_len || i < args_len && !fs[i]._p_cb);
       if (unpack_promise(v, c)) return;
       is_mr(v) ?
         _.lambda(fs[i++]).apply(self, (v[v.length++] = function() { c(to_mr(arguments)); }) && v) : v === __ ?
-        _.lambda(fs[i++]).call(self, function() { c(to_mr(arguments)); }) :
-        _.lambda(fs[i++]).call(self, v, function() { c(to_mr(arguments)); });
+          _.lambda(fs[i++]).call(self, function() { c(to_mr(arguments)); }) :
+          _.lambda(fs[i++]).call(self, v, function() { c(to_mr(arguments)); });
     })(v);
     return promise;
   }
@@ -1641,8 +1641,8 @@
   function line(source, tag_stack) {
     source = source.replace(REG8, "\n").replace(/^[ \t]*/, "");
     return source.match(/^[\[.#\w\-]/) ? source.replace(/^(\[.*\]|\{.*?\}|\S)+ ?/, function(str) {
-      return start_tag(str, tag_stack);
-    }) : source;
+        return start_tag(str, tag_stack);
+      }) : source;
   }
   function push_in(ary, index, data) {
     var rest_ary = ary.splice(index);
@@ -1707,9 +1707,9 @@
   _.sel = _.select = function(start, selector) {
     return selector && _.reduce(selector.split(/\s*->\s*/), function (mem, key) {
         return !key.match(/^\((.+)\)/) ? !key.match(/\[(.*)\]/) ? mem[key] : function(mem, numbers) {
-          if (numbers.length > 2 || numbers.length < 1 || _.filter(numbers, function(v) { return isNaN(v); }).length) return _.Err('[] selector in [num] or [num ~ num]');
-          var s = numbers[0], e = numbers[1]; return !e ? mem[s<0 ? mem.length+s : s] : slice.call(mem, s<0 ? mem.length+s : s, e<0 ? mem.length+e : e + 1);
-        }(mem, _.map(RegExp.$1.replace(/\s/g, '').split('~'), _.parseInt)) : _.find(mem, _.lambda(RegExp.$1));
+              if (numbers.length > 2 || numbers.length < 1 || _.filter(numbers, function(v) { return isNaN(v); }).length) return _.Err('[] selector in [num] or [num ~ num]');
+              var s = numbers[0], e = numbers[1]; return !e ? mem[s<0 ? mem.length+s : s] : slice.call(mem, s<0 ? mem.length+s : s, e<0 ? mem.length+e : e + 1);
+            }(mem, _.map(RegExp.$1.replace(/\s/g, '').split('~'), _.parseInt)) : _.find(mem, _.lambda(RegExp.$1));
       }, start);
   };
 
@@ -1745,11 +1745,11 @@
       start: im_start,
       selected: _.reduce(selector.split(/\s*->\s*/), function(clone, key) {
         return !key.match(/^\((.+)\)/) ? /*start*/(!key.match(/\[(.*)\]/) ? clone[key] = _.clone(clone[key]) : function(clone, numbers) {
-          if (numbers.length > 2 || numbers.length < 1 || _.filter(numbers, _.pipe(_.identity, isNaN)).length) return _.Err('[] selector in [num] or [num ~ num]');
-          var s = numbers[0], e = numbers[1]; return !e ? clone[s] = _.clone(clone[s<0 ? clone.length+s : s]) : function(clone, oris) {
-            return each(oris, function(ori) { clone[clone.indexOf(ori)] = _.clone(ori); });
-          }(clone, slice.call(clone, s<0 ? clone.length+s : s, e<0 ? clone.length+e : e + 1));
-        }(clone, map(RegExp.$1.replace(/\s/g, '').split('~'), _.pipe(_.identity, parseInt))))/*end*/ :
+              if (numbers.length > 2 || numbers.length < 1 || _.filter(numbers, _.pipe(_.identity, isNaN)).length) return _.Err('[] selector in [num] or [num ~ num]');
+              var s = numbers[0], e = numbers[1]; return !e ? clone[s] = _.clone(clone[s<0 ? clone.length+s : s]) : function(clone, oris) {
+                  return each(oris, function(ori) { clone[clone.indexOf(ori)] = _.clone(ori); });
+                }(clone, slice.call(clone, s<0 ? clone.length+s : s, e<0 ? clone.length+e : e + 1));
+            }(clone, map(RegExp.$1.replace(/\s/g, '').split('~'), _.pipe(_.identity, parseInt))))/*end*/ :
           function(clone, ori) { return clone[clone.indexOf(ori)] = _.clone(ori); } (clone, _.find(clone, _.lambda(RegExp.$1)))
       }, im_start)
     };
@@ -1903,8 +1903,8 @@
     }
     function make_selector(el) {
       return _.isString(el) ? el : _.isArray(el) ? map(el, function(val) {
-        return (_.isString(val) ? val : (_.isArrayLike(val) ? val[0] : val).getAttribute('box_selector'));
-      }).join('->') : (_.isArrayLike(el) ? el[0] : el).getAttribute('box_selector');
+            return (_.isString(val) ? val : (_.isArrayLike(val) ? val[0] : val).getAttribute('box_selector'));
+          }).join('->') : (_.isArrayLike(el) ? el[0] : el).getAttribute('box_selector');
     }
   };
 

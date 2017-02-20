@@ -406,10 +406,10 @@
   console.log = log;
 
   _.go(
-    _.mr(20, [1, 2, 3]),
+    _.mr([1, 2, 3], 20),
     _.each(log));
 
-  _.each(20, [1, 2, 3], log);
+  _.each([1, 2, 3], log, 20);
 
   _.each([1,2,3], function(v) {
     return new Promise(function(rs) {
@@ -439,10 +439,43 @@
 
 
   _.log('map', _.go(
-    _.mr(20, [1, 2, 3]),
-    _.map((a, v) => v * 3)));
+    _.mr([1, 2, 3], 20),
+    _.map(v => v * 3)));
 
-  _.log('map2', _.map(20, [1, 2, 3], (a, v) => v * 4));
+  _.log('map2', _.map([1, 2, 3], v => v * 4, 20));
+
+  _.map([1,2,3], function(v) {
+    return new Promise(function(rs) {
+      setTimeout(function() {
+        console.log(v);
+        rs(v * 2);
+      }, 1000)
+    });
+  }).then(function(data) {
+    console.log('map', data);
+  });
+
+  _.map({
+    a: 1,
+    b: 2,
+    c: 3
+  }, function(v) {
+    return new Promise(function(rs) {
+      setTimeout(function() {
+        console.log(v);
+        rs(v*2);
+      }, 1000)
+    });
+  }).then(function(data) {
+    console.log('map', data);
+  });
+
+
+  _.log('reduce', _.go(
+    _.mr([1, 2, 3], 20),
+    _.map(v => v * 3)));
+
+  _.log('map2', _.map([1, 2, 3], v => v * 4, 20));
 
   _.map([1,2,3], function(v) {
     return new Promise(function(rs) {
