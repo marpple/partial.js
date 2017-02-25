@@ -1286,7 +1286,7 @@
       var data = d;
       var iteratee = i;
     }
-    if (this != _ && this != G) iteratee = _.bind(iteratee, this);
+    if (this != _ && this != G && _.isFunction(iteratee)) iteratee = _.bind(iteratee, this);
 
     data = data || {};
     var res = {};
@@ -1310,7 +1310,7 @@
       var data = d;
       var iteratee = i;
     }
-    if (this != _ && this != G) iteratee = _.bind(iteratee, this);
+    if (this != _ && this != G && _.isFunction(iteratee)) iteratee = _.bind(iteratee, this);
 
     data = data || {};
     var res = {};
