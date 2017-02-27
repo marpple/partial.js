@@ -286,8 +286,8 @@
   _.null = _.constant(null);
   _.not = function(v) { return !v; };
   _.nnot = function(v) { return !!v; };
-  _.log = window.console && window.console.log ? console.log.bind ? console.log.bind(console) : function() { console.log.apply(console, arguments); } : _.i;
-  _.loge = window.console && window.console.error ? console.error.bind ? console.error.bind(console) : function() { console.error.apply(console, arguments); } : _.i;
+  _.log = window.console && window.console.log ? console.log.bind ? console.log.bind(console) : function() { console.log.apply(console, arguments); } : _.idtt;
+  _.loge = window.console && window.console.error ? console.error.bind ? console.error.bind(console) : function() { console.error.apply(console, arguments); } : _.idtt;
   _.hi = _.Tap(_.log);
 
   _.f = function(nodes) {
@@ -1340,7 +1340,7 @@
     var fns = _.rest(arguments, 1), res = [], tmp;
     for (var i = 0, fl = fns.length, al = args.length; i < fl || i < al; i++) {
       tmp = _.is_mr(args[i]) ?
-        (fns[i] || _.i).apply(this == _ ? null : this, args[i]) : (fns[i] || _.i).call(this == _ ? null : this, args[i]);
+        (fns[i] || _.idtt).apply(this == _ ? null : this, args[i]) : (fns[i] || _.idtt).call(this == _ ? null : this, args[i]);
       if (_.is_mr(tmp)) for (var j = 0, l = tmp.length; j < l; j++) res.push(tmp[j]);
       else res.push(tmp);
     }
@@ -1503,20 +1503,16 @@
    * */
   var TAB_SIZE;
   var REG1, REG2, REG3, REG4 = {}, REG5, REG6, REG7, REG8;
-  function s_matcher(length, key, re, source, var_names, self) {
-
-    if (self && self[key]) return self[key];
-    var res = map(source.match(re), function(matched) {
+  function s_matcher(length, re, source, var_names) {
+    return map(source.match(re), function(matched) {
       return new Function(var_names, "return " + matched.substring(length, matched.length-length) + ";");
     });
-    if (self) self[key] = res;
-    return res;
   }
 
-  var insert_datas1 = _.partial(s_exec, /\{\{\{.*?\}\}\}/g, _.escape, s_matcher.bind(null, 3, "insert_datas1")); // {{{}}}
-  var insert_datas2 = _.partial(s_exec, /\{\{.*?\}\}/g, _.i, s_matcher.bind(null, 2, "insert_datas2")); // {{}}
-  var async_insert_datas1 = _.partial(async_s_exec, /\{\{\{.*?\}\}\}/g, _.escape, s_matcher.bind(null, 3, "insert_datas1")); // {{{}}}
-  var async_insert_datas2 = _.partial(async_s_exec, /\{\{.*?\}\}/g, _.i, s_matcher.bind(null, 2, "insert_datas2")); // {{}}
+  var s_matcher_reg1 = /\{\{\{.*?\}\}\}/g;
+  var s_matcher_reg2 = /\{\{.*?\}\}/g;
+  var insert_datas1 = _.partial(s_exec, s_matcher_reg1, _.escape); // {{{}}}
+  var insert_datas2 = _.partial(s_exec, s_matcher_reg2, _.idtt); // {{}}
 
   var TAB;
   _.TAB_SIZE = function(size) {
@@ -1536,13 +1532,11 @@
   _._ts_storage = {};
 
   /* sync */
-  _.template = _.t =
-    function() { return s.apply(null, [convert_to_html, _.go, {}].concat(_.toArray(arguments))); };
-  _.template$ = _.t$ =
-    function() { return s.apply(null, [convert_to_html, _.go, {}, '$'].concat(_.toArray(arguments))); };
+  _.template = _.t = function() { return s.apply(null, [convert_to_html].concat(_.toArray(arguments))); };
+  _.template$ = _.t$ = function() { return s.apply(null, [convert_to_html, '$'].concat(_.toArray(arguments))); };
 
-  _.string = _.s = function() { return s.apply(null, [_.mr, _.go, {}].concat(_.toArray(arguments))); };
-  _.string$ = _.s$ = function() { return s.apply(null, [_.mr, _.go, {}, '$'].concat(_.toArray(arguments))); };
+  _.string = _.s = function() { return s.apply(null, [_.idtt].concat(_.toArray(arguments))); };
+  _.string$ = _.s$ = function() { return s.apply(null, [_.idtt, '$'].concat(_.toArray(arguments))); };
 
   var teach = function(t) {
     return function() {
@@ -1566,52 +1560,37 @@
     return space_length / TAB_SIZE + tab_length;
   }
 
-  function s(convert, go, self, var_names/*, source...*/) {
-    var source = _.map(_.rest(arguments, 4), function(str_or_func) {
+  function s(convert, var_names/*, source...*/) {
+    var source = remove_comment(_.map(_.rest(arguments, 2), function(str_or_func) {
       if (_.isString(str_or_func)) return str_or_func;
       var key = _.uniqueId("func");
       _._ts_storage[key] = str_or_func;
       return '_p._ts_storage.' + key;
-    }).join("");
-    return function(a) {
-      return go == _.go ?
-        go(_.mr(source, var_names, arguments, self), remove_comment, convert, insert_datas1, insert_datas2, _.i) :
-        go(_.mr(source, var_names, arguments, self), remove_comment, convert, async_insert_datas1, async_insert_datas2, _.i);
+    }).join(""));
+
+    var self = { matcher: {} };
+    self.matcher[s_matcher_reg1] = s_matcher(3, s_matcher_reg1, source, var_names);
+    self.matcher[s_matcher_reg2] = s_matcher(2, s_matcher_reg2, source, var_names);
+    source = convert(source.replace(s_matcher_reg1, "{{{}}}").replace(s_matcher_reg2, "{{}}"));
+
+    return function() {
+      return _.go(_.mr(source, arguments, self), insert_datas1, insert_datas2, _.idtt);
     }
   }
 
-  function remove_comment(source, var_names, args, self) {
-    return _.mr(source.replace(/\/\*(.*?)\*\//g, "").replace(REG2, ""), var_names, args, self);
+  function remove_comment(source) {
+    return source.replace(/\/\*(.*?)\*\//g, "").replace(REG2, "");
   }
 
-  /*function s_exec(re, wrap, matcher, source, var_names, args, self) {
-   var s = source.split(re);
-   return _.mr(map(map(matcher(re, source, var_names, self), function(func) {
-   return _.go(func.apply(null, args), wrap, return_check);
-   }), function(v, i) { return s[i] + v; }).join("") + s[s.length-1], var_names, args, self);
-   }*/
-
-  function s_exec(re, wrap, matcher, source, var_names, args, self) {
+  function s_exec(re, wrap, source, args, self) {
     return _.go(_.mr(source.split(re),
-      _.map(matcher(re, source, var_names, self), function(func) {
+      _.map(self.matcher[re], function(func) {
         return _.go(func.apply(null, args), wrap, return_check);
       })),
-      function(s, vs) { return _.mr(map(vs, function(v, i) { return s[i] + v; }).join("") + s[s.length-1], var_names, args, self); });
+      function(s, vs) { return _.mr(map(vs, function(v, i) { return s[i] + v; }).join("") + s[s.length-1], args, self); });
   }
 
-  function async_s_exec(re, wrap, matcher, source, var_names, args, self) {
-    return _.go.async(
-      _.mr(source.split(re),
-        _.map(matcher(re, source, var_names, self), __.async(function(func) {
-          return _.go.async(func.apply(null, args), wrap, return_check);
-        }))
-      ),
-      function(s, vs) { return _.mr(map(vs, function(v, i) { return s[i] + v; }).join("") + s[s.length-1], var_names, args, self); });
-  }
-
-  function convert_to_html(source, var_names, args, self) {
-    if (self && self.convert_to_html) return _.mr(self.convert_to_html, var_names, args, self);
-
+  function convert_to_html(source) {
     var tag_stack = [];
     var ary = source.match(REG3);
     var base_tab = number_of_tab(ary[0]);
@@ -1636,7 +1615,7 @@
 
     while (tag_stack.length) ary[ary.length - 1] += end_tag(tag_stack.pop()); // 마지막 태그
 
-    return _.mr(self ? self.convert_to_html = ary.join("") : ary.join(""), var_names, args, self);
+    return ary.join("");
   }
   function line(source, tag_stack) {
     source = source.replace(REG8, "\n").replace(/^[ \t]*/, "");
