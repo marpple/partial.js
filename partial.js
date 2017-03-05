@@ -151,8 +151,8 @@
   _.tap = _.Tap = function() {
     var func = __.apply(null, arguments);
     return function(arg) {
-      var arg = arguments.length > 1 ? _.to_mr(arguments) : arguments.length ? arguments[0] : __;
-      return _.go.call(this, arg, func, _.c(arg));
+      var args = arguments.length > 1 ? _.to_mr(arguments) : arguments.length ? arguments[0] : __;
+      return _.go.call(this, args, func, _.c(args));
     }
   };
 
@@ -300,7 +300,7 @@
     if (arguments.length == 1) return _.property(obj);
     return (function v(obj, i, keys, li) {
       return (obj = obj[keys[i]]) ? li == i ? obj : v(obj, i + 1, keys, li) : li == i ? obj : void 0;
-    })(obj, 0, keys = key.split('.'), keys.length - 1);
+    })(obj || {}, 0, keys = key.split('.'), keys.length - 1);
   };
   _.property = function(key) { return _(_.val, _, key); };
 
@@ -876,7 +876,8 @@
     return false;
   };
 
-  _.contains = function(data, value, fromIndex) {
+  _.contains = function f(data, value, fromIndex) {
+    if (arguments.length == 1) return _(f, data);
     if (typeof fromIndex == 'number') data = _.rest(data, fromIndex);
     if (_.isArrayLike(data)) return data.indexOf(value) !== -1;
     else return _.isMatch(data, value);
@@ -1277,7 +1278,7 @@
   };
 
   // async not supported
-  _.pick = function f(d, i) {
+  _.pick = function f(d, i) { // (data, key1, key2, key3)은 지원 안됨
     if (arguments.length == 1) return _(f, ___, d);
     if (arguments.length > 2) {
       var data = arguments[arguments.length-2];
@@ -1294,14 +1295,14 @@
       for (var keys = _.keys(data), i = 0, l = keys.length; i < l; i++)
         if (iteratee(data[keys[i]], keys[i], data)) res[keys[i]] = data[keys[i]];
     } else {
-      var keys = _.isArray(iteratee) ? iteratee : _.rest(arguments);
+      var keys = iteratee;
       for (var i = 0, l = keys.length; i < l; i++) res[keys[i]] = data[keys[i]];
     }
     return res;
   };
 
   // async not supported
-  _.omit = function f(d, i) {
+  _.omit = function f(d, i) { // (data, key1, key2, key3)은 지원 안됨
     if (arguments.length == 1) return _(f, ___, d);
     if (arguments.length > 2) {
       var data = arguments[arguments.length-2];
@@ -1318,7 +1319,7 @@
       for (var keys = _.keys(data), i = 0, l = keys.length; i < l; i++)
         if (!iteratee(data[keys[i]], keys[i], data)) res[keys[i]] = data[keys[i]];
     } else {
-      var oKeys = _.keys(data), keys = _.rest(arguments);
+      var oKeys = _.keys(data), keys = iteratee;
       for (var i = 0, l = oKeys.length; i < l; i++)
         if (keys.indexOf(oKeys[i]) == -1) res[oKeys[i]] = data[oKeys[i]];
     }
@@ -1659,7 +1660,7 @@
   /* mutable */
   function _set(obj, key, valueOrFunc) {
     if (!_.isFunction(valueOrFunc)) return _.mr(obj[key] = valueOrFunc, key, obj);
-    return _.go.async(_.mr(obj, key), valueOrFunc, function(_value) { return _.mr(obj[key] = _value, key, obj) });
+    return _.go(_.mr(obj, key), valueOrFunc, function(_value) { return _.mr(obj[key] = _value, key, obj) });
   }
   function _unset(obj, key) { var val = obj[key]; delete obj[key]; return _.mr(val, key, obj); }
   function _remove(arr, remove) { return _.mr(remove, _.removeByIndex(arr, arr.indexOf(remove)), arr); }
@@ -1667,11 +1668,11 @@
   function _shift(arr) { return _.mr(arr.shift(), 0, arr); }
   function _push(arr, itemOrFunc) {
     if (!_.isFunction(itemOrFunc)) return _.mr(itemOrFunc, arr.push(itemOrFunc), arr);
-    return _.go.async(arr, itemOrFunc, function(_item) { return _.mr(_item, arr.push(_item), arr); });
+    return _.go(arr, itemOrFunc, function(_item) { return _.mr(_item, arr.push(_item), arr); });
   }
   function _unshift(arr, itemOrFunc) {
     if (!_.isFunction(itemOrFunc)) return _.mr(itemOrFunc, arr.unshift(itemOrFunc), arr);
-    return _.go.async(arr, itemOrFunc, function(_item) { return _.mr(_item, arr.unshift(_item), arr); });
+    return _.go(arr, itemOrFunc, function(_item) { return _.mr(_item, arr.unshift(_item), arr); });
   }
   _.removeByIndex = function(arr, from) {
     if (from !== -1) {
@@ -1718,7 +1719,7 @@
     unshift: function(start, selector, item) { return _.mr_cat(start, _unshift(_.sel(start, selector), item)); }
   });
 
-  _.imutable = _.im = _.extend(function(start, selector) {
+  _.immutable = _.im = _.extend(function(start, selector) {
     var im_start = _.clone(start);
     return {
       start: im_start,
