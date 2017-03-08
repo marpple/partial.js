@@ -134,16 +134,16 @@
   function is_mr(v) { return v && v._mr; }
 
   _.pipe = __;
-  function __() {
-    var fs = arguments;
+  function __(_fs) {
+    var fs = Array.isArray(_fs) ? _fs : arguments;
     return function() {
       return this == window ? goapply2(to_mr(arguments), fs) : goapply(this, to_mr(arguments), fs);
     }
   }
 
   _.indent = ___;
-  function ___() {
-    var fs = arguments;
+  function ___(_fs) {
+    var fs = Array.isArray(_fs) ? _fs : arguments;
     return function() { return goapply(ithis(this, arguments), to_mr(arguments), fs); }
   }
   function ithis(self, args) { return { parent: self, arguments: args }; }
@@ -169,8 +169,8 @@
   _.go.async = function(v) {
     return go_async(_.go == this ? null : this, v, arguments, 1);
   };
-  __.async = function() {
-    var fs = arguments;
+  __.async = function(_fs) {
+    var fs = Array.isArray(_fs) ? _fs : arguments;
     var f = function() {
       return go_async(this, to_mr(arguments), fs, 0);
     };
@@ -179,8 +179,8 @@
   };
   _.async = __.async;
   _.pipe.async = __.async;
-  ___.async = _.indent.async = function() {
-    var fs = arguments;
+  ___.async = _.indent.async = function(_fs) {
+    var fs = Array.isArray(_fs) ? _fs : arguments;
     return function() { return go_async(ithis(this, arguments), to_mr(arguments), fs, 0); }
   };
   __.async2 = _.pipe;
@@ -273,6 +273,13 @@
   _.this = function() { return this; };
   _.idtt = _.identity = function(v) { return v; };
   _.i = _.i18n = _.idtt; // TODO
+  _.$ = function(val) { return function() { return $(val) }; };
+  _.location = {}; _.location.href = function(url) {
+    var t_url = _.s$(url);
+    return function($) {
+      location.href = t_url($);
+    }
+  };
   _.args = function() { return arguments; };
   _.args0 = _.identity;
   _.args1 = function() { return arguments[1]; };
@@ -336,12 +343,16 @@
     if (!obj) return [];
     return _.isArray(obj) ? slice.call(obj) : _.values(obj);
   };
-  _.object = function(list, values) {
+  _.obj = _.object = function(list, values) {
     for (var result = {}, i = 0, length = list.length; i < length; i++) {
       if (values) result[list[i]] = values[i];
       else result[list[i][0]] = list[i][1];
     }
     return result;
+  };
+  _.obj2 = _.object2 = function f(obj, keys1, keys2) {
+    if (arguments.length == 2) return _(f, _, obj, keys1);
+    return _.obj(_.wrap_arr(keys1), _.values(_.pick(obj, keys2)));
   };
   var _keys = function(obj) { return _.isObject(obj) ? Object.keys(obj) : []; };
   var _invert = function(obj) {
@@ -1295,7 +1306,7 @@
       for (var keys = _.keys(data), i = 0, l = keys.length; i < l; i++)
         if (iteratee(data[keys[i]], keys[i], data)) res[keys[i]] = data[keys[i]];
     } else {
-      var keys = iteratee;
+      var keys = _.wrap_arr(iteratee);
       for (var i = 0, l = keys.length; i < l; i++) res[keys[i]] = data[keys[i]];
     }
     return res;
@@ -1319,7 +1330,7 @@
       for (var keys = _.keys(data), i = 0, l = keys.length; i < l; i++)
         if (!iteratee(data[keys[i]], keys[i], data)) res[keys[i]] = data[keys[i]];
     } else {
-      var oKeys = _.keys(data), keys = iteratee;
+      var oKeys = _.keys(data), keys = _.wrap_arr(iteratee);
       for (var i = 0, l = oKeys.length; i < l; i++)
         if (keys.indexOf(oKeys[i]) == -1) res[oKeys[i]] = data[oKeys[i]];
     }
@@ -1660,7 +1671,7 @@
   /* mutable */
   function _set(obj, key, valueOrFunc) {
     if (!_.isFunction(valueOrFunc)) return _.mr(obj[key] = valueOrFunc, key, obj);
-    return _.go(_.mr(obj, key), valueOrFunc, function(_value) { return _.mr(obj[key] = _value, key, obj) });
+    return _.go(_.mr(obj[key], key, obj), valueOrFunc, function(_value) { return _.mr(obj[key] = _value, key, obj) });
   }
   function _unset(obj, key) { var val = obj[key]; delete obj[key]; return _.mr(val, key, obj); }
   function _remove(arr, remove) { return _.mr(remove, _.removeByIndex(arr, arr.indexOf(remove)), arr); }
@@ -1748,10 +1759,10 @@
       return _.mr_cat(im.start, _remove(_.sel(im.start, _arr.slice(0, _arr.length - 1).join('->')), im.selected));
     },
     extend: function(start/*, objs*/) {
-      return _.extend.apply(null, [{}, start].concat(_.toArray(arguments).slice(1, arguments.length)));
+      return _.extend.apply(null, [_.is_array(start) ? [] : {}, start].concat(_.toArray(arguments).slice(1, arguments.length)));
     },
     defaults: function(start/*, objs*/) {
-      return _.defaults.apply(null, [{}, start].concat(_.toArray(arguments).slice(1, arguments.length)));
+      return _.defaults.apply(null, [_.is_array(start) ? [] : {}, start].concat(_.toArray(arguments).slice(1, arguments.length)));
     },
     extend2: function(start, selector/*, objs*/) {
       var im = _.im(start, selector);
