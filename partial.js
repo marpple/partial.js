@@ -47,12 +47,7 @@
     while (i-- && n_arg3[i] == _) n_arg3.pop();
     return _to_unde(n_args1, n_arg3);
   }
-  _.right = function() {
-    var len = --arguments.length, fn = arguments[len];
-    delete arguments[len];
-    return fn.apply(this == _ ? null : this, arguments);
-  };
-  _.righta = function(args, fn) { return fn.apply(this == _ ? null : this, args); };
+
   var bind = Function.prototype.bind;
   _.bind = function(fn) {
     var f = bind.apply(fn, _.rest(arguments));
@@ -177,16 +172,12 @@
     f._p_async = true;
     return f;
   };
-  _.async = __.async;
-  _.pipe.async = __.async;
+  _.async = __.async; _.pipe.async = __.async;
   ___.async = _.indent.async = function(_fs) {
     var fs = Array.isArray(_fs) ? _fs : arguments;
     return function() { return go_async(ithis(this, arguments), to_mr(arguments), fs, 0); }
   };
-  __.async2 = _.pipe;
-  _.async2 = __.async2;
-  _.pipe.async2 = __.async2;
-  ___.async2 = _.indent;
+  __.async2 = _.pipe; _.async2 = __.async2; _.pipe.async2 = __.async2; ___.async2 = _.indent;
   _.cb = _.callback = function(f) {
     return __.async.apply(null, map(arguments, function(f) {
       f._p_cb = true;
@@ -267,19 +258,31 @@
   }
   function fpro(res) { return is_mr(res) && res.length == 1 ? res[0] : res; }
 
-
   /* Ice cream */
   _.noop = function() {};
   _.this = function() { return this; };
   _.idtt = _.identity = function(v) { return v; };
-  _.i = _.i18n = _.idtt; // TODO
+  _.i = _.i18n = function(key, value) { // TODO
+    if (arguments.length == 1) return key;
+    return _.toArray(arguments).join(" ");
+  };
   _.$ = function(val) { return function() { return $(val) }; };
-  _.location = {}; _.location.href = function(url) {
+  _.location = {};
+  _.location.href = function(url) {
     var t_url = _.s$(url);
     return function($) {
       location.href = t_url($);
     }
   };
+
+  _.redirect = function(url) {
+    if (!arguments.length) return _.if(function() { location.reload() });
+    var t_url = _.s$(url);
+    return function(data) {
+      return data ? window.location.href = t_url(data) : console.error('data:', data);
+    };
+  };
+
   _.args = function() { return arguments; };
   _.args0 = _.identity;
   _.args1 = function() { return arguments[1]; };
@@ -296,6 +299,11 @@
   _.log = window.console && window.console.log ? console.log.bind ? console.log.bind(console) : function() { console.log.apply(console, arguments); } : _.idtt;
   _.loge = window.console && window.console.error ? console.error.bind ? console.error.bind(console) : function() { console.error.apply(console, arguments); } : _.idtt;
   _.hi = _.Tap(_.log);
+  _.Hi = function(pre) {
+    return _.tap(function() {
+      return console.log.apply(null, [pre].concat(_.toArray(arguments)))
+    });
+  };
 
   _.f = function(nodes) {
     var f = _.val(G, nodes);
@@ -402,6 +410,9 @@
   _.times = function(len, iteratee) { for (var i = 0; i <= len; i++) iteratee(i); };
 
   /* is Series */
+  _.is_numeric = function(n) {
+    return !isNaN(parseFloat(n)) && isFinite(n);
+  };
   _.is_array = _.isArray = Array.isArray;
   _.is_match = _.isMatch = function(obj, attrs) {
     var keys = _.keys(attrs);
@@ -442,7 +453,8 @@
   function lambda(str) {
     if (typeof str !== 'string') return str;
     str = str.replace(/\*\*/g, '"');
-    str = str.replace(/\*/g, "'");
+    str = str.replace(/\*/g, '"');
+    if (!has_lambda) str = str.replace(/`/g, "'");
     if (lambda[str]) return lambda[str];
     if (!str.match(/=>/))
       return lambda[str = str.replace('#', '$.id==')] = new Function('$', 'return (' + str + ')');
@@ -454,7 +466,7 @@
   }
   _.l = _.lambda = _.Lambda = lambda;
   function bexdf(setter, obj1/* objs... */) {
-    for (var i = 2, len = arguments.length; i < len; i++) setter(obj1, arguments[i]);
+    for (var i = 2, len = arguments.length; i < len; i++) if (obj1 && arguments[i]) setter(obj1, arguments[i])
     return obj1;
   }
   function setter(r, s) { for (var key in s) r[key] = s[key]; }
@@ -579,6 +591,11 @@
     return res;
   };
 
+  _.if_arr_map = function f(v, iter) {
+    if (arguments.length == 1) return _(f, _, v);
+    return _.is_array(v) ? _.map(v, iter) : iter(v);
+  };
+
   var _reduce_async = function f(data, iter, keys, mp, i) {
     return _.go(mp, function(memo) {
       var key = keys ? keys[i] : i;
@@ -588,6 +605,8 @@
 
   _.reduce = function f(d, i, m) {
     if (arguments.length == 1) return _(f, _, ___, d, _);
+    if (arguments.length == 2 && _.isFunction(d))
+      return _(f, ___, d, _.isFunction(i) ? i : _(_.clone, i));
     if (arguments.length > 3) {
       var data = arguments[arguments.length-3];
       var iteratee = Iter(arguments, true);
@@ -597,6 +616,8 @@
       var iteratee = i;
       var memo = m;
     }
+    memo = _.isFunction(memo) ? memo.call(this) : memo;
+
     if (this != _ && this != G) iteratee = _.bind(iteratee, this);
     var keys = _.isArrayLike(data) ? null : _.keys(data);
     var i = 0;
@@ -633,6 +654,8 @@
 
   _.reduceRight = _.reduce_right = function f(d, i, m) {
     if (arguments.length == 1) return _(f, _, ___, d, _);
+    if (arguments.length == 2 && _.isFunction(d))
+      return _(f, ___, d, _.isFunction(i) ? i : _(_.clone, i));
     if (arguments.length > 3) {
       var data = arguments[arguments.length-3];
       var iteratee = Iter(arguments, true);
@@ -642,6 +665,8 @@
       var iteratee = i;
       var memo = m;
     }
+    memo = _.isFunction(memo) ? memo.call(this) : memo;
+
     if (this != _ && this != G) iteratee = _.bind(iteratee, this);
     var keys = _.isArrayLike(data) ? null : _.keys(data);
     if (iteratee._p_async || iteratee._p_cb) {
@@ -806,7 +831,7 @@
 
   var _every_async = function f(data, predi, keys, mp, i) {
     return _.go(mp, function(bool) {
-      if (bool) return false;
+      if (!bool) return false;
       var key = keys ? keys[i] : i;
       return (keys || data).length == i ? true : f(data, predi, keys, predi(data[key], key, data), ++i);
     });
@@ -830,17 +855,17 @@
       var mp = predicate(data[keys[0]], keys[0], data);
       if (mp && (mp._mr ? maybe_promise_mr(mp) : mp.then && _.isFunction(mp.then)))
         return _every_async(data, predicate, keys, mp, 1);
-      else if (mp) return false;
+      else if (!mp) return false;
       for (var i = 1, l = keys.length; i < l; i++)
-        if (predicate(data[keys[i]], keys[i], data)) return false;
+        if (!predicate(data[keys[i]], keys[i], data)) return false;
     } else {
       if (!data.length) return false;
       var mp = predicate(data[0], 0, data);
       if (mp && (mp._mr ? maybe_promise_mr(mp) : mp.then && _.isFunction(mp.then)))
         return _every_async(data, predicate, null, mp, 1);
-      else if (mp) return false;
+      else if (!mp) return false;
       for (var i = 1, l = data.length; i < l; i++)
-        if (predicate(data[i], i, data)) return false;
+        if (!predicate(data[i], i, data)) return false;
     }
     return true;
   };
@@ -920,7 +945,7 @@
 
   // async not supported
   _.max = function f(d, i) {
-    if (arguments.length == 1 && _.isFunction(data)) return _(f, ___, d);
+    if (arguments.length == 1 && _.isFunction(d)) return _(f, ___, d);
     if (arguments.length > 2) {
       var data = arguments[arguments.length-2];
       var iteratee = Iter(arguments);
@@ -951,7 +976,7 @@
 
   // async not supported
   _.min = function f(d, i) {
-    if (arguments.length == 1 && _.isFunction(data)) return _(f, ___, d);
+    if (arguments.length == 1 && _.isFunction(d)) return _(f, ___, d);
     if (arguments.length > 2) {
       var data = arguments[arguments.length-2];
       var iteratee = Iter(arguments);
@@ -1139,7 +1164,7 @@
 
   // async not supported
   _.uniq = function f(d, i) {
-    if (arguments.length == 1 && _.isFunction(data)) return _(f, ___, d);
+    if (arguments.length == 1 && _.isFunction(d)) return _(f, ___, d);
     if (arguments.length > 2) {
       var data = arguments[arguments.length-2];
       var iteratee = Iter(arguments);
@@ -1303,11 +1328,16 @@
     data = data || {};
     var res = {};
     if (_.isFunction(iteratee)) {
-      for (var keys = _.keys(data), i = 0, l = keys.length; i < l; i++)
-        if (iteratee(data[keys[i]], keys[i], data)) res[keys[i]] = data[keys[i]];
+      for (var keys = _.keys(data), i = 0, l = keys.length; i < l; i++) {
+        var key = keys[i], val = data[key];
+        if (iteratee(val, key, data)) res[key] = val;
+      }
     } else {
       var keys = _.wrap_arr(iteratee);
-      for (var i = 0, l = keys.length; i < l; i++) res[keys[i]] = data[keys[i]];
+      for (var i = 0, l = keys.length; i < l; i++) {
+        var key = keys[i], val = data[key];
+        if (val) res[key] = val;
+      }
     }
     return res;
   };
@@ -1495,6 +1525,11 @@
     }
   };
 
+  _.confirm = function(msg, ok_fn, cancel_fn) {
+    var f = _.if(function() { return confirm(msg) }, ok_fn);
+    return cancel_fn ? f.else(cancel_fn) : f;
+  };
+
   // TDD
   _.test = function() {
     var fails = _.constant([]), all = _.constant([]), fna = _.constant([fails(), all()]);
@@ -1562,8 +1597,8 @@
   };
   _.teach = _.template.each = _.t.each = teach(_.t);
   _.seach = _.string.each = _.t.seach = teach(_.s);
-  _.t$each = _.template$.each = _.t$.each = teach(_.t);
-  _.s$each = _.string$.each = _.t$.seach = teach(_.s);
+  _.t$each = _.template$.each = _.t$.each = teach(_.t$);
+  _.s$each = _.string$.each = _.t$.seach = teach(_.s$);
 
   function number_of_tab(a) {
     var snt = a.match(REG1)[0];
@@ -1582,8 +1617,9 @@
 
     var self = { matcher: {} };
     self.matcher[s_matcher_reg1] = s_matcher(3, s_matcher_reg1, source, var_names);
+    source = source.replace(s_matcher_reg1, "__PJT__");
     self.matcher[s_matcher_reg2] = s_matcher(2, s_matcher_reg2, source, var_names);
-    source = convert(source.replace(s_matcher_reg1, "{{{}}}").replace(s_matcher_reg2, "{{}}"));
+    source = convert(source.replace(s_matcher_reg2, "{{}}").replace(/__PJT__/g, "{{{}}}"));
 
     return function() {
       return _.go(_.mr(source, arguments, self), insert_datas1, insert_datas2, _.idtt);
@@ -1796,7 +1832,7 @@
     return result;
   }
   _.box = function (key, value) {
-    var _box_data = new Box(), _box_cache = {};
+    var _box_data = new Box();
     var is_string = _.isString(key), k;
     if (is_string && arguments.length == 2) _box_data[key] = value;
     else if (!is_string && arguments.length == 1) for (k in key) _box_data[k] = key[k];
@@ -1806,17 +1842,15 @@
       sel: select,
       set: function (el, value) {
         var selector = make_selector(el), result = help_result(_.set(_box_data, selector, value), _box);
-        _box_cache[selector] = result[1];
         return result;
       },
       unset: function(el) {
         var selector = make_selector(el), result = help_result(_.unset(_box_data, selector), _box);
-        delete _box_cache[selector];
         return result;
       },
       remove: function(el) {
         var selector = make_selector(el), result = help_result( _.remove(_box_data, selector), _box);
-        delete _box_cache[selector];
+        // delete _box_cache[selector];
         return result;
       },
       extend: function(obj) {
@@ -1829,12 +1863,10 @@
       },
       extend2: function(el) {
         var selector = make_selector(el), result = help_result(_.extend2.apply(null, [_box_data, selector].concat(_.toArray(arguments).slice(1, arguments.length))), _box);
-        _box_cache[selector] = result[1];
         return result;
       },
       defaults2: function(el) {
         var selector = make_selector(el), result = help_result(_.defaults2.apply(null, [_box_data, selector].concat(_.toArray(arguments).slice(1, arguments.length))), _box);
-        _box_cache[selector] = result[1];
         return result;
       },
       pop: function(el) {
@@ -1885,12 +1917,10 @@
         }
       }
     });
-    function select(el, is_init_cache) {
+    function select(el) {
       if (!el || _.isArrayLike(el) && !el.length) return ;
       var selector = make_selector(el);
-      var _data = _.select(_box_data, selector);
-      var _cache_val = _box_cache[selector];
-      return (is_init_cache || !_cache_val) ? (_box_cache[selector] = _data) : _cache_val;
+      return _.select(_box_data, selector);
     }
     function make_selector(el) {
       return _.isString(el) ? el : _.isArray(el) ? map(el, function(val) {
