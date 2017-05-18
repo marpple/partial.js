@@ -1,0 +1,33 @@
+{
+  "name": "partial-js",
+  "version": "0.0.1",
+  "description": "functional javascript.",
+  "main": "partial.js",
+  "keywords": [
+    "server",
+    "client",
+    "util",
+    "functional",
+    "functional util",
+    "functional library",
+    "functional javscript"
+  ],
+  "author": {
+    "name": "indong yoo",
+    "email": "",
+    "url": ""
+  },
+  "directories": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marpple/partial.js.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/marpple/partial.js/issues"
+  },
+  "homepage": "https://marpple.github.io/partial.js/"
+}
