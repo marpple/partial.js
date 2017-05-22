@@ -917,3 +917,12 @@ _.go(null,
   </li>
 </ul>
 ```
+
+## Underscore
+
+Partial.js의 15% 정도의 코드는 Underscore.js에서 그대로 가져왔습니다. 우리는 Underscore.js를 만든 개발자들의 코드와 글에서 많은 것을 배웠습니다.
+
+##### 관련 링크:
+ - http://underscorejs.org
+ - http://documentcloud.github.io/underscore-contrib
+ - https://github.com/fogus/lemonad
