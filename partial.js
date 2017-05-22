@@ -1,8 +1,7 @@
 // Partial.js 1.0
-// History - lmn.js -> lego.js -> L.js -> abc.js -> Partial.js
 // Project Lead - Indong Yoo
 // Maintainers - Piljung Park, Hanah Choi
-// Contributors - Joeun Ha, Byeongjin Kim, Jeongik Park, Hoonil Kim
+// Contributors - Joeun Ha, Byeongjin Kim, Jeongik Park
 // Respect Underscore.js
 // (c) 2015-2017 Marpple. MIT Licensed.
 !function(G) {
@@ -221,12 +220,12 @@
         return;
       }
       return thenable(res[i]) && (has_promise = true) ? (function(i) {
-          res[i].then(function(v) {
-            res[i] = v;
-            u(i + 1, res, length, has_promise);
-          });
-          return true;
-        })(i) : u(i + 1, res, length, has_promise);
+        res[i].then(function(v) {
+          res[i] = v;
+          u(i + 1, res, length, has_promise);
+        });
+        return true;
+      })(i) : u(i + 1, res, length, has_promise);
     })(0, (res = is_r ? res : [res]), res.length, false);
   }
 
@@ -255,8 +254,8 @@
       if (unpack_promise(v, c)) return;
       is_mr(v) ?
         fs[i++].apply(self, (v[v.length++] = function() { c(to_mr(arguments)); }) && v) : v === __ ?
-          fs[i++].call(self, function() { c(to_mr(arguments)); }) :
-          fs[i++].call(self, v, function() { c(to_mr(arguments)); });
+        fs[i++].call(self, function() { c(to_mr(arguments)); }) :
+        fs[i++].call(self, v, function() { c(to_mr(arguments)); });
     })(v);
     return promise;
   }
@@ -659,8 +658,11 @@
     str = str.replace(/\*\*/g, '"');
     if (!has_lambda) str = str.replace(/`/g, "'");
     if (lambda[str]) return lambda[str];
+
+    if (str.indexOf('#') == 0)
+      return lambda[str] = function(id) { return function($) { return $.id == id; } }(parseInt(str.substr(1)));
     if (!str.match(/=>/))
-      return lambda[str = str.replace('#', '$.id==')] = new Function('$', 'return (' + str + ')');
+      return lambda[str] = new Function('$', 'return (' + str + ')');
     if (has_lambda) return lambda[str] = eval(str); // es6 lambda
     var ex_par = str.split(/\s*=>\s*/);
     return lambda[str] = new Function(
@@ -1545,8 +1547,8 @@
   function line(source, tag_stack) {
     source = source.replace(REG8, "\n").replace(/^[ \t]*/, "");
     return source.match(/^[\[.#\w\-]/) ? source.replace(/^(\[.*\]|\{.*?\}|\S)+ ?/, function(str) {
-        return start_tag(str, tag_stack);
-      }) : source;
+      return start_tag(str, tag_stack);
+    }) : source;
   }
   function push_in(ary, index, data) {
     var rest_ary = ary.splice(index);
@@ -1613,9 +1615,9 @@
     return sel && _.reduce(sel.split(/\s*->\s*/), function(mem, key) {
         if (!mem || !key) return;
         return !key.match(/^\((.+)\)/) ? (!key.match(/\[(.*)\]/) ? mem[key] : function(mem, numbers) {
-              if (numbers.length > 2 || numbers.length < 1 || _.filter(numbers, function(v) { return isNaN(v); }).length) return _.Err('[] sel in [num] or [num ~ num]');
-              var s = numbers[0], e = numbers[1]; return !e ? mem[s<0 ? mem.length+s : s] : slice.call(mem, s<0 ? mem.length+s : s, e<0 ? mem.length+e : e + 1);
-            }(mem, _.map(RegExp.$1.replace(/\s/g, '').split('~'), _.parseInt))) : _.find(mem, _.lambda(RegExp.$1));
+          if (numbers.length > 2 || numbers.length < 1 || _.filter(numbers, function(v) { return isNaN(v); }).length) return _.Err('[] sel in [num] or [num ~ num]');
+          var s = numbers[0], e = numbers[1]; return !e ? mem[s<0 ? mem.length+s : s] : slice.call(mem, s<0 ? mem.length+s : s, e<0 ? mem.length+e : e + 1);
+        }(mem, _.map(RegExp.$1.replace(/\s/g, '').split('~'), _.parseInt))) : _.find(mem, _.lambda(RegExp.$1));
       }, start);
   };
 
@@ -1653,11 +1655,11 @@
       start: im_start,
       selected: _.reduce(sel.split(/\s*->\s*/), function(clone, key) {
         return !key.match(/^\((.+)\)/) ? /*start*/(!key.match(/\[(.*)\]/) ? clone[key] = _.clone(clone[key]) : function(clone, numbers) {
-              if (numbers.length > 2 || numbers.length < 1 || _.filter(numbers, _.pipe(_.identity, isNaN)).length) return _.Err('[] sel in [num] or [num ~ num]');
-              var s = numbers[0], e = numbers[1]; return !e ? clone[s] = _.clone(clone[s<0 ? clone.length+s : s]) : function(clone, oris) {
-                  return each(oris, function(ori) { clone[clone.indexOf(ori)] = _.clone(ori); });
-                }(clone, slice.call(clone, s<0 ? clone.length+s : s, e<0 ? clone.length+e : e + 1));
-            }(clone, map(RegExp.$1.replace(/\s/g, '').split('~'), _.pipe(_.identity, parseInt))))/*end*/ :
+          if (numbers.length > 2 || numbers.length < 1 || _.filter(numbers, _.pipe(_.identity, isNaN)).length) return _.Err('[] sel in [num] or [num ~ num]');
+          var s = numbers[0], e = numbers[1]; return !e ? clone[s] = _.clone(clone[s<0 ? clone.length+s : s]) : function(clone, oris) {
+            return each(oris, function(ori) { clone[clone.indexOf(ori)] = _.clone(ori); });
+          }(clone, slice.call(clone, s<0 ? clone.length+s : s, e<0 ? clone.length+e : e + 1));
+        }(clone, map(RegExp.$1.replace(/\s/g, '').split('~'), _.pipe(_.identity, parseInt))))/*end*/ :
           function(clone, ori) { return clone[clone.indexOf(ori)] = _.clone(ori); } (clone, _.find(clone, _.lambda(RegExp.$1)))
       }, im_start)
     };
@@ -1799,8 +1801,8 @@
     }
     function make_sel(el) {
       return _.isString(el) ? el : _.isArray(el) ? map(el, function(val) {
-            return (_.isString(val) ? val : (likearr(val) ? val[0] : val).getAttribute('box_sel'));
-          }).join('->') : (likearr(el) ? el[0] : el).getAttribute('box_sel');
+        return (_.isString(val) ? val : (likearr(val) ? val[0] : val).getAttribute('box_sel'));
+      }).join('->') : (likearr(el) ? el[0] : el).getAttribute('box_sel');
     }
   };
 
