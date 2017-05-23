@@ -1,28 +1,9 @@
 # Functional Javascript Library - Partial.js
 
+[Site](https://marpple.github.io/partial.js) |
+[Docs](https://marpple.github.io/partial.js/docs)
+
 Partial.js는 함수형 자바스크립트를 더 많은 영역에서 사용하고자, 몇 가지 기능을 확장한 함수형 자바스크립트 라이브러리입니다. Partial.js는 부분 적용, 파이프라인, 불변적인 값 다루기, 가변적인 값 다루기, 템플릿 엔진, 비동기 제어, 이벤트 등의 기능을 제공하고 있습니다. 이 문서는 Partial.js의 주요 기능과 스타일을 소개합니다.
-
-```javascript
-/* Others */
-fetch('/api/products')
-    .then(res => res.json())
-    .then(products => _(products)
-        .filter(p => p.price > p.discounted_price)
-        .minBy(p => p.price - p.discounted_price))
-    .then(_.flow(
-      p => p.price - p.discounted_price,
-      commify,
-      console.log)); // 1,000
-
-/* Partial.js */
-_.go(fetch('/api/products'),
-    _('json'),
-    _.filter(p => p.price > p.discounted_price),
-    _.min(p => p.price - p.discounted_price),
-    p => p.price - p.discounted_price,
-    commify,
-    console.log); // 1,000
-```
 
 ## 설치하기
 
@@ -39,7 +20,7 @@ _.go(fetch('/api/products'),
 ```
 
 ##### npm:
-```
+```shell
 $ npm intall --save partial-js
 ```
 
@@ -572,7 +553,7 @@ console.log(
 // (#4)는 function($) { return $.id == 4 } 와 같습니다.
 ```
 
-`()`를 사용할 때 `id`로 비교하는 경우에는 `#`을 사용하는 방식이 성능이 가장 좋습니다. JSON Selector는 `()`를 통해 `find(predicate)`를 작성할 수 있어 단순히 key들로 찾아가는 방법보다 유용합니다. JSON Selector의 `()`는 함수이므로, `id` 비교외에 다른 조건도 만들 수 있습니다.
+`()`를 사용할 때 `id`로 비교하는 경우에는 `#`을 사용하는 방식이 성능이 가장 좋습니다. JSON Selector는 `()`를 통해 `find(predicate)`를 작성할 수 있어 단순히 key들로 찾아가는 방법보다 유용합니다. JSON Selector의 `()`는 함수이므로, `id` 비교외에 다른 조건도 얼마든지 만들 수 있습니다.
 
 ### 깊은 값 가변적으로 변경하기
 
