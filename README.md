@@ -2,6 +2,28 @@
 
 Partial.js는 함수형 자바스크립트를 더 많은 영역에서 사용하고자, 몇 가지 기능을 확장한 함수형 자바스크립트 라이브러리입니다. Partial.js는 부분 적용, 파이프라인, 불변적인 값 다루기, 가변적인 값 다루기, 템플릿 엔진, 비동기 제어, 이벤트 등의 기능을 제공하고 있습니다. 이 문서는 Partial.js의 주요 기능과 스타일을 소개합니다.
 
+```javascript
+/* Others */
+fetch('/api/products')
+    .then(res => res.json())
+    .then(products => _(products)
+        .filter(p => p.price > p.discounted_price)
+        .minBy(p => p.price - p.discounted_price))
+    .then(_.flow(
+      p => p.price - p.discounted_price,
+      commify,
+      console.log)); // 1,000
+
+/* Partial.js */
+_.go(fetch('/api/products'),
+    _('json'),
+    _.filter(p => p.price > p.discounted_price),
+    _.min(p => p.price - p.discounted_price),
+    p => p.price - p.discounted_price,
+    commify,
+    console.log); // 1,000
+```
+
 ## 설치하기
 
 ### Partial.js 설치
@@ -231,13 +253,13 @@ Partial.js의 주요 함수들은 커링이 부분적으로 동작하도록 지�
 
 ```javascript
 var values = function(list) {
-    return _.map(list, function(v) { return v; })
+  return _.map(list, function(v) { return v; })
 };
 console.log(values({ a: 1, b: 2, c: 4 }));
 // [1, 2, 4]
 
 var take3 = function(list) {
-    return _.take(list, 3);
+  return _.take(list, 3);
 };
 take3([1, 2, 3, 4, 5]);
 // [1, 2, 3]
@@ -283,13 +305,6 @@ _.go(users,
   console.log);
 // ["HA", "PJ", "JE"]
 
-/* 부분 적용 */
-_.go(users,
-  _.partial(_.filter, _, function(u) { return u.age < 30; }),
-  _.partial(_.pluck, _, 'name'),
-  console.log);
-// ["HA", "PJ", "JE"]
-
 /* 부분 커링이 된다면 */
 _.go(users,
   _.filter(function(u) { return u.age < 30; }),
@@ -306,6 +321,45 @@ underscore.chain(users)
 ```
 
 `_.go`, `_.pipe` 등의 파이프라인이 받는 재료는 함수이기 때문에 아무 함수나 조합할 수 있습니다. 체인처럼 메서드 등으로 준비되어있지 않아도 되며 Partial.js의 함수만 사용할 필요도 없습니다. Partial.js의 파이프라인은 결과를 여러 개로 리턴할 수 있고, 여러 개의 인자를 받을 수 있고, 다른 라이브러리에 있는 함수든, 직접 만든 함수든, 익명 함수든 모두 쉽게 사용할 수 있습니다.
+
+```javascript
+var products = [
+  { id: 1, name: "후드 집업", discounted_price: 6000, price: 10000  },
+  { id: 2, name: "코잼 후드티", discounted_price: 8000, price: 8000  },
+  { id: 3, name: "A1 반팔티", discounted_price: 6000, price: 6000  },
+  { id: 4, name: "코잼 반팔티", discounted_price: 5000, price: 6000  }
+];
+
+// 할인 상품들을 가격이 낮은 순으로 정렬한 상품 이름들
+_.go(products,
+  _.filter(p => p.price > p.discounted_price),
+  _.sortBy('discounted_price'),
+  _.pluck('name'),
+  console.log);
+  // ["코잼 반팔티", "후드 집업"]
+
+// 할인이 없는 상품들의 id들
+_.go(products,
+  _.reject(p => p.price > p.discounted_price),
+  _.pluck('id'),
+  console.log);
+  // [2, 3]
+
+// 할인 상품 중 할인액이 가장 낮은 상품의 이름
+_.go(products,
+  _.filter(p => p.price > p.discounted_price),
+  _.min(p => p.price - p.discounted_price),
+  _.val('name'),
+  console.log);
+  // 코잼 반팔티
+
+// 할인액이 가장 높은 상품의 이름
+_.go(products,
+  _.max(p => p.price - p.discounted_price),
+  _.val('name'),
+  console.log);
+  // 후드 집업
+```
 
 ## 비동기
 
