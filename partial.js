@@ -1830,7 +1830,7 @@
         if (!_notice) return ;
         if (_.isString(keys)) return emit_loop(emit_args, _notice, keys);
         if (_.isArray(keys)) each(keys, _(emit_loop, emit_args, _notice));
-      }(notices[name], _.isFunction(keys) ? keys() : keys);
+      }(notices[name], _.isFunction(keys) ? keys(_.keys(notices[name])) : keys);
     }
     function emit_loop(emit_args, _notice, key) {
       _set(_notice, key, _.reject(_notice[key], function(func) {
