@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Partial.js</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Partial_.partial_.partial을 통해 인자를 부분 적용해둔 함수를 만들 수 있습니다.12345678function add(a, b) &amp;#123;  return a + b;&amp;#125;var add10 = _.partial(add, 10);var result = add10(5);console.log(result);// 15 __ == _.par">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Partial.js Documents Page">
+<meta property="og:url" content="https://marpple.github.io/partial.js/docs/index.html">
+<meta property="og:site_name" content="Partial.js">
+<meta property="og:description" content="Partial_.partial_.partial을 통해 인자를 부분 적용해둔 함수를 만들 수 있습니다.12345678function add(a, b) &amp;#123;  return a + b;&amp;#125;var add10 = _.partial(add, 10);var result = add10(5);console.log(result);// 15 __ == _.par">
+<meta property="og:updated_time" content="2017-05-24T09:18:30.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Partial.js Documents Page">
+<meta name="twitter:description" content="Partial_.partial_.partial을 통해 인자를 부분 적용해둔 함수를 만들 수 있습니다.12345678function add(a, b) &amp;#123;  return a + b;&amp;#125;var add10 = _.partial(add, 10);var result = add10(5);console.log(result);// 15 __ == _.par">
+  
+  
+    <link rel="shortcut icon" href="/partial.js/css/images/favicon.ico">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/partial.js/css/style.css">
+  
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-99842735-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="header-outer">
+    <div id="header-title" class="inner">
+      <a href="/partial.js/">
+       
+        <div id="logo">Partial.js</div>
+       
+      </a>
+    </div>
+    <div id="header-middle" class="inner"></div>
+    <div id="header-menu" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/partial.js/">About</a>
+        
+          <a class="main-nav-link" href="/partial.js/docs">Docs</a>
+        
+          <a class="main-nav-link" href="https://github.com/marpple/partial.js">Github</a>
+        
+          <a class="main-nav-link" href="https://github.com/functionandjs/book">Book</a>
+        
+          <a class="main-nav-link" href="https://github.com/marpple/partial.py">Partial.py</a>
+        
+      </nav>
+    </div>
+  </div>
+</header>
+      <div id="body">
+        
+<aside id="sidebar">
+  
+  <div class="widget-wrap" id="docs">
+    
+    <div class="widget-title">
+      <a href="#partial">partial</a>
+    </div>
+    <div class="widget">
+      <ul>
+        
+        <li>
+          <a href="#partial">_.partial</a>
+        </li>
+        
+        <li>
+          <a href="#">_</a>
+        </li>
+        
+        <li>
+          <a href="#">___</a>
+        </li>
+        
+        <li>
+          <a href="#method">method</a>
+        </li>
+        
+      </ul>
+    </div>
+    
+    <div class="widget-title">
+      <a href="#pipe">pipe</a>
+    </div>
+    <div class="widget">
+      <ul>
+        
+        <li>
+          <a href="#pipe">_.pipe</a>
+        </li>
+        
+        <li>
+          <a href="#go">_.go</a>
+        </li>
+        
+        <li>
+          <a href="#mr">_.mr</a>
+        </li>
+        
+        <li>
+          <a href="#tap">_.tap</a>
+        </li>
+        
+      </ul>
+    </div>
+    
+    <div class="widget-title">
+      <a href="#collections">collections</a>
+    </div>
+    <div class="widget">
+      <ul>
+        
+        <li>
+          <a href="#each">_.each</a>
+        </li>
+        
+        <li>
+          <a href="#map">_.map</a>
+        </li>
+        
+        <li>
+          <a href="#reduce">_.reduce</a>
+        </li>
+        
+        <li>
+          <a href="#reduceRight">_.reduceRight</a>
+        </li>
+        
+        <li>
+          <a href="#find">_.find</a>
+        </li>
+        
+        <li>
+          <a href="#filter">_.filter</a>
+        </li>
+        
+        <li>
+          <a href="#where">_.where</a>
+        </li>
+        
+        <li>
+          <a href="#findWhere">_.findWhere</a>
+        </li>
+        
+        <li>
+          <a href="#reject">_.reject</a>
+        </li>
+        
+        <li>
+          <a href="#every">_.every</a>
+        </li>
+        
+        <li>
+          <a href="#some">_.some</a>
+        </li>
+        
+        <li>
+          <a href="#contains">_.contains</a>
+        </li>
+        
+        <li>
+          <a href="#invoke">_.invoke</a>
+        </li>
+        
+        <li>
+          <a href="#pluck">_.pluck</a>
+        </li>
+        
+        <li>
+          <a href="#max">_.max</a>
+        </li>
+        
+        <li>
+          <a href="#min">_.min</a>
+        </li>
+        
+        <li>
+          <a href="#sortBy">_.sortBy</a>
+        </li>
+        
+        <li>
+          <a href="#groupBy">_.groupBy</a>
+        </li>
+        
+        <li>
+          <a href="#countBy">_.countBy</a>
+        </li>
+        
+        <li>
+          <a href="#shuffle">_.shuffle</a>
+        </li>
+        
+        <li>
+          <a href="#random">_.random</a>
+        </li>
+        
+        <li>
+          <a href="#sample">_.sample</a>
+        </li>
+        
+        <li>
+          <a href="#toArray">_.toArray</a>
+        </li>
+        
+        <li>
+          <a href="#size">_.size</a>
+        </li>
+        
+        <li>
+          <a href="#partition">_.partition</a>
+        </li>
+        
+      </ul>
+    </div>
+    
+    <div class="widget-title">
+      <a href="#array">array</a>
+    </div>
+    <div class="widget">
+      <ul>
+        
+        <li>
+          <a href="#first">_.first</a>
+        </li>
+        
+        <li>
+          <a href="#initial">_.initial</a>
+        </li>
+        
+        <li>
+          <a href="#last">_.last</a>
+        </li>
+        
+        <li>
+          <a href="#rest">_.rest</a>
+        </li>
+        
+        <li>
+          <a href="#compact">_.compact</a>
+        </li>
+        
+        <li>
+          <a href="#flatten">_.flatten</a>
+        </li>
+        
+        <li>
+          <a href="#without">_.without</a>
+        </li>
+        
+        <li>
+          <a href="#union">_.union</a>
+        </li>
+        
+        <li>
+          <a href="#intersection">_.intersection</a>
+        </li>
+        
+        <li>
+          <a href="#difference">_.difference</a>
+        </li>
+        
+        <li>
+          <a href="#uniq">_.uniq</a>
+        </li>
+        
+        <li>
+          <a href="#zip">_.zip</a>
+        </li>
+        
+        <li>
+          <a href="#unzip">_.unzip</a>
+        </li>
+        
+        <li>
+          <a href="#object">_.object</a>
+        </li>
+        
+        <li>
+          <a href="#indexOf">_.indexOf</a>
+        </li>
+        
+        <li>
+          <a href="#lastIndexOf">_.lastIndexOf</a>
+        </li>
+        
+        <li>
+          <a href="#sortedIndex">_.sortedIndex</a>
+        </li>
+        
+        <li>
+          <a href="#findIndex">_.findIndex</a>
+        </li>
+        
+        <li>
+          <a href="#findLastIndex">_.findLastIndex</a>
+        </li>
+        
+        <li>
+          <a href="#range">_.range</a>
+        </li>
+        
+        <li>
+          <a href="#remove">_.remove</a>
+        </li>
+        
+        <li>
+          <a href="#removeByIndex">_.removeByIndex</a>
+        </li>
+        
+      </ul>
+    </div>
+    
+    <div class="widget-title">
+      <a href="#object">object</a>
+    </div>
+    <div class="widget">
+      <ul>
+        
+        <li>
+          <a href="#keys">_.keys</a>
+        </li>
+        
+        <li>
+          <a href="#values">_.values</a>
+        </li>
+        
+        <li>
+          <a href="#mapObject">_.mapObject</a>
+        </li>
+        
+        <li>
+          <a href="#pairs">_.pairs</a>
+        </li>
+        
+        <li>
+          <a href="#invert">_.invert</a>
+        </li>
+        
+        <li>
+          <a href="#functions">_.functions</a>
+        </li>
+        
+        <li>
+          <a href="#findKey">_.findKey</a>
+        </li>
+        
+        <li>
+          <a href="#extend">_.extend</a>
+        </li>
+        
+        <li>
+          <a href="#pick">_.pick</a>
+        </li>
+        
+        <li>
+          <a href="#omit">_.omit</a>
+        </li>
+        
+        <li>
+          <a href="#defaults">_.defaults</a>
+        </li>
+        
+        <li>
+          <a href="#clone">_.clone</a>
+        </li>
+        
+        <li>
+          <a href="#has">_.has</a>
+        </li>
+        
+        <li>
+          <a href="#method">_.method</a>
+        </li>
+        
+        <li>
+          <a href="#isEqual">_.isEqual</a>
+        </li>
+        
+        <li>
+          <a href="#isMatch">_.isMatch</a>
+        </li>
+        
+        <li>
+          <a href="#isEmpty">_.isEmpty</a>
+        </li>
+        
+        <li>
+          <a href="#isElement">_.isElement</a>
+        </li>
+        
+        <li>
+          <a href="#isArray">_.isArray</a>
+        </li>
+        
+        <li>
+          <a href="#isObject">_.isObject</a>
+        </li>
+        
+        <li>
+          <a href="#isArguments">_.isArguments</a>
+        </li>
+        
+        <li>
+          <a href="#isFunction">_.isFunction</a>
+        </li>
+        
+        <li>
+          <a href="#isString">_.isString</a>
+        </li>
+        
+        <li>
+          <a href="#isNumber">_.isNumber</a>
+        </li>
+        
+        <li>
+          <a href="#isDate">_.isDate</a>
+        </li>
+        
+        <li>
+          <a href="#isRegExp">_.isRegExp</a>
+        </li>
+        
+        <li>
+          <a href="#isError">_.isError</a>
+        </li>
+        
+        <li>
+          <a href="#isArrayLike">_.isArrayLike</a>
+        </li>
+        
+      </ul>
+    </div>
+    
+    <div class="widget-title">
+      <a href="#Function">Function</a>
+    </div>
+    <div class="widget">
+      <ul>
+        
+        <li>
+          <a href="#memoize">_.memoize</a>
+        </li>
+        
+        <li>
+          <a href="#memoize2">_.memoize2</a>
+        </li>
+        
+        <li>
+          <a href="#delay">_.delay</a>
+        </li>
+        
+        <li>
+          <a href="#defer">_.defer</a>
+        </li>
+        
+        <li>
+          <a href="#once">_.once</a>
+        </li>
+        
+        <li>
+          <a href="#after">_.after</a>
+        </li>
+        
+        <li>
+          <a href="#before">_.before</a>
+        </li>
+        
+        <li>
+          <a href="#negate">_.negate</a>
+        </li>
+        
+      </ul>
+    </div>
+    
+    <div class="widget-title">
+      <a href="#JSON-Selector">JSON Selector</a>
+    </div>
+    <div class="widget">
+      <ul>
+        
+        <li>
+          <a href="#sel">_.sel</a>
+        </li>
+        
+      </ul>
+    </div>
+    
+    <div class="widget-title">
+      <a href="#Mutable">Mutable</a>
+    </div>
+    <div class="widget">
+      <ul>
+        
+        <li>
+          <a href="#set">_.set</a>
+        </li>
+        
+        <li>
+          <a href="#unset">_.unset</a>
+        </li>
+        
+        <li>
+          <a href="#push">_.push</a>
+        </li>
+        
+        <li>
+          <a href="#pop">_.pop</a>
+        </li>
+        
+        <li>
+          <a href="#shift">_.shift</a>
+        </li>
+        
+        <li>
+          <a href="#unshift">_.unshift</a>
+        </li>
+        
+        <li>
+          <a href="#extend2">_.extend2</a>
+        </li>
+        
+        <li>
+          <a href="#defaults2">_.defaults2</a>
+        </li>
+        
+        <li>
+          <a href="#remove2">_.remove2</a>
+        </li>
+        
+      </ul>
+    </div>
+    
+    <div class="widget-title">
+      <a href="#Immutable">Immutable</a>
+    </div>
+    <div class="widget">
+      <ul>
+        
+      </ul>
+    </div>
+    
+    <div class="widget-title">
+      <a href="#Box">Box</a>
+    </div>
+    <div class="widget">
+      <ul>
+        
+      </ul>
+    </div>
+    
+    <div class="widget-title">
+      <a href="#Notification">Notification</a>
+    </div>
+    <div class="widget">
+      <ul>
+        
+      </ul>
+    </div>
+    
+    <div class="widget-title">
+      <a href="#Template">Template</a>
+    </div>
+    <div class="widget">
+      <ul>
+        
+      </ul>
+    </div>
+    
+  </div>
+  
+</aside>
+<div id="main">
+  <div id="posts-container">
+    <article id="undefined" class="article article-type-page" itemscope itemprop="blogPost">
+  <div class="article-meta"></div>
+  <div class="article-inner">
+    <div class="article-entry" itemprop="articleBody">
+      <h2 id="Partial"><a href="#Partial" class="headerlink" title="Partial"></a>Partial</h2><h3 id="partial"><a href="#partial" class="headerlink" title="_.partial"></a>_.partial</h3><p><code>_.partial</code>을 통해 인자를 부분 적용해둔 함수를 만들 수 있습니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">add</span>(<span class="params">a, b</span>) </span>&#123;</div><div class="line">  <span class="keyword">return</span> a + b;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">var</span> add10 = _.partial(add, <span class="number">10</span>);</div><div class="line"><span class="keyword">var</span> result = add10(<span class="number">5</span>);</div><div class="line"><span class="built_in">console</span>.log(result);</div><div class="line"><span class="comment">// 15</span></div></pre></td></tr></table></figure></p>
+<h3 id=""><a href="#" class="headerlink" title="_"></a>_</h3><p><code>_ == _.partial</code>입니다. <code>_.partial</code>을 <code>_</code>로 짧게 줄여서 사용할 수 있습니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">add</span>(<span class="params">a, b</span>) </span>&#123;</div><div class="line">  <span class="keyword">return</span> a + b;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">var</span> add10 = _(add, <span class="number">10</span>);</div><div class="line"><span class="keyword">var</span> result = add10(<span class="number">5</span>);</div><div class="line"><span class="built_in">console</span>.log(result);</div><div class="line"><span class="comment">// 15</span></div></pre></td></tr></table></figure></p>
+<p><code>_.partial</code> 혹은 <code>_</code>를 실행하면서 인자 자리에 자기 자신인 <code>_</code>를 넘기면 부분 적용할 인자를 건너띌 수 있습니다. <code>_</code>를 이용하면 원하는 곳에만 인자를 부분 적용해둘 수 있습니다. <code>_</code>가 있는 자리는 이후 실행시 채워집니다.</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">sub</span>(<span class="params">a, b</span>) </span>&#123;</div><div class="line">  <span class="keyword">return</span> a - b;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">var</span> sub10 = _.partial(sub, _, <span class="number">10</span>);</div><div class="line"><span class="keyword">var</span> result = sub10(<span class="number">20</span>);</div><div class="line"><span class="built_in">console</span>.log(result);</div><div class="line"><span class="comment">// 10</span></div></pre></td></tr></table></figure>
+<h3 id="-1"><a href="#-1" class="headerlink" title="___"></a>___</h3><p>부분 적용의 새로운 구분자인 <code>___</code>를 활용하면 중간 지점에 인자가 가변적으로 적용되도록 비워둘 수 있습니다. 이것을 이용해 맨 오른쪽 인자나 맨 오른쪽에서 두 번째에만 인자를 적용해두는 것도 가능합니다. <code>___</code>를 기준으로 왼편의 인자들을 왼쪽부터 적용하고 오른편의 인자들을 오른쪽부터 적용할 준비를 해둔 함수를 리턴합니다. 부분 적용된 함수를 나중에 실행하면 그때 받은 인자들로 왼쪽과 오른쪽을 먼저 채운 후, 남은 인자들로 가운데 <code>___</code> 자리를 채웁니다.</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> pc = _.partial(<span class="built_in">console</span>.log, ___, <span class="number">2</span>, <span class="number">3</span>);</div><div class="line">pc(<span class="number">1</span>);</div><div class="line"><span class="comment">// 결과: 1 2 3</span></div><div class="line"><span class="comment">// ___ 자리에 1이 들어가고 2, 3은 맨 오른쪽에 들어갑니다.</span></div><div class="line">pc(<span class="number">1</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>);</div><div class="line"><span class="comment">// 결과: 1 4 5 6 2 3</span></div><div class="line"><span class="comment">// ___ 자리에 1, 4, 5, 6이 들어가고 2, 3은 맨 오른쪽에 들어갑니다.</span></div><div class="line"></div><div class="line"><span class="keyword">var</span> pc = _.partial(<span class="built_in">console</span>.log, _, <span class="number">2</span>, ___, <span class="number">6</span>);</div><div class="line">pc(<span class="number">1</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>);</div><div class="line"><span class="comment">// 결과: 1 2 3 4 5 6</span></div><div class="line"><span class="comment">// _에 1이 들어가고 2를 넘어가고 ___ 자리에 3, 4, 5가 채워지고 6이 맨 오른쪽에 들어갑니다.</span></div><div class="line">pc(<span class="number">1</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">7</span>, <span class="number">8</span>, <span class="number">9</span>);</div><div class="line"><span class="comment">// 결과: 1 2 3 4 5 7 8 9 6</span></div><div class="line"><span class="comment">// _에 1이 들어가고 2를 넘어가고 ___ 자리에 3, 4, 5, 7, 8, 9가 채워지고 6이 맨 오른쪽에 들어갑니다.</span></div><div class="line"></div><div class="line"><span class="keyword">var</span> pc = _.partial(<span class="built_in">console</span>.log, _, <span class="number">2</span>, ___, <span class="number">5</span>, _, <span class="number">7</span>);</div><div class="line">pc(<span class="number">1</span>);</div><div class="line"><span class="comment">// 결과: 1 2 5 undefined 7</span></div><div class="line"><span class="comment">// _ 자리에 1이 들어가고 2와 5사이는 유동적이므로 모이고 5가 들어간 후 _가 undefined로 대체 되고 7이 들어갑니다.</span></div><div class="line">pc(<span class="number">1</span>, <span class="number">3</span>, <span class="number">4</span>);</div><div class="line"><span class="comment">// 결과: 1 2 3 5 4 7</span></div><div class="line"><span class="comment">// _ 자리에 1이 들어가고 2와 5사이에 3이 들어가고 _ 를 4로 채운 후 7이 들어갑니다.</span></div><div class="line"><span class="comment">// 왼쪽의 _ 들이 우선 순위가 제일 높고 ___ 보다 오른쪽의 _ 들이 우선순위가 높습니다.</span></div><div class="line">pc(<span class="number">1</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">6</span>, <span class="number">8</span>);</div><div class="line"><span class="comment">// 결과: 1 2 3 4 6 5 8 7</span></div><div class="line"><span class="comment">// _ 자리에 1이 들어가고 2와 5사이에 3, 4, 6이 들어가고 _ 를 8로 채운 후 7이 들어갑니다.</span></div></pre></td></tr></table></figure>
+<h2 id="Pipe"><a href="#Pipe" class="headerlink" title="Pipe"></a>Pipe</h2><h3 id="-2"><a href="#-2" class="headerlink" title="__"></a>__</h3><h3 id="pipe"><a href="#pipe" class="headerlink" title="_.pipe"></a>_.pipe</h3><p><code>_.pipe</code>는 함수들을 모아서 하나의 함수로 합성하는 함수입니다. 왼쪽에서 오른쪽으로 실행됩니다.</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">sum</span>(<span class="params">a, b</span>) </span>&#123;</div><div class="line">  <span class="keyword">return</span> a + b;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">square</span>(<span class="params">a</span>) </span>&#123;</div><div class="line">  <span class="keyword">return</span> a * a;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">var</span> f1 = _.pipe(sum, square, square);</div><div class="line"><span class="keyword">var</span> result = f1(<span class="number">1</span>, <span class="number">2</span>)</div><div class="line"><span class="built_in">console</span>.log(result);</div><div class="line"><span class="comment">// 81</span></div></pre></td></tr></table></figure>
+<h3 id="go"><a href="#go" class="headerlink" title="_.go"></a>_.go</h3><p><code>_.go</code>는 파이프라인의 즉시 실행 버전입니다. 첫 번째 인자로 받은 값을 두 번째 인자로 받은 함수에게 넘겨주고 두 번째 인자로 받은 함수의 결과는 세 번째 함수에게 넘겨주는 것을 반복하다가 마지막 함수의 결과를 리턴해줍니다.</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">_.go(<span class="number">10</span>, <span class="comment">// 첫 번째 함수에서 사용할 인자</span></div><div class="line">  <span class="function"><span class="keyword">function</span>(<span class="params">a</span>) </span>&#123; <span class="keyword">return</span> a * <span class="number">10</span> &#125;, <span class="comment">// 연속 실행할 함수 1</span></div><div class="line">  <span class="comment">// 100</span></div><div class="line">  <span class="function"><span class="keyword">function</span>(<span class="params">a</span>) </span>&#123; <span class="keyword">return</span> a - <span class="number">50</span> &#125;, <span class="comment">// 연속 실행할 함수 2</span></div><div class="line">  <span class="comment">// 50</span></div><div class="line">  <span class="function"><span class="keyword">function</span>(<span class="params">a</span>) </span>&#123; <span class="keyword">return</span> a + <span class="number">10</span> &#125;); <span class="comment">// 연속 실행할 함수 3</span></div><div class="line">  <span class="comment">// 60</span></div></pre></td></tr></table></figure>
+<h3 id="mr"><a href="#mr" class="headerlink" title="_.mr"></a>_.mr</h3><p>Partial.js의 파이프라인 함수들은 Multiple Results를 지원합니다. <code>_.mr</code> 함수를 함께 사용하면 다음 함수에게 2개 이상의 인자들을 전달할 수 있습니다.</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">_.go(<span class="number">10</span>, <span class="comment">// 첫 번째 함수에서 사용할 인자</span></div><div class="line">  <span class="function"><span class="keyword">function</span>(<span class="params">a</span>) </span>&#123; <span class="keyword">return</span> _.mr(a * <span class="number">10</span>, <span class="number">50</span>) &#125;, <span class="comment">// 두 개의 값을 리턴</span></div><div class="line">  <span class="function"><span class="keyword">function</span>(<span class="params">a, b</span>) </span>&#123; <span class="keyword">return</span> a - b &#125;, <span class="comment">// 두 개의 인자 받기</span></div><div class="line">  <span class="function"><span class="keyword">function</span>(<span class="params">a</span>) </span>&#123; <span class="keyword">return</span> a + <span class="number">10</span> &#125;);</div><div class="line">  <span class="comment">// 60</span></div><div class="line"></div><div class="line">_.go(_.mr(<span class="number">2</span>, <span class="number">3</span>),</div><div class="line">  <span class="function"><span class="keyword">function</span>(<span class="params">a, b</span>) </span>&#123;</div><div class="line">    <span class="keyword">return</span> a + b; <span class="comment">// 2 + 3</span></div><div class="line">  &#125;,</div><div class="line">  <span class="function"><span class="keyword">function</span>(<span class="params">a</span>) </span>&#123;</div><div class="line">    <span class="keyword">return</span> a * a;</div><div class="line">  &#125;);</div><div class="line">  <span class="comment">// 25</span></div></pre></td></tr></table></figure>
+<h3 id="tap"><a href="#tap" class="headerlink" title="_.tap"></a>_.tap</h3><p><code>_.tap</code>은 받아둔 함수들을 모두 실행한 후 처음 받은 인자를 동일하게 리턴하는 파이프라인 함수입니다.</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">_.go(<span class="number">10</span>,</div><div class="line">  _.tap(</div><div class="line">    <span class="function"><span class="keyword">function</span>(<span class="params">a</span>) </span>&#123; <span class="keyword">return</span> a * a &#125;,</div><div class="line">    <span class="built_in">console</span>.log), <span class="comment">// 100</span></div><div class="line">  <span class="built_in">console</span>.log); <span class="comment">// 10</span></div></pre></td></tr></table></figure>
+<h2 id="Collections"><a href="#Collections" class="headerlink" title="Collections"></a>Collections</h2><h3 id="each"><a href="#each" class="headerlink" title="_.each"></a>_.each</h3><p><code>_.each(list, iteratee)</code> 리스트를 끝까지 순회하며 함수를 실행합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">_.each([<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>], alert);</div><div class="line"><span class="comment">// alert 함수가 각 번호에 맞춰 실행됩니다.</span></div><div class="line">_.each(&#123;<span class="attr">one</span>: <span class="number">1</span>, <span class="attr">two</span>: <span class="number">2</span>, <span class="attr">three</span>: <span class="number">3</span>&#125;, alert)</div><div class="line"><span class="comment">// alert 함수가 각 번호 값에 맞춰 실행됩니다.</span></div></pre></td></tr></table></figure></p>
+<h3 id="map"><a href="#map" class="headerlink" title="_.map"></a>_.map</h3><p><code>_.map(list, iteratee)</code> 리스트를 순회하며 주어진 함수로 새로운 배열을 생성합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">_.map([<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>], <span class="function"><span class="keyword">function</span>(<span class="params">num</span>) </span>&#123; <span class="keyword">return</span> num * <span class="number">3</span>; &#125;);</div><div class="line"><span class="comment">// [3, 6, 9]</span></div><div class="line">_.map(&#123;<span class="attr">one</span>: <span class="number">1</span>, <span class="attr">two</span>: <span class="number">2</span>, <span class="attr">three</span>: <span class="number">3</span>&#125;, <span class="function"><span class="keyword">function</span>(<span class="params">num, key</span>) </span>&#123; <span class="keyword">return</span> num * <span class="number">3</span>; &#125;);</div><div class="line"><span class="comment">// [3, 6, 9]</span></div><div class="line">_.map([[<span class="number">1</span>, <span class="number">2</span>], [<span class="number">3</span>, <span class="number">4</span>]], _.first);</div><div class="line"><span class="comment">// [1, 3]</span></div></pre></td></tr></table></figure></p>
+<h3 id="reduce"><a href="#reduce" class="headerlink" title="_.reduce"></a>_.reduce</h3><p><code>_.reduce(list, iteratee, [memo])</code> <code>inject</code> 혹은 <code>foldl</code>라고 불리는 이 함수는 리스트를 순회하며 하나의 값을 추출합니다. <code>memo</code>는 옵션값이며 추출될 값의 초기값이 됩니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> sum = _.reduce([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>], <span class="function"><span class="keyword">function</span>(<span class="params">memo, num</span>)</span>&#123; <span class="keyword">return</span> memo + num; &#125;, <span class="number">0</span>);</div><div class="line"><span class="built_in">console</span>.log(sum); <span class="comment">// 6</span></div></pre></td></tr></table></figure></p>
+<h3 id="reduceRight"><a href="#reduceRight" class="headerlink" title="_.reduceRight"></a>_.reduceRight</h3><p><code>_.reduceRight(list, iteratee, [memo])</code> <code>_.reduce</code>와 반대 방향으로 순회하며 하나의 값을 추출합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> list = [[<span class="number">0</span>, <span class="number">1</span>], [<span class="number">2</span>, <span class="number">3</span>], [<span class="number">4</span>, <span class="number">5</span>]];</div><div class="line"><span class="keyword">var</span> flat = _.reduceRight(list, <span class="function"><span class="keyword">function</span>(<span class="params">a, b</span>) </span>&#123; <span class="keyword">return</span> a.concat(b); &#125;, []);</div><div class="line"><span class="built_in">console</span>.log(flat); <span class="comment">// [4, 5, 2, 3, 0, 1]</span></div></pre></td></tr></table></figure></p>
+<h3 id="find"><a href="#find" class="headerlink" title="_.find"></a>_.find</h3><p><code>_.find(list, predicate)</code> 리스트의 내부 값을 관찰하여 predicate의 결과가 참인 값을 반환합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> even = _.find([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>], <span class="function"><span class="keyword">function</span>(<span class="params">num</span>)</span>&#123; <span class="keyword">return</span> num % <span class="number">2</span> == <span class="number">0</span>; &#125;);</div><div class="line"><span class="built_in">console</span>.log(even); <span class="comment">// 2</span></div></pre></td></tr></table></figure></p>
+<h3 id="filter"><a href="#filter" class="headerlink" title="_.filter"></a>_.filter</h3><p><code>_.filter(list, predicate)</code> 리스트의 내부 값을 관찰하여 predicate의 결과가 참인 값들을 배열로 반환합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> evens = _.filter([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>], <span class="function"><span class="keyword">function</span>(<span class="params">num</span>)</span>&#123; <span class="keyword">return</span> num % <span class="number">2</span> == <span class="number">0</span>; &#125;);</div><div class="line"><span class="built_in">console</span>.log(evens); <span class="comment">// [2, 4, 6]</span></div></pre></td></tr></table></figure></p>
+<h3 id="where"><a href="#where" class="headerlink" title="_.where"></a>_.where</h3><p><code>_.where(list, properties)</code> 리스트의 내부 값을 관찰하여 프로퍼티를 포함하고 있는 객체들을 배열로 반환합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">_.where(listOfPlays, &#123;<span class="attr">author</span>: <span class="string">"Shakespeare"</span>, <span class="attr">year</span>: <span class="number">1611</span>&#125;);</div><div class="line"><span class="comment">// [&#123;title: "Cymbeline", author: "Shakespeare", year: 1611&#125;, &#123;title: "The Tempest", author: "Shakespeare", year: 1611&#125;]</span></div></pre></td></tr></table></figure></p>
+<h3 id="findWhere"><a href="#findWhere" class="headerlink" title="_.findWhere"></a>_.findWhere</h3><p><code>_.findWhere(list, properties)</code> 리스트의 내부 값을 관찰하여 프로퍼티를 포함하고 있는 첫번째 객체를 반환합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">_.findWhere(publicServicePulitzers, &#123;<span class="attr">newsroom</span>: <span class="string">"The New York Times"</span>&#125;);</div><div class="line"><span class="comment">/*</span></div><div class="line"> &#123;</div><div class="line">  year: 1918, newsroom: "The New York Times",</div><div class="line">  reason: "For its public service in publishing in full so many official reports,</div><div class="line">  documents and speeches by European statesmen relating to the progress and</div><div class="line">  conduct of the war."</div><div class="line"> &#125;</div><div class="line">*/</div></pre></td></tr></table></figure></p>
+<h3 id="reject"><a href="#reject" class="headerlink" title="_.reject"></a>_.reject</h3><p><code>_.reject(list, predicate)</code> 리스트를 순회하며 predicate의 결과가 참인 값들을 제외한 배열을 반환합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> odds = _.reject([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>], <span class="function"><span class="keyword">function</span>(<span class="params">num</span>)</span>&#123; <span class="keyword">return</span> num % <span class="number">2</span> == <span class="number">0</span>; &#125;);</div><div class="line"><span class="built_in">console</span>.log(odds); <span class="comment">// [1, 3, 5]</span></div></pre></td></tr></table></figure></p>
+<h3 id="every"><a href="#every" class="headerlink" title="_.every"></a>_.every</h3><p><code>_.every(list, [predicate])</code> 리스트의 모든 값이 참에 해당하는 값인지 판별합니다. 거짓 값을 발견하면 순회를 멈춥니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">_.every([<span class="number">2</span>, <span class="number">4</span>, <span class="number">5</span>], <span class="function"><span class="keyword">function</span>(<span class="params">num</span>) </span>&#123; <span class="keyword">return</span> num % <span class="number">2</span> == <span class="number">0</span>; &#125;);</div><div class="line"><span class="comment">// false</span></div></pre></td></tr></table></figure></p>
+<h3 id="some"><a href="#some" class="headerlink" title="_.some"></a>_.some</h3><p><code>_.some(list, [predicate])</code> 리스트의 값 중 참에 해당하는 값이 하나라도 있다면 참을 반환합니다. 참 값을 발견하면 순회를 멈춥니다.<br> <figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">_.some([<span class="literal">null</span>, <span class="number">0</span>, <span class="string">'yes'</span>, <span class="literal">false</span>]);</div><div class="line"><span class="comment">// true</span></div></pre></td></tr></table></figure></p>
+<h3 id="contains"><a href="#contains" class="headerlink" title="_.contains"></a>_.contains</h3><p><code>_.contains(list, value, [fromIndex])</code> 리스트의 값이 value를 포함한다면 참을 반환합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">_.contains([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>], <span class="number">3</span>);</div><div class="line"><span class="comment">// true</span></div></pre></td></tr></table></figure></p>
+<h3 id="invoke"><a href="#invoke" class="headerlink" title="_.invoke"></a>_.invoke</h3><p><code>_.invoke(list, methodName, *arguments)</code> 리스트의 각 값이 가지고 있는 메소드를 실행합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">_.invoke([[<span class="number">5</span>, <span class="number">1</span>, <span class="number">7</span>], [<span class="number">3</span>, <span class="number">2</span>, <span class="number">1</span>]], <span class="string">'sort'</span>);</div><div class="line"><span class="comment">// [[1, 5, 7], [1, 2, 3]]</span></div></pre></td></tr></table></figure></p>
+<h3 id="pluck"><a href="#pluck" class="headerlink" title="_.pluck"></a>_.pluck</h3><p><code>_.pluck(list, propertyName)</code> 프로퍼티의 값만을 추출합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> stooges = [&#123;<span class="attr">name</span>: <span class="string">'moe'</span>, <span class="attr">age</span>: <span class="number">40</span>&#125;, &#123;<span class="attr">name</span>: <span class="string">'larry'</span>, <span class="attr">age</span>: <span class="number">50</span>&#125;, &#123;<span class="attr">name</span>: <span class="string">'curly'</span>, <span class="attr">age</span>: <span class="number">60</span>&#125;];</div><div class="line">_.pluck(stooges, <span class="string">'name'</span>);</div><div class="line"><span class="comment">// ["moe", "larry", "curly"]</span></div></pre></td></tr></table></figure></p>
+<h3 id="max"><a href="#max" class="headerlink" title="_.max"></a>_.max</h3><p><code>_.max(list, [iteratee])</code> 리스트의 값 중 최대값을 반환합니다. 만약 iteratee 함수를 전달하면 해당 함수가 최대값이 될 기준을 정합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> stooges = [&#123;<span class="attr">name</span>: <span class="string">'moe'</span>, <span class="attr">age</span>: <span class="number">40</span>&#125;, &#123;<span class="attr">name</span>: <span class="string">'larry'</span>, <span class="attr">age</span>: <span class="number">50</span>&#125;, &#123;<span class="attr">name</span>: <span class="string">'curly'</span>, <span class="attr">age</span>: <span class="number">60</span>&#125;];</div><div class="line">_.max(stooges, <span class="function"><span class="keyword">function</span>(<span class="params">stooge</span>)</span>&#123; <span class="keyword">return</span> stooge.age; &#125;);</div><div class="line"><span class="comment">// &#123;name: 'curly', age: 60&#125;</span></div></pre></td></tr></table></figure></p>
+<h3 id="min"><a href="#min" class="headerlink" title="_.min"></a>_.min</h3><p><code>_.min(list, [iteratee])</code> 리스트의 값 중 최소값을 반환합니다. 만약 iteratee 함수를 전달하면 해당 함수가 최소값이 될 기준을 정합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> numbers = [<span class="number">10</span>, <span class="number">5</span>, <span class="number">100</span>, <span class="number">2</span>, <span class="number">1000</span>];</div><div class="line">_.min(numbers);</div><div class="line"><span class="comment">// 2</span></div></pre></td></tr></table></figure></p>
+<h3 id="sortBy"><a href="#sortBy" class="headerlink" title="_.sortBy"></a>_.sortBy</h3><p><code>_.sortBy(list, iteratee)</code> 리스트의 값들을 정렬합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">_.sortBy([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>], <span class="function"><span class="keyword">function</span>(<span class="params">num</span>)</span>&#123; <span class="keyword">return</span> <span class="built_in">Math</span>.sin(num); &#125;);</div><div class="line"><span class="comment">// [5, 4, 6, 3, 1, 2]</span></div><div class="line"></div><div class="line"><span class="keyword">var</span> stooges = [&#123;<span class="attr">name</span>: <span class="string">'moe'</span>, <span class="attr">age</span>: <span class="number">40</span>&#125;, &#123;<span class="attr">name</span>: <span class="string">'larry'</span>, <span class="attr">age</span>: <span class="number">50</span>&#125;, &#123;<span class="attr">name</span>: <span class="string">'curly'</span>, <span class="attr">age</span>: <span class="number">60</span>&#125;];</div><div class="line">_.sortBy(stooges, <span class="string">'name'</span>);</div><div class="line"><span class="comment">// [&#123;name: 'curly', age: 60&#125;, &#123;name: 'larry', age: 50&#125;, &#123;name: 'moe', age: 40&#125;];</span></div></pre></td></tr></table></figure></p>
+<h3 id="groupBy"><a href="#groupBy" class="headerlink" title="_.groupBy"></a>_.groupBy</h3><p><code>_.groupBy(list, iteratee)</code> 리스트의 값들을 iteratee를 통해 특정 집합으로 분류합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">_.groupBy([<span class="number">1.3</span>, <span class="number">2.1</span>, <span class="number">2.4</span>], <span class="function"><span class="keyword">function</span>(<span class="params">num</span>)</span>&#123; <span class="keyword">return</span> <span class="built_in">Math</span>.floor(num); &#125;);</div><div class="line"><span class="comment">// &#123;1: [1.3], 2: [2.1, 2.4]&#125;</span></div><div class="line"></div><div class="line">_.groupBy([<span class="string">'one'</span>, <span class="string">'two'</span>, <span class="string">'three'</span>], <span class="string">'length'</span>);</div><div class="line"><span class="comment">// &#123;3: ["one", "two"], 5: ["three"]&#125;</span></div></pre></td></tr></table></figure></p>
+<h3 id="indexBy"><a href="#indexBy" class="headerlink" title="_.indexBy"></a>_.indexBy</h3><p><code>_.indexBy(list, iteratee)</code> 특정 리스트의 값을 인덱스 값으로 반영한 객체를 반환합니다. <code>_.groupBy</code>와 비슷하지만 알고 있는 키의 값이 유니크 할 때 사용합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> stooges = [&#123;<span class="attr">name</span>: <span class="string">'moe'</span>, <span class="attr">age</span>: <span class="number">40</span>&#125;, &#123;<span class="attr">name</span>: <span class="string">'larry'</span>, <span class="attr">age</span>: <span class="number">50</span>&#125;, &#123;<span class="attr">name</span>: <span class="string">'curly'</span>, <span class="attr">age</span>: <span class="number">60</span>&#125;];</div><div class="line">_.indexBy(stooges, <span class="string">'age'</span>);</div><div class="line"><span class="comment">/*</span></div><div class="line"> &#123;</div><div class="line">  "40": &#123;name: 'moe', age: 40&#125;,</div><div class="line">  "50": &#123;name: 'larry', age: 50&#125;,</div><div class="line">  "60": &#123;name: 'curly', age: 60&#125;</div><div class="line"> &#125;</div><div class="line">*/</div></pre></td></tr></table></figure></p>
+<h3 id="countBy"><a href="#countBy" class="headerlink" title="_.countBy"></a>_.countBy</h3><p><code>_.countBy(list, iteratee)</code> 리스트의 값들을 iteratee를 통해 분류된 값의 개수 정리한 객체를 반환합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">_.countBy([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>], <span class="function"><span class="keyword">function</span>(<span class="params">num</span>) </span>&#123;</div><div class="line">  <span class="keyword">return</span> num % <span class="number">2</span> == <span class="number">0</span> ? <span class="string">'even'</span>: <span class="string">'odd'</span>;</div><div class="line">&#125;);</div><div class="line"><span class="comment">// &#123;odd: 3, even: 2&#125;</span></div></pre></td></tr></table></figure></p>
+<h3 id="shuffle"><a href="#shuffle" class="headerlink" title="_.shuffle"></a>_.shuffle</h3><p><code>_.shuffle(list)</code> 리스트의 값의 순서를 섞은 사본을 반환합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">_.shuffle([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>]);</div><div class="line"><span class="comment">// [4, 1, 6, 3, 5, 2]</span></div></pre></td></tr></table></figure></p>
+<h3 id="sample"><a href="#sample" class="headerlink" title="_.sample"></a>_.sample</h3><p><code>_.sample(list, [n])</code> 리스트에서 임의의 샘플을 반환합니다. 옵션 값인 n값을 통해 샘플의 수를 정할 수 있습니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">_.sample([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>]);</div><div class="line"><span class="comment">// 4</span></div><div class="line"></div><div class="line">_.sample([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>], <span class="number">3</span>);</div><div class="line"><span class="comment">// [1, 6, 2]</span></div></pre></td></tr></table></figure></p>
+<h3 id="toArray"><a href="#toArray" class="headerlink" title="_.toArray"></a>_.toArray</h3><p><code>_.toArray(list)</code> 리스트를 진짜 배열로 만들어줍니다. arguments 객체를 변경할 때 유용합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123; <span class="keyword">return</span> _.toArray(<span class="built_in">arguments</span>).slice(<span class="number">1</span>); &#125;)(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>);</div><div class="line"><span class="comment">// [2, 3, 4]</span></div></pre></td></tr></table></figure></p>
+<h3 id="size"><a href="#size" class="headerlink" title="_.size"></a>_.size</h3><p><code>_.size(list)</code> 리스트에 있는 값의 개수를 반환합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">_.size(&#123;<span class="attr">one</span>: <span class="number">1</span>, <span class="attr">two</span>: <span class="number">2</span>, <span class="attr">three</span>: <span class="number">3</span>&#125;);</div><div class="line"><span class="comment">// 3</span></div></pre></td></tr></table></figure></p>
+<h3 id="partition"><a href="#partition" class="headerlink" title="_.partition"></a>_.partition</h3><p><code>_.partition(array, predicate)</code> 하나의 배열을 predicate를 만족하는 배열과 그렇지 않은 배열로 나눕니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">_.partition([<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>], isOdd);</div><div class="line"><span class="comment">// [[1, 3, 5], [0, 2, 4]]</span></div></pre></td></tr></table></figure></p>
+<h2 id="Array"><a href="#Array" class="headerlink" title="Array"></a>Array</h2><h3 id="first"><a href="#first" class="headerlink" title="_.first"></a>_.first</h3><p><code>_.first(array, [n])</code> 배열의 첫번째 요소를 반환합니다. <strong>n</strong>으로 몇개까지 반환할지 결정할 수 있습니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">_.first([<span class="number">5</span>, <span class="number">4</span>, <span class="number">3</span>, <span class="number">2</span>, <span class="number">1</span>]); <span class="comment">// 5</span></div></pre></td></tr></table></figure></p>
+<h3 id="initial"><a href="#initial" class="headerlink" title="_.initial"></a>_.initial</h3><p><code>_.initial(array, [n])</code> 배열의 마지막 요소만 제외한 배열을 반환합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">_.initial([<span class="number">5</span>, <span class="number">4</span>, <span class="number">3</span>, <span class="number">2</span>, <span class="number">1</span>]); <span class="comment">// [5, 4, 3, 2]</span></div></pre></td></tr></table></figure></p>
+<h3 id="last"><a href="#last" class="headerlink" title="_.last"></a>_.last</h3><p><code>_.last(array, [n])</code> 배열의 마지막 요소를 반환합니다. <strong>n</strong>으로 몇개까지 반환할지 결정할 수 있습니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">_.last([<span class="number">5</span>, <span class="number">4</span>, <span class="number">3</span>, <span class="number">2</span>, <span class="number">1</span>]); <span class="comment">// 1</span></div></pre></td></tr></table></figure></p>
+<h3 id="rest"><a href="#rest" class="headerlink" title="_.rest"></a>_.rest</h3><p><code>_.rest(array, [n])</code> 배열의 첫번째 요소만 제외한 배열을 반환합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">_.rest([<span class="number">5</span>, <span class="number">4</span>, <span class="number">3</span>, <span class="number">2</span>, <span class="number">1</span>]); <span class="comment">// [4, 3, 2, 1]</span></div></pre></td></tr></table></figure></p>
+<h3 id="compact"><a href="#compact" class="headerlink" title="_.compact"></a>_.compact</h3><p><code>_.compact(array)</code> 배열의 모든 거짓 값을 제거한 배열의 사본을 반환합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">_.compact([<span class="number">0</span>, <span class="number">1</span>, <span class="literal">false</span>, <span class="number">2</span>, <span class="string">''</span>, <span class="number">3</span>]); <span class="comment">// [1, 2, 3]</span></div></pre></td></tr></table></figure></p>
+<h3 id="flatten"><a href="#flatten" class="headerlink" title="_.flatten"></a>_.flatten</h3><p><code>_.flatten(array, [noDeep])</code> 중첩 배열(nested array)을 풀어냅니다. 만약에 <strong>noDeep</strong>을 전달하면 배열을 한단계만 풉니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">_.flatten([<span class="number">1</span>, [<span class="number">2</span>], [<span class="number">3</span>, [[<span class="number">4</span>]]]]);</div><div class="line"><span class="comment">// [1, 2, 3, 4];</span></div><div class="line"></div><div class="line">_.flatten([<span class="number">1</span>, [<span class="number">2</span>], [<span class="number">3</span>, [[<span class="number">4</span>]]]], <span class="literal">true</span>);</div><div class="line"><span class="comment">// [1, 2, 3, [[4]]];</span></div></pre></td></tr></table></figure></p>
+<h3 id="without"><a href="#without" class="headerlink" title="_.without"></a>_.without</h3><p><code>_.without(array, *values)</code> <strong>values</strong>와 같은 값이 제거된 배열의 사본을 반환합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">_.without([<span class="number">1</span>, <span class="number">2</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">3</span>, <span class="number">1</span>, <span class="number">4</span>], <span class="number">0</span>, <span class="number">1</span>);</div><div class="line"><span class="comment">// [2, 3, 4]</span></div></pre></td></tr></table></figure></p>
+<h3 id="union"><a href="#union" class="headerlink" title="_.union"></a>_.union</h3><p><code>_.union(*arrays)</code> 배열들의 값을 확인하여 하나의 합집합 배열을 만듭니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">_.union([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>], [<span class="number">101</span>, <span class="number">2</span>, <span class="number">1</span>, <span class="number">10</span>], [<span class="number">2</span>, <span class="number">1</span>]);</div><div class="line"><span class="comment">// [1, 2, 3, 101, 10]</span></div></pre></td></tr></table></figure></p>
+<h3 id="intersection"><a href="#intersection" class="headerlink" title="_.intersection"></a>_.intersection</h3><p><code>_.intersection(*arrays)</code> 배열들의 값을 확인하여 하나의 교집합 배열을 만듭니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">_.intersection([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>], [<span class="number">101</span>, <span class="number">2</span>, <span class="number">1</span>, <span class="number">10</span>], [<span class="number">2</span>, <span class="number">1</span>]);</div><div class="line"><span class="comment">// [1, 2]</span></div></pre></td></tr></table></figure></p>
+<h3 id="difference"><a href="#difference" class="headerlink" title="_.difference"></a>_.difference</h3><p><code>_.difference(array, *others)</code> 첫번째 배열과 비교하여 하나의 차집합 배열을 만듭니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">_.difference([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>], [<span class="number">5</span>, <span class="number">2</span>, <span class="number">10</span>]);</div><div class="line"><span class="comment">// [1, 3, 4]</span></div></pre></td></tr></table></figure></p>
+<h3 id="uniq"><a href="#uniq" class="headerlink" title="_.uniq"></a>_.uniq</h3><p><code>_.uniq(array, [iteratee])</code> 배열에서 중복을 제거된 상태의 배열을 만듭니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">_.uniq([<span class="number">1</span>, <span class="number">2</span>, <span class="number">1</span>, <span class="number">4</span>, <span class="number">1</span>, <span class="number">3</span>]);</div><div class="line"><span class="comment">// [1, 2, 4, 3]</span></div></pre></td></tr></table></figure></p>
+<h3 id="zip"><a href="#zip" class="headerlink" title="_.zip"></a>_.zip</h3><p><code>_.zip(*arrays)</code> 배열들의 값 중 인덱스가 동일한 값끼리 묶은 다중 배열을 만듭니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">_.zip([<span class="string">'moe'</span>, <span class="string">'larry'</span>, <span class="string">'curly'</span>], [<span class="number">30</span>, <span class="number">40</span>, <span class="number">50</span>], [<span class="literal">true</span>, <span class="literal">false</span>, <span class="literal">false</span>]);</div><div class="line"><span class="comment">// [["moe", 30, true], ["larry", 40, false], ["curly", 50, false]]</span></div></pre></td></tr></table></figure></p>
+<h3 id="unzip"><a href="#unzip" class="headerlink" title="_.unzip"></a>_.unzip</h3><p><code>_.unzip(array)</code> 인자로 전달된 다중 배열에서 인덱스가 동일한 값끼리 재배열한 다중 배열을 만듭니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">_.unzip([[<span class="string">"moe"</span>, <span class="number">30</span>, <span class="literal">true</span>], [<span class="string">"larry"</span>, <span class="number">40</span>, <span class="literal">false</span>], [<span class="string">"curly"</span>, <span class="number">50</span>, <span class="literal">false</span>]]);</div><div class="line"><span class="comment">// [['moe', 'larry', 'curly'], [30, 40, 50], [true, false, false]]</span></div></pre></td></tr></table></figure></p>
+<h3 id="object"><a href="#object" class="headerlink" title="_.object"></a>_.object</h3><p><code>_.object(list, [values])</code> 배열을 객체로 만듭니다. 키가 될 배열과 값이 될 배열을 인자로 함께 전달하거나 하나의 배열에 키와 값을 쌍으로 가진 복수의 배열을 전달할 수 있습니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">_.object([<span class="string">'moe'</span>, <span class="string">'larry'</span>, <span class="string">'curly'</span>], [<span class="number">30</span>, <span class="number">40</span>, <span class="number">50</span>]);</div><div class="line"><span class="comment">// &#123;moe: 30, larry: 40, curly: 50&#125;</span></div><div class="line"></div><div class="line">_.object([[<span class="string">'moe'</span>, <span class="number">30</span>], [<span class="string">'larry'</span>, <span class="number">40</span>], [<span class="string">'curly'</span>, <span class="number">50</span>]]);</div><div class="line"><span class="comment">// &#123;moe: 30, larry: 40, curly: 50&#125;</span></div></pre></td></tr></table></figure></p>
+<h3 id="indexOf"><a href="#indexOf" class="headerlink" title="_.indexOf"></a>_.indexOf</h3><p><code>_.indexOf(array, value, [isSorted])</code> 배열을 순서대로 탐색해 <strong>value</strong>와 일치하는 값의 인덱스를 찾습니다. 일치하는 값을 찾을 수 없다면 -1을 반환합니다. 정렬된 배열이라면 <strong>isSorted</strong>에 <code>true</code>를 전달함으로써 보다 빠른 검색이 가능해집니다. 혹은 인덱스 값을 전달해서 탐색을 시작할 위치를 정할 수도 있습니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">_.indexOf([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>], <span class="number">2</span>);</div><div class="line"><span class="comment">// 1</span></div></pre></td></tr></table></figure></p>
+<h3 id="lastIndexOf"><a href="#lastIndexOf" class="headerlink" title="_.lastIndexOf"></a>_.lastIndexOf</h3><p><code>_.lastIndexOf(array, value, [fromIndex])</code> 배열의 끝에서부터 탐색해 <strong>value</strong>와 일치하는 값의 인덱스를 찾습니다. 찾을 수 없다면 -1을 반환합니다. <strong>fromIndex</strong>값으로 탐색을 시작할 위치 정할 수 있습니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">_.lastIndexOf([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>], <span class="number">2</span>);</div><div class="line"><span class="comment">// 4</span></div></pre></td></tr></table></figure></p>
+<h3 id="sortedIndex"><a href="#sortedIndex" class="headerlink" title="_.sortedIndex"></a>_.sortedIndex</h3><p><code>_.sortedIndex(list, value, [iteratee])</code> 리스트를 탐색하며 <strong>value</strong>가 삽입되었을 때 리스트의 정렬된 상태를 유지할 수 있는 위치의 인덱스를 찾습니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">_.sortedIndex([<span class="number">10</span>, <span class="number">20</span>, <span class="number">30</span>, <span class="number">40</span>, <span class="number">50</span>], <span class="number">35</span>);</div><div class="line"><span class="comment">// 3</span></div><div class="line"></div><div class="line"><span class="keyword">var</span> stooges = [&#123;<span class="attr">name</span>: <span class="string">'moe'</span>, <span class="attr">age</span>: <span class="number">40</span>&#125;, &#123;<span class="attr">name</span>: <span class="string">'curly'</span>, <span class="attr">age</span>: <span class="number">60</span>&#125;];</div><div class="line">_.sortedIndex(stooges, &#123;<span class="attr">name</span>: <span class="string">'larry'</span>, <span class="attr">age</span>: <span class="number">50</span>&#125;, <span class="string">'age'</span>);</div><div class="line"><span class="comment">// 1</span></div></pre></td></tr></table></figure></p>
+<h3 id="findIndex"><a href="#findIndex" class="headerlink" title="_.findIndex"></a>_.findIndex</h3><p><code>_.findIndex(array, predicate)</code> <code>_.indexOf</code>와 같은 일을 하지만 <strong>predicate</strong>가 참을 반환하는 값의 인덱스를 찾습니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">_.findIndex([<span class="number">4</span>, <span class="number">6</span>, <span class="number">8</span>, <span class="number">12</span>], isPrime);</div><div class="line"><span class="comment">// -1</span></div><div class="line">_.findIndex([<span class="number">4</span>, <span class="number">6</span>, <span class="number">7</span>, <span class="number">12</span>], isPrime);</div><div class="line"><span class="comment">// 2</span></div></pre></td></tr></table></figure></p>
+<h3 id="findLastIndex"><a href="#findLastIndex" class="headerlink" title="_.findLastIndex"></a>_.findLastIndex</h3><p><code>_.findLastIndex(array, predicate)</code> <code>_.findIndex</code>처럼 <strong>predicate</strong>가 참을 반환하는 값의 인덱스를 찾지만, 배열의 역순으로 탐색합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> users = [&#123;<span class="string">'id'</span>: <span class="number">1</span>, <span class="string">'name'</span>: <span class="string">'Bob'</span>, <span class="string">'last'</span>: <span class="string">'Brown'</span>&#125;,</div><div class="line">             &#123;<span class="string">'id'</span>: <span class="number">2</span>, <span class="string">'name'</span>: <span class="string">'Ted'</span>, <span class="string">'last'</span>: <span class="string">'White'</span>&#125;,</div><div class="line">             &#123;<span class="string">'id'</span>: <span class="number">3</span>, <span class="string">'name'</span>: <span class="string">'Frank'</span>, <span class="string">'last'</span>: <span class="string">'James'</span>&#125;,</div><div class="line">             &#123;<span class="string">'id'</span>: <span class="number">4</span>, <span class="string">'name'</span>: <span class="string">'Ted'</span>, <span class="string">'last'</span>: <span class="string">'Jones'</span>&#125;];</div><div class="line">_.findLastIndex(users, &#123;</div><div class="line">  <span class="attr">name</span>: <span class="string">'Ted'</span></div><div class="line">&#125;);</div><div class="line"><span class="comment">// 3</span></div></pre></td></tr></table></figure></p>
+<h3 id="range"><a href="#range" class="headerlink" title="_.range"></a>_.range</h3><p><code>_.range([start], stop, [step])</code> 범위를 정해 정수로 구성된 배열을 만듭니다. 값을 하나만 전달하면 0부터 전달된 값 이전까지가 범위가 됩니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">_.range(<span class="number">10</span>);</div><div class="line"><span class="comment">// [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]</span></div><div class="line">_.range(<span class="number">1</span>, <span class="number">11</span>);</div><div class="line"><span class="comment">// [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]</span></div><div class="line">_.range(<span class="number">0</span>, <span class="number">30</span>, <span class="number">5</span>);</div><div class="line"><span class="comment">// [0, 5, 10, 15, 20, 25]</span></div><div class="line">_.range(<span class="number">0</span>, <span class="number">-10</span>, <span class="number">-1</span>);</div><div class="line"><span class="comment">// [0, -1, -2, -3, -4, -5, -6, -7, -8, -9]</span></div><div class="line">_.range(<span class="number">0</span>);</div><div class="line"><span class="comment">// []</span></div></pre></td></tr></table></figure></p>
+<h3 id="remove"><a href="#remove" class="headerlink" title="_.remove"></a>_.remove</h3><p><code>_.remove</code>는 <code>list</code>의 값을 직접 변경합니다. 동일한 값을 지웁니다.</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> list = [<span class="number">1</span>, <span class="number">3</span>, <span class="number">5</span>, <span class="number">7</span>];</div><div class="line">_.remove(list, <span class="number">5</span>);</div><div class="line"><span class="built_in">console</span>.log(list);</div><div class="line"><span class="comment">// [1, 3, 7]</span></div></pre></td></tr></table></figure>
+<h3 id="removeByIndex"><a href="#removeByIndex" class="headerlink" title="_.removeByIndex"></a>_.removeByIndex</h3><p><code>_.removeByIndex</code>는 <code>list</code>의 값을 직접 변경합니다. 해당하는 번째의 값을 지웁니다.</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> list = [<span class="number">1</span>, <span class="number">3</span>, <span class="number">5</span>, <span class="number">7</span>];</div><div class="line">_.removeByIndex(list, <span class="number">2</span>);</div><div class="line"><span class="built_in">console</span>.log(list);</div><div class="line"><span class="comment">// [1, 3, 7]</span></div></pre></td></tr></table></figure>
+<h2 id="Object"><a href="#Object" class="headerlink" title="Object"></a>Object</h2><h3 id="keys"><a href="#keys" class="headerlink" title="_.keys"></a>_.keys</h3><p><code>_.keys(object)</code> 객체가 가진 프로퍼티의 이름인 키 값들을 모아 배열을 만듭니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">_.keys(&#123;<span class="attr">one</span>: <span class="number">1</span>, <span class="attr">two</span>: <span class="number">2</span>, <span class="attr">three</span>: <span class="number">3</span>&#125;);</div><div class="line"><span class="comment">// ["one", "two", "three"]</span></div></pre></td></tr></table></figure></p>
+<h3 id="values"><a href="#values" class="headerlink" title="_.values"></a>_.values</h3><p><code>_.values(object)</code> 객체가 가진 프로퍼티의 값을 모아 배열을 만듭니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">_.values(&#123;<span class="attr">one</span>: <span class="number">1</span>, <span class="attr">two</span>: <span class="number">2</span>, <span class="attr">three</span>: <span class="number">3</span>&#125;);</div><div class="line"><span class="comment">// [1, 2, 3]</span></div></pre></td></tr></table></figure></p>
+<h3 id="mapObject"><a href="#mapObject" class="headerlink" title="_.mapObject"></a>_.mapObject</h3><p><code>_.mapObject(object, iteratee)</code> <code>_.map</code>과 유사하지만 객체를 만들어줍니다. 객채를 순회하며 각 프로퍼티의 값을 변경합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">_.mapObject(&#123;<span class="attr">start</span>: <span class="number">5</span>, <span class="attr">end</span>: <span class="number">12</span>&#125;, <span class="function"><span class="keyword">function</span>(<span class="params">val, key</span>) </span>&#123;</div><div class="line">  <span class="keyword">return</span> val + <span class="number">5</span>;</div><div class="line">&#125;);</div><div class="line"><span class="comment">// &#123;start: 10, end: 17&#125;</span></div></pre></td></tr></table></figure></p>
+<h3 id="pairs"><a href="#pairs" class="headerlink" title="_.pairs"></a>_.pairs</h3><p><code>_.pairs(object)</code> 객체를 <code>[key, value]</code>의 형태의 배열들을 가진 다중 배열로 변환합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">_.pairs(&#123;<span class="attr">one</span>: <span class="number">1</span>, <span class="attr">two</span>: <span class="number">2</span>, <span class="attr">three</span>: <span class="number">3</span>&#125;);</div><div class="line"><span class="comment">// [["one", 1], ["two", 2], ["three", 3]]</span></div></pre></td></tr></table></figure></p>
+<h3 id="invert"><a href="#invert" class="headerlink" title="_.invert"></a>_.invert</h3><p><code>_.invert(object)</code> 객체의 프로퍼티 값과 키를 거꾸로 만들어줍니다. 값은 키로 키는 값이 됩니다. 이때 모든 값은 유니크하고 문자열로 나타낼 수 있어야합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">_.invert(&#123;<span class="attr">Moe</span>: <span class="string">"Moses"</span>, <span class="attr">Larry</span>: <span class="string">"Louis"</span>, <span class="attr">Curly</span>: <span class="string">"Jerome"</span>&#125;);</div><div class="line"><span class="comment">// &#123;Moses: "Moe", Louis: "Larry", Jerome: "Curly"&#125;;</span></div></pre></td></tr></table></figure></p>
+<h3 id="functions"><a href="#functions" class="headerlink" title="_.functions"></a>_.functions</h3><p><code>_.functions(object)</code> 객체가 가진 메소드들의 이름을 정렬된 상태의 배열로 반환합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">_.functions(_);</div><div class="line"><span class="comment">// ["all", "any", "bind", "bindAll", "clone", "compact", "compose" ...</span></div></pre></td></tr></table></figure></p>
+<h3 id="findKey"><a href="#findKey" class="headerlink" title="_.findKey"></a>_.findKey</h3><p><code>_.findKey(object, predicate)</code> 객체를 위한 <code>_.findIndex</code>입니다. <strong>predicate</strong>가 참을 반환하는 프로퍼티의 이름인 키를 반환합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> list = &#123;<span class="attr">Moe</span>: <span class="string">"Moses"</span>, <span class="attr">Larry</span>: <span class="string">"Louis"</span>, <span class="attr">Curly</span>: <span class="string">"Jerome"</span>&#125;;</div><div class="line">_.findKey(list, <span class="function"><span class="keyword">function</span>(<span class="params">val</span>) </span>&#123; </div><div class="line">  <span class="keyword">return</span> <span class="regexp">/oui$/</span>.test(val); </div><div class="line">&#125;);</div><div class="line"><span class="comment">// "Larry"</span></div></pre></td></tr></table></figure></p>
+<h3 id="extend"><a href="#extend" class="headerlink" title="_.extend"></a>_.extend</h3><p><code>_.extend(destination, *sources)</code> <strong>sources</strong>에 해당하는 객체들의 프로퍼티를 얕게 복사해서 <strong>destination</strong>에 해당하는 객체에 붙여 객체를 확장합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">_.extend(&#123;<span class="attr">name</span>: <span class="string">'moe'</span>&#125;, &#123;<span class="attr">age</span>: <span class="number">50</span>&#125;);</div><div class="line"><span class="comment">// &#123;name: 'moe', age: 50&#125;</span></div></pre></td></tr></table></figure></p>
+<h3 id="pick"><a href="#pick" class="headerlink" title="_.pick"></a>_.pick</h3><p><code>_.pick(object, *keys)</code> 객체의 프로퍼티 중에서 키가 일치하는 프로퍼티를 뽑은 새로운 객체를 반환합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">_.pick(&#123;<span class="attr">name</span>: <span class="string">'moe'</span>, <span class="attr">age</span>: <span class="number">50</span>, <span class="attr">userid</span>: <span class="string">'moe1'</span>&#125;, <span class="string">'name'</span>, <span class="string">'age'</span>);</div><div class="line"><span class="comment">// &#123;name: 'moe', age: 50&#125;</span></div><div class="line">_.pick(&#123;<span class="attr">name</span>: <span class="string">'moe'</span>, <span class="attr">age</span>: <span class="number">50</span>, <span class="attr">userid</span>: <span class="string">'moe1'</span>&#125;, <span class="function"><span class="keyword">function</span>(<span class="params">value, key, object</span>) </span>&#123;</div><div class="line">  <span class="keyword">return</span> _.isNumber(value);</div><div class="line">&#125;);</div><div class="line"><span class="comment">// &#123;age: 50&#125;</span></div></pre></td></tr></table></figure></p>
+<h3 id="omit"><a href="#omit" class="headerlink" title="_.omit"></a>_.omit</h3><p><code>_.omit(object, *keys)</code> 객체의 프로퍼티 중에서 키가 일치하는 프로퍼티를 빼낸 새로운 객체를 반환합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">_.omit(&#123;<span class="attr">name</span>: <span class="string">'moe'</span>, <span class="attr">age</span>: <span class="number">50</span>, <span class="attr">userid</span>: <span class="string">'moe1'</span>&#125;, <span class="string">'userid'</span>);</div><div class="line"><span class="comment">// &#123;name: 'moe', age: 50&#125;</span></div><div class="line">_.omit(&#123;<span class="attr">name</span>: <span class="string">'moe'</span>, <span class="attr">age</span>: <span class="number">50</span>, <span class="attr">userid</span>: <span class="string">'moe1'</span>&#125;, <span class="function"><span class="keyword">function</span>(<span class="params">value, key, object</span>) </span>&#123;</div><div class="line">  <span class="keyword">return</span> _.isNumber(value);</div><div class="line">&#125;);</div><div class="line"><span class="comment">// &#123;name: 'moe', userid: 'moe1'&#125;</span></div></pre></td></tr></table></figure></p>
+<h3 id="defaults"><a href="#defaults" class="headerlink" title="_.defaults"></a>_.defaults</h3><p><code>_.defaults(object, *defaults)</code> 객체의 프로퍼티 중 값이 <code>undefined</code>인 프로퍼티의 값을 <strong>defaults</strong>객체의 값으로 채웁니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> iceCream = &#123;<span class="attr">flavor</span>: <span class="string">"chocolate"</span>&#125;;</div><div class="line">_.defaults(iceCream, &#123;<span class="attr">flavor</span>: <span class="string">"vanilla"</span>, <span class="attr">sprinkles</span>: <span class="string">"lots"</span>&#125;);</div><div class="line"><span class="comment">// &#123;flavor: "chocolate", sprinkles: "lots"&#125;</span></div></pre></td></tr></table></figure></p>
+<h3 id="clone"><a href="#clone" class="headerlink" title="_.clone"></a>_.clone</h3><p><code>_.clone(object)</code> 얕은 복사로 객체를 복제합니다. 중첩 객체의 경우에는 복제하지 않고 참조합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">_.clone(&#123;<span class="attr">name</span>: <span class="string">'moe'</span>&#125;);</div><div class="line"><span class="comment">// &#123;name: 'moe'&#125;;</span></div></pre></td></tr></table></figure></p>
+<h3 id="has"><a href="#has" class="headerlink" title="_.has"></a>_.has</h3><p><code>_.has(object, key)</code> 객체에 특정 키가 존재하는지 확인합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">_.has(&#123;<span class="attr">a</span>: <span class="number">1</span>, <span class="attr">b</span>: <span class="number">2</span>, <span class="attr">c</span>: <span class="number">3</span>&#125;, <span class="string">"b"</span>);</div><div class="line"><span class="comment">// true</span></div></pre></td></tr></table></figure></p>
+<h3 id="method"><a href="#method" class="headerlink" title="_.method"></a>_.method</h3><p><code>_.method(method, [*arguments])</code> 객체의 메소드를 실행할 함수를 반환합니다. 메소드에게 전달할 <strong>arguments</strong>도 받습니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">_.go(</div><div class="line">  jQuery(<span class="string">'body'</span>),</div><div class="line">  _.method(<span class="string">'find'</span>, <span class="string">'#main'</span>),</div><div class="line">  _.first</div><div class="line">);</div><div class="line"><span class="comment">// &lt;div id="main"&gt;...&lt;/div&gt;</span></div></pre></td></tr></table></figure></p>
+<h3 id="isEqual"><a href="#isEqual" class="headerlink" title="_.isEqual"></a>_.isEqual</h3><p><code>_.isEqual(object, other)</code> 두 객체의 값을 비교해 같은지 확인합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> stooge = &#123;<span class="attr">name</span>: <span class="string">'moe'</span>, <span class="attr">luckyNumbers</span>: [<span class="number">13</span>, <span class="number">27</span>, <span class="number">34</span>]&#125;;</div><div class="line"><span class="keyword">var</span> clone  = &#123;<span class="attr">name</span>: <span class="string">'moe'</span>, <span class="attr">luckyNumbers</span>: [<span class="number">13</span>, <span class="number">27</span>, <span class="number">34</span>]&#125;;</div><div class="line">stooge == clone;</div><div class="line"><span class="comment">// false</span></div><div class="line">_.isEqual(stooge, clone);</div><div class="line"><span class="comment">// true</span></div></pre></td></tr></table></figure></p>
+<h3 id="isMatch"><a href="#isMatch" class="headerlink" title="_.isMatch"></a>_.isMatch</h3><p><code>_.isMatch(object, properties)</code> 두 객체를 비교해 일치하는 프로퍼티가 있는지 확인합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> stooge = &#123;<span class="attr">name</span>: <span class="string">'moe'</span>, <span class="attr">age</span>: <span class="number">32</span>&#125;;</div><div class="line">_.isMatch(stooge, &#123;<span class="attr">age</span>: <span class="number">32</span>&#125;);</div><div class="line"><span class="comment">// true</span></div></pre></td></tr></table></figure></p>
+<h3 id="isEmpty"><a href="#isEmpty" class="headerlink" title="_.isEmpty"></a>_.isEmpty</h3><p><code>_.isEmpty(object)</code> 객체가 비어있는지 확인합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">_.isEmpty([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>]);</div><div class="line"><span class="comment">// false</span></div><div class="line">_.isEmpty(&#123;&#125;);</div><div class="line"><span class="comment">// true</span></div></pre></td></tr></table></figure></p>
+<h3 id="isElement"><a href="#isElement" class="headerlink" title="_.isElement"></a>_.isElement</h3><p><code>_.isElement(object)</code> 객체가 DOM 엘리먼트인지 확인합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">_.isElement(jQuery(<span class="string">'body'</span>)[<span class="number">0</span>]);</div><div class="line"><span class="comment">// true</span></div></pre></td></tr></table></figure></p>
+<h3 id="isArray"><a href="#isArray" class="headerlink" title="_.isArray"></a>_.isArray</h3><p><code>_.isArray(object)</code> 객체가 배열인지 확인합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123; <span class="keyword">return</span> _.isArray(<span class="built_in">arguments</span>); &#125;)();</div><div class="line"><span class="comment">// false</span></div><div class="line">_.isArray([<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>]);</div><div class="line"><span class="comment">// true</span></div></pre></td></tr></table></figure></p>
+<h3 id="isObject"><a href="#isObject" class="headerlink" title="_.isObject"></a>_.isObject</h3><p><code>_.isObject(value)</code> 값이 객체인지 확인합니다. (자바스크립트에선 배열과 함수도 객체입니다.)<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">_.isObject(&#123;&#125;);</div><div class="line"><span class="comment">// true</span></div><div class="line">_.isObject(<span class="number">1</span>);</div><div class="line"><span class="comment">// false</span></div></pre></td></tr></table></figure></p>
+<h3 id="isArguments"><a href="#isArguments" class="headerlink" title="_.isArguments"></a>_.isArguments</h3><p><code>_.isArguments(object)</code> 객체가 Arguments 객체인지 확인합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123; <span class="keyword">return</span> _.isArguments(<span class="built_in">arguments</span>); &#125;)(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>);</div><div class="line"><span class="comment">// true</span></div><div class="line">_.isArguments([<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>]);</div><div class="line"><span class="comment">// false</span></div></pre></td></tr></table></figure></p>
+<h3 id="isFunction"><a href="#isFunction" class="headerlink" title="_.isFunction"></a>_.isFunction</h3><p><code>_.isFunction</code> 객체가 함수인지 확인합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">_.isFunction(alert);</div><div class="line"><span class="comment">// true</span></div></pre></td></tr></table></figure></p>
+<h3 id="isString"><a href="#isString" class="headerlink" title="_.isString"></a>_.isString</h3><p><code>_.isString(object)</code> 객체가 문자열인지 확인합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">_.isString(<span class="string">"marpple"</span>);</div><div class="line"><span class="comment">// true</span></div></pre></td></tr></table></figure></p>
+<h3 id="isNumber"><a href="#isNumber" class="headerlink" title="_.isNumber"></a>_.isNumber</h3><p><code>_.isNumber(object)</code> 객체가 숫자인지 확인합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">_.isNumber(<span class="number">8.4</span> * <span class="number">5</span>);</div><div class="line"><span class="comment">// true</span></div></pre></td></tr></table></figure></p>
+<h3 id="isDate"><a href="#isDate" class="headerlink" title="_.isDate"></a>_.isDate</h3><p><code>_.isDate(new Date())</code> 객체가 날짜 객체인지 확인합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">_.isDate(<span class="keyword">new</span> <span class="built_in">Date</span>());</div><div class="line"><span class="comment">// true</span></div></pre></td></tr></table></figure></p>
+<h3 id="isRegExp"><a href="#isRegExp" class="headerlink" title="_.isRegExp"></a>_.isRegExp</h3><p><code>_.isRegExp(object)</code> 객체가 정규식인지 확인합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">_.isRegExp(<span class="regexp">/marpple/</span>);</div><div class="line"><span class="comment">// true</span></div></pre></td></tr></table></figure></p>
+<h3 id="isError"><a href="#isError" class="headerlink" title="_.isError"></a>_.isError</h3><p><code>_.isError(object)</code> 객체가 에러 객체인지 확인합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">try</span> &#123;</div><div class="line">  <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">TypeError</span>(<span class="string">"Example"</span>);</div><div class="line">&#125; <span class="keyword">catch</span> (o_O) &#123;</div><div class="line">  _.isError(o_O);</div><div class="line">&#125;</div><div class="line"><span class="comment">// true</span></div></pre></td></tr></table></figure></p>
+<h3 id="isArrayLike"><a href="#isArrayLike" class="headerlink" title="_.isArrayLike"></a>_.isArrayLike</h3><p><code>_.isArrayLike</code> 객체가 ArrayLike인지 확인합니다.<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123; <span class="keyword">return</span> _.isArrayLike(<span class="built_in">arguments</span>); &#125;)(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>);</div><div class="line"><span class="comment">// true</span></div><div class="line">_.isArrayLike(&#123;<span class="attr">name</span>: <span class="string">'moe'</span>, <span class="attr">age</span>: <span class="number">50</span>&#125;);</div><div class="line"><span class="comment">// false</span></div></pre></td></tr></table></figure></p>
+<h2 id="Function"><a href="#Function" class="headerlink" title="Function"></a>Function</h2><h3 id="memoize"><a href="#memoize" class="headerlink" title="_.memoize"></a>_.memoize</h3><p><code>_.memoize(function, [hashFunction])</code> 함수의 리턴 값을 저장하여, 동일한 인자가 들어올 때 저장 값을 리턴합니다</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> mult5 = _.memoize(<span class="function"><span class="keyword">function</span>(<span class="params">a</span>) </span>&#123; <span class="keyword">return</span> a * <span class="number">5</span>; &#125;);</div><div class="line"><span class="built_in">console</span>.log( mult5(<span class="number">1</span>) );</div><div class="line"><span class="comment">// 본체 실행 1</span></div><div class="line"><span class="comment">// 5</span></div><div class="line"><span class="built_in">console</span>.log( mult5(<span class="number">2</span>) );</div><div class="line"><span class="comment">// 본체 실행 2</span></div><div class="line"><span class="comment">// 10</span></div><div class="line"><span class="built_in">console</span>.log( mult5(<span class="number">1</span>) );</div><div class="line"><span class="comment">// 캐시로 결과 바로 리턴 1</span></div><div class="line"><span class="comment">// 5</span></div></pre></td></tr></table></figure>
+<h3 id="memoize2"><a href="#memoize2" class="headerlink" title="_.memoize2"></a>_.memoize2</h3><p>_.memoize2는 불변적으로 값을 다룰 때 성능과 관리가 유용합니다. 불변적으로 값을 다루기만하면 캐시를 비우는 것도 자동으로 이루어집니다.</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> evens = _.memoize2(<span class="function"><span class="keyword">function</span>(<span class="params">list</span>) </span>&#123;</div><div class="line">  <span class="built_in">console</span>.log(<span class="string">'함수 본체에 들어와서 loop 실행'</span>);</div><div class="line">  <span class="keyword">return</span> _.filter(list, <span class="function"><span class="keyword">function</span>(<span class="params">num</span>) </span>&#123;</div><div class="line">    <span class="keyword">return</span> num % <span class="number">2</span> == <span class="number">0</span>;</div><div class="line">  &#125;)</div><div class="line">&#125;);</div><div class="line"></div><div class="line"><span class="keyword">var</span> list = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>, <span class="number">8</span>, <span class="number">9</span>, <span class="number">10</span>];</div><div class="line"><span class="built_in">console</span>.log( evens(list) );</div><div class="line"><span class="comment">// 함수 본체에 들어와서 loop 실행</span></div><div class="line"><span class="comment">// [2, 4, 6, 8, 10]</span></div><div class="line"><span class="built_in">console</span>.log( evens(list) );</div><div class="line"><span class="comment">// [2, 4, 6, 8, 10] (캐시를 사용하여 loop를 돌지 않음)</span></div><div class="line"></div><div class="line">list = list.concat(<span class="number">11</span>, <span class="number">12</span>); <span class="comment">// _.memoize2는 불변적으로 값을 다룰 때 성능과 관리가 유용합니다.</span></div><div class="line"><span class="built_in">console</span>.log( list );</div><div class="line"><span class="comment">// [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]</span></div><div class="line"></div><div class="line"><span class="built_in">console</span>.log( evens(list) );</div><div class="line"><span class="comment">// 함수 본체에 들어와서 loop 실행</span></div><div class="line"><span class="comment">// [2, 4, 6, 8, 10, 12]</span></div><div class="line"></div><div class="line"><span class="built_in">console</span>.log( evens(list) );</div><div class="line"><span class="comment">// [2, 4, 6, 8, 10, 12] (캐시를 사용하여 loop를 돌지 않음)</span></div></pre></td></tr></table></figure>
+<h3 id="delay"><a href="#delay" class="headerlink" title="_.delay"></a>_.delay</h3><p><code>_.delay(function, wait, *arguments)</code> 정해진 시간(wait) 후에 함수가 호출 됩니다. 호출 될 함수의 인자를 옵션으로 받을 수 있습니다</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">_.delay(alert, <span class="number">1000</span>, <span class="string">"alert later"</span>);</div><div class="line"><span class="comment">// 1초 후에 'alert later' 알림 메세지가 나타납니다.</span></div></pre></td></tr></table></figure>
+<h3 id="defer"><a href="#defer" class="headerlink" title="defer"></a>defer</h3><p><code>_.defer(function, *arguments)</code> setTimeout 0과 같은 효과입니다. 콜 스택이 다 비워진 후에 함수가 호출 됩니다.</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">_.defer(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123; <span class="built_in">console</span>.log(<span class="string">"deferred"</span>); &#125;);</div><div class="line"><span class="built_in">console</span>.log(<span class="string">"first"</span>)</div><div class="line"><span class="comment">//'first' 후에 'deferred'가 출력됩니다.</span></div></pre></td></tr></table></figure>
+<h3 id="once"><a href="#once" class="headerlink" title="_.once"></a>_.once</h3><p><code>_.once(function)</code> 함수가 한 번만 호출 됩니다. 그 이후의 호출은 효력이 없습니다.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">var oneTime = _.once(function()&#123; return &quot;only one time&quot;&#125;);</div><div class="line">oneTime();</div><div class="line">//&apos;only one time&apos;</div><div class="line">oneTime();</div><div class="line">//undefined</div></pre></td></tr></table></figure>
+<h3 id="after"><a href="#after" class="headerlink" title="_.after"></a>_.after</h3><p><code>_.after(count, function)</code> 지정한 횟수만큼 호출 후에 함수가 호출 됩니다. 그 이후로는 호출 할때마다 함수가 호출 됩니다.</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> renderNotes = _.after(notes.length, render);</div><div class="line">_.each(notes, <span class="function"><span class="keyword">function</span>(<span class="params">note</span>) </span>&#123;</div><div class="line">  note.asyncSave(&#123;<span class="attr">success</span>: renderNotes&#125;);</div><div class="line">&#125;);</div><div class="line"><span class="comment">// renderNotes는 모든 note가 비동기로 저장된(asyncSave) 후에 한번 호출 됩니다.</span></div></pre></td></tr></table></figure>
+<h3 id="before"><a href="#before" class="headerlink" title="_.before"></a>_.before</h3><p><code>_.before(count, function)</code> 지정 횟수 전까지 함수를 호출 합니다. 그 이후의 호출은 마지막 호출된 값과 같은 결과 값이 나옵니다.</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> greet = _.before(<span class="number">3</span>, <span class="function"><span class="keyword">function</span>(<span class="params">when</span>)</span>&#123;<span class="keyword">return</span> <span class="string">'Good '</span>+when+<span class="string">'!'</span>&#125;);</div><div class="line">greet(<span class="string">'morning'</span>);</div><div class="line"><span class="comment">//"Good morning!"</span></div><div class="line">greet(<span class="string">'afternoon'</span>);</div><div class="line"><span class="comment">//"Good afternoon!"</span></div><div class="line">greet(<span class="string">'evening'</span>);</div><div class="line"><span class="comment">//"Good afternoon!"</span></div></pre></td></tr></table></figure>
+<h3 id="negate"><a href="#negate" class="headerlink" title="_.negate"></a>_.negate</h3><p><code>_.negate(predicate)</code> predicate 함수 결과(true, false)의 반대를 리턴합니다.</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> isFalsy = _.negate(<span class="built_in">Boolean</span>); <span class="comment">// Boolean 함수는 인자가 참일때, true, 거짓일때 false를 출력합니다</span></div><div class="line">_.find([<span class="number">-2</span>, <span class="number">-1</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>], isFalsy);</div><div class="line"><span class="comment">// 0</span></div></pre></td></tr></table></figure>
+<h2 id="JSON-Selector"><a href="#JSON-Selector" class="headerlink" title="JSON Selector"></a>JSON Selector</h2><h3 id="sel"><a href="#sel" class="headerlink" title="_.sel"></a>_.sel</h3><p>_.sel은 깊은 값을 찾아가기 위한 JSON Selector를 인자로 받습니다. JSON Selector는 깊은 값을 조회하기 위한 쿼리문입니다.</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> users = [</div><div class="line">  &#123;</div><div class="line">    <span class="attr">id</span>: <span class="number">1</span>,</div><div class="line">    <span class="attr">name</span>: <span class="string">'BJ'</span>,</div><div class="line">    <span class="attr">post_count</span>: <span class="number">3</span>,</div><div class="line">    <span class="attr">posts</span>: [</div><div class="line">      &#123; <span class="attr">id</span>: <span class="number">1</span>, <span class="attr">body</span>: <span class="string">'하이'</span>, <span class="attr">comments</span>: [&#123; <span class="attr">id</span>: <span class="number">3</span>, <span class="attr">body</span>: <span class="string">'코멘트3'</span> &#125;] &#125;,</div><div class="line">      &#123; <span class="attr">id</span>: <span class="number">2</span>, <span class="attr">body</span>: <span class="string">'하이2'</span>, <span class="attr">comments</span>: [&#123; <span class="attr">id</span>: <span class="number">1</span>, <span class="attr">body</span>: <span class="string">'코멘트1'</span> &#125;, &#123; <span class="attr">id</span>: <span class="number">2</span>, <span class="attr">body</span>: <span class="string">'코멘트2'</span> &#125;] &#125;,</div><div class="line">      &#123; <span class="attr">id</span>: <span class="number">4</span>, <span class="attr">body</span>: <span class="string">'하이4'</span>, <span class="attr">comments</span>: [&#123; <span class="attr">id</span>: <span class="number">4</span>, <span class="attr">body</span>: <span class="string">'코멘트4'</span> &#125;, &#123; <span class="attr">id</span>: <span class="number">5</span>, <span class="attr">body</span>: <span class="string">'코멘트5'</span> &#125;] &#125;</div><div class="line">    ]</div><div class="line">  &#125;,</div><div class="line">  &#123;</div><div class="line">    <span class="attr">id</span>: <span class="number">2</span>,</div><div class="line">    <span class="attr">name</span>: <span class="string">'PJ'</span>,</div><div class="line">    <span class="attr">post_count</span>: <span class="number">1</span>,</div><div class="line">    <span class="attr">posts</span>: [</div><div class="line">      &#123; <span class="attr">id</span>: <span class="number">3</span>, <span class="attr">body</span>: <span class="string">'하이3'</span>, <span class="attr">comments</span>: [] &#125;</div><div class="line">    ]</div><div class="line">  &#125;</div><div class="line">];</div><div class="line"></div><div class="line"><span class="comment">// key로만 찾기</span></div><div class="line"><span class="built_in">console</span>.log(</div><div class="line">  _.sel(users, <span class="string">'0-&gt;name'</span>), <span class="comment">// BJ</span></div><div class="line">  _.sel(users, <span class="string">'1-&gt;name'</span>), <span class="comment">// PJ</span></div><div class="line">  _.sel(users, <span class="string">'0-&gt;post_count'</span>), <span class="comment">// 3</span></div><div class="line">  _.sel(users, <span class="string">'1-&gt;post_count'</span>), <span class="comment">// 1</span></div><div class="line">  _.sel(users, <span class="string">'0-&gt;posts-&gt;1-&gt;body'</span>) <span class="comment">// 하이2</span></div><div class="line">);</div><div class="line"></div><div class="line"><span class="comment">// 괄호로 내부적으로 find + predicate 실행하기</span></div><div class="line"><span class="built_in">console</span>.log(</div><div class="line">  _.sel(users, <span class="string">'(u=&gt;u.id==1)-&gt;name'</span>), <span class="comment">// BJ</span></div><div class="line">  _.sel(users, <span class="string">'(u=&gt;u.id==1)-&gt;posts-&gt;(p=&gt;p.id==4)-&gt;body'</span>) <span class="comment">// 하이4</span></div><div class="line">);</div><div class="line"></div><div class="line"><span class="comment">// 동일 코드를 아래처럼 더 짧게 표현할 수 있습니다.</span></div><div class="line"><span class="built_in">console</span>.log(</div><div class="line">  _.sel(users, <span class="string">'($.id==1)-&gt;name'</span>), <span class="comment">// BJ</span></div><div class="line">  _.sel(users, <span class="string">'(#1)-&gt;posts-&gt;(#4)-&gt;body'</span>) <span class="comment">// 하이4</span></div><div class="line">);</div></pre></td></tr></table></figure>
+<p><code>()</code>를 사용할 때 <code>id</code>로 비교하는 경우에는 <code>#</code>을 사용하는 방식이 성능이 가장 좋습니다. JSON Selector는 <code>()</code>를 통해 <code>find(predicate)</code>를 작성할 수 있어 단순히 key들로 찾아가는 방법보다 유용합니다. JSON Selector의 <code>()</code>는 함수이므로, <code>id</code> 비교외에 다른 조건도 얼마든지 만들 수 있습니다.</p>
+<h2 id="Mutable"><a href="#Mutable" class="headerlink" title="Mutable"></a>Mutable</h2><h3 id="set"><a href="#set" class="headerlink" title="_.set"></a>_.set</h3><p><code>_.set</code>은 첫 번째 인자로 변경할 부모 객체를 받고, 두 번째 인자로 JSON Selector를 받아, 해당 부분의 값을 세 번째 인자로 받은 값으로 변경합니다.</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> user = &#123;</div><div class="line">  <span class="attr">id</span>: <span class="number">1</span>,</div><div class="line">  <span class="attr">name</span>: <span class="string">'BJ'</span>,</div><div class="line">  <span class="attr">post_count</span>: <span class="number">3</span>,</div><div class="line">  <span class="attr">posts</span>: [</div><div class="line">    &#123; <span class="attr">id</span>: <span class="number">1</span>, <span class="attr">body</span>: <span class="string">'하이'</span>, <span class="attr">comments</span>: [&#123; <span class="attr">id</span>: <span class="number">3</span>, <span class="attr">body</span>: <span class="string">'코멘트3'</span> &#125;] &#125;,</div><div class="line">    &#123; <span class="attr">id</span>: <span class="number">2</span>, <span class="attr">body</span>: <span class="string">'하이2'</span>, <span class="attr">comments</span>: [&#123; <span class="attr">id</span>: <span class="number">1</span>, <span class="attr">body</span>: <span class="string">'코멘트1'</span> &#125;, &#123; <span class="attr">id</span>: <span class="number">2</span>, <span class="attr">body</span>: <span class="string">'코멘트2'</span> &#125;] &#125;,</div><div class="line">    &#123; <span class="attr">id</span>: <span class="number">4</span>, <span class="attr">body</span>: <span class="string">'하이4'</span>, <span class="attr">comments</span>: [&#123; <span class="attr">id</span>: <span class="number">4</span>, <span class="attr">body</span>: <span class="string">'코멘트4'</span> &#125;, &#123; <span class="attr">id</span>: <span class="number">5</span>, <span class="attr">body</span>: <span class="string">'코멘트5'</span> &#125;] &#125;</div><div class="line">  ]</div><div class="line">&#125;;</div><div class="line"></div><div class="line">_.set(user, <span class="string">'posts-&gt;(#4)-&gt;comments-&gt;(#4)-&gt;body'</span>, <span class="string">'코멘트4를 수정'</span>);</div><div class="line"><span class="built_in">console</span>.log( user.posts[<span class="number">2</span>].comments[<span class="number">0</span>] );</div><div class="line"><span class="comment">// &#123;id: 4, body: "코멘트4를 수정"&#125;</span></div></pre></td></tr></table></figure>
+<p><code>_.set</code>의 마지막인자에 함수를 전달하면 더 다양한 방법으로 값 변경이 가능합니다.</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">_.set(user, <span class="string">'posts'</span>, posts =&gt; _.reject(posts, <span class="function"><span class="keyword">function</span>(<span class="params">post</span>) </span>&#123;</div><div class="line">  <span class="keyword">return</span> post.comments.length &lt; <span class="number">2</span>;</div><div class="line">&#125;));</div><div class="line"><span class="built_in">console</span>.log( _.pluck(user.posts, <span class="string">'body'</span>) );</div><div class="line"><span class="comment">// ["하이2", "하이4"]</span></div></pre></td></tr></table></figure>
+<h3 id="unset"><a href="#unset" class="headerlink" title="_.unset"></a>_.unset</h3><p><code>_.unset</code>은 첫 번째 인자로 변경할 부모 객체를 받고, 두 번째 인자로 JSON Selector를 받아, 해당 부분의 key/value를 삭제합니다.</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">_.unset(user, <span class="string">'posts-&gt;(#4)-&gt;comments-&gt;(#4)-&gt;body'</span>);</div><div class="line"><span class="built_in">console</span>.log( user.posts[<span class="number">2</span>].comments[<span class="number">0</span>] );</div><div class="line"><span class="comment">// &#123;id: 4&#125;</span></div></pre></td></tr></table></figure>
+<h3 id="push"><a href="#push" class="headerlink" title="_.push"></a>_.push</h3><p><code>_.push</code>는 첫 번째 인자로 변경할 부모 객체를 받고, 두 번째 인자로 JSON Selector를 받아, 해당 부분의 배열에 세 번째 인자로 받은 값을 더합니다.</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">_.push(user, <span class="string">'posts-&gt;(#4)-&gt;comments'</span>, &#123; <span class="attr">id</span>: <span class="number">6</span>, <span class="attr">body</span>: <span class="string">'코멘트6'</span> &#125;);</div><div class="line"><span class="built_in">console</span>.log( _.last(user.posts[<span class="number">2</span>].comments) );</div><div class="line"><span class="comment">// &#123; id: 6, body: '코멘트6' &#125;</span></div></pre></td></tr></table></figure>
+<h3 id="pop"><a href="#pop" class="headerlink" title="_.pop"></a>_.pop</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">console</span>.log( user.posts[<span class="number">1</span>].comments.length ); <span class="comment">// 2</span></div><div class="line">_.pop(user, <span class="string">'posts-&gt;(#2)-&gt;comments'</span>);</div><div class="line"><span class="built_in">console</span>.log( user.posts[<span class="number">1</span>].comments.length ); <span class="comment">// 1</span></div></pre></td></tr></table></figure>
+<h3 id="shift"><a href="#shift" class="headerlink" title="_.shift"></a>_.shift</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">console</span>.log( _.pluck(user.posts, <span class="string">'body'</span>) ); <span class="comment">// ["하이", "하이2", "하이4"]</span></div><div class="line">_.shift(user, <span class="string">'posts'</span>);</div><div class="line"><span class="built_in">console</span>.log( _.pluck(user.posts, <span class="string">'body'</span>) ); <span class="comment">// ["하이2", "하이4"]</span></div></pre></td></tr></table></figure>
+<h3 id="unshift"><a href="#unshift" class="headerlink" title="_.unshift"></a>_.unshift</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">_.unshift(user, <span class="string">'posts-&gt;(#4)-&gt;comments'</span>, &#123; <span class="attr">id</span>: <span class="number">7</span>, <span class="attr">body</span>: <span class="string">'코멘트7'</span> &#125;);</div><div class="line"><span class="built_in">console</span>.log( _.first(user.posts[<span class="number">2</span>].comments) );</div><div class="line"><span class="comment">// &#123; id: 7, body: '코멘트7' &#125;</span></div></pre></td></tr></table></figure>
+<h3 id="extend2"><a href="#extend2" class="headerlink" title="_.extend2"></a>_.extend2</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">_.extend2(user, <span class="string">'posts-&gt;(#2)'</span>, &#123; <span class="attr">body</span>: <span class="string">"내용 변경"</span>, <span class="attr">body2</span>: <span class="string">"내용 추가"</span> &#125;);</div><div class="line"><span class="built_in">console</span>.log( user.posts[<span class="number">1</span>] );</div><div class="line"><span class="comment">// &#123;id: 2, body: "내용 변경", comments: Array(2), body2: "내용 추가"&#125;</span></div></pre></td></tr></table></figure>
+<h3 id="defaults2"><a href="#defaults2" class="headerlink" title="_.defaults2"></a>_.defaults2</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">console</span>.log( user.posts[<span class="number">1</span>] );</div><div class="line"><span class="comment">// &#123;id: 2, body: "하이2", comments: Array(2)&#125;</span></div><div class="line"></div><div class="line">_.defaults2(user, <span class="string">'posts-&gt;(#2)'</span>, &#123; <span class="attr">body</span>: <span class="string">"내용 변경"</span>, <span class="attr">body3</span>: <span class="string">"내용 추가"</span> &#125;);</div><div class="line"></div><div class="line"><span class="built_in">console</span>.log( user.posts[<span class="number">1</span>] );</div><div class="line"><span class="comment">// &#123;id: 2, body: "하이2", comments: Array(2), body2: "내용 추가"&#125;</span></div></pre></td></tr></table></figure>
+<h3 id="remove2"><a href="#remove2" class="headerlink" title="_.remove2"></a>_.remove2</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> user = &#123;</div><div class="line">  <span class="attr">id</span>: <span class="number">1</span>,</div><div class="line">  <span class="attr">name</span>: <span class="string">'BJ'</span>,</div><div class="line">  <span class="attr">post_count</span>: <span class="number">3</span>,</div><div class="line">  <span class="attr">posts</span>: [</div><div class="line">    &#123; <span class="attr">id</span>: <span class="number">1</span>, <span class="attr">body</span>: <span class="string">'하이'</span>, <span class="attr">comments</span>: [&#123; <span class="attr">id</span>: <span class="number">3</span>, <span class="attr">body</span>: <span class="string">'코멘트3'</span> &#125;] &#125;,</div><div class="line">    &#123; <span class="attr">id</span>: <span class="number">2</span>, <span class="attr">body</span>: <span class="string">'하이2'</span>, <span class="attr">comments</span>: [&#123; <span class="attr">id</span>: <span class="number">1</span>, <span class="attr">body</span>: <span class="string">'코멘트1'</span> &#125;, &#123; <span class="attr">id</span>: <span class="number">2</span>, <span class="attr">body</span>: <span class="string">'코멘트2'</span> &#125;] &#125;,</div><div class="line">    &#123; <span class="attr">id</span>: <span class="number">4</span>, <span class="attr">body</span>: <span class="string">'하이4'</span>, <span class="attr">comments</span>: [&#123; <span class="attr">id</span>: <span class="number">4</span>, <span class="attr">body</span>: <span class="string">'코멘트4'</span> &#125;, &#123; <span class="attr">id</span>: <span class="number">5</span>, <span class="attr">body</span>: <span class="string">'코멘트5'</span> &#125;] &#125;</div><div class="line">  ]</div><div class="line">&#125;</div><div class="line"></div><div class="line">_.remove2(user, <span class="string">'posts-&gt;(#2)-&gt;comments'</span>, user.posts[<span class="number">1</span>].comments[<span class="number">0</span>]);</div><div class="line"></div><div class="line"><span class="built_in">console</span>.log(user.posts[<span class="number">1</span>].comments);</div><div class="line"><span class="comment">// [&#123; id: 2, body: '코멘트2' &#125;]</span></div></pre></td></tr></table></figure>
+<h2 id="Immutable"><a href="#Immutable" class="headerlink" title="Immutable"></a>Immutable</h2><p>Mutable 함수들 앞에 <code>_.im</code>를 붙이면 깊은 값을 불변적으로 다룰 수 있습니다. 예를 들어 <code>_.im.set</code>은 첫 번째 인자로 변경할 부모 객체를 받고, 두 번째 인자로 JSON Selector를 받아, 해당 부분의 값을 세 번째 인자로 받은 값으로 변경합니다. 단 기존의 값은 변경하지 않고 안쪽 값이 변경된 새로운 부모 객체를 리턴합니다.</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> user = &#123;</div><div class="line">  <span class="attr">id</span>: <span class="number">1</span>,</div><div class="line">  <span class="attr">name</span>: <span class="string">'BJ'</span>,</div><div class="line">  <span class="attr">post_count</span>: <span class="number">3</span>,</div><div class="line">  <span class="attr">posts</span>: [</div><div class="line">    &#123; <span class="attr">id</span>: <span class="number">1</span>, <span class="attr">body</span>: <span class="string">'하이'</span>, <span class="attr">comments</span>: [&#123; <span class="attr">id</span>: <span class="number">3</span>, <span class="attr">body</span>: <span class="string">'코멘트3'</span> &#125;] &#125;,</div><div class="line">    &#123; <span class="attr">id</span>: <span class="number">2</span>, <span class="attr">body</span>: <span class="string">'하이2'</span>, <span class="attr">comments</span>: [&#123; <span class="attr">id</span>: <span class="number">1</span>, <span class="attr">body</span>: <span class="string">'코멘트1'</span> &#125;, &#123; <span class="attr">id</span>: <span class="number">2</span>, <span class="attr">body</span>: <span class="string">'코멘트2'</span> &#125;] &#125;,</div><div class="line">    &#123; <span class="attr">id</span>: <span class="number">4</span>, <span class="attr">body</span>: <span class="string">'하이4'</span>, <span class="attr">comments</span>: [&#123; <span class="attr">id</span>: <span class="number">4</span>, <span class="attr">body</span>: <span class="string">'코멘트4'</span> &#125;, &#123; <span class="attr">id</span>: <span class="number">5</span>, <span class="attr">body</span>: <span class="string">'코멘트5'</span> &#125;] &#125;</div><div class="line">  ]</div><div class="line">&#125;;</div><div class="line"></div><div class="line">_.go(</div><div class="line">  _.im.set(user, <span class="string">'posts -&gt; (#4) -&gt; comments -&gt; (#4) -&gt; body'</span>, <span class="string">'코멘트4를 새롭게 수정'</span>),</div><div class="line">  <span class="function"><span class="keyword">function</span>(<span class="params">user2</span>) </span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(</div><div class="line">      user == user2, <span class="comment">// false</span></div><div class="line">      user.posts[<span class="number">2</span>].comments[<span class="number">0</span>].body, <span class="comment">// 코멘트4</span></div><div class="line">      user2.posts[<span class="number">2</span>].comments[<span class="number">0</span>].body, <span class="comment">// 코멘트4를 새롭게 수정</span></div><div class="line"></div><div class="line">      user.posts == user2.posts, <span class="comment">// false</span></div><div class="line">      user.posts[<span class="number">0</span>] == user2.posts[<span class="number">0</span>], <span class="comment">// true 기존 값 공유</span></div><div class="line">      user.posts[<span class="number">1</span>] == user2.posts[<span class="number">1</span>], <span class="comment">// true 기존 값 공유</span></div><div class="line">      user.posts[<span class="number">2</span>] == user2.posts[<span class="number">2</span>], <span class="comment">// false 부모 라인이므로 새로운 값</span></div><div class="line">      user.posts[<span class="number">2</span>].comments[<span class="number">0</span>] == user2.posts[<span class="number">2</span>].comments[<span class="number">0</span>], <span class="comment">// false 새로운 값</span></div><div class="line">      user.posts[<span class="number">2</span>].comments[<span class="number">1</span>] == user2.posts[<span class="number">2</span>].comments[<span class="number">1</span>] <span class="comment">// true 기존 값 공유</span></div><div class="line">    )</div><div class="line">  &#125;);</div><div class="line"></div><div class="line"><span class="keyword">var</span> users = [</div><div class="line">  &#123;</div><div class="line">    <span class="attr">id</span>: <span class="number">1</span>,</div><div class="line">    <span class="attr">name</span>: <span class="string">'BJ'</span>,</div><div class="line">    <span class="attr">post_count</span>: <span class="number">3</span>,</div><div class="line">    <span class="attr">posts</span>: [</div><div class="line">      &#123; <span class="attr">id</span>: <span class="number">1</span>, <span class="attr">body</span>: <span class="string">'하이'</span>, <span class="attr">comments</span>: [&#123; <span class="attr">id</span>: <span class="number">3</span>, <span class="attr">body</span>: <span class="string">'코멘트3'</span> &#125;] &#125;,</div><div class="line">      &#123; <span class="attr">id</span>: <span class="number">2</span>, <span class="attr">body</span>: <span class="string">'하이2'</span>, <span class="attr">comments</span>: [&#123; <span class="attr">id</span>: <span class="number">1</span>, <span class="attr">body</span>: <span class="string">'코멘트1'</span> &#125;, &#123; <span class="attr">id</span>: <span class="number">2</span>, <span class="attr">body</span>: <span class="string">'코멘트2'</span> &#125;] &#125;,</div><div class="line">      &#123; <span class="attr">id</span>: <span class="number">4</span>, <span class="attr">body</span>: <span class="string">'하이4'</span>, <span class="attr">comments</span>: [&#123; <span class="attr">id</span>: <span class="number">4</span>, <span class="attr">body</span>: <span class="string">'코멘트4'</span> &#125;, &#123; <span class="attr">id</span>: <span class="number">5</span>, <span class="attr">body</span>: <span class="string">'코멘트5'</span> &#125;] &#125;</div><div class="line">    ]</div><div class="line">  &#125;,</div><div class="line">  &#123;</div><div class="line">    <span class="attr">id</span>: <span class="number">2</span>,</div><div class="line">    <span class="attr">name</span>: <span class="string">'PJ'</span>,</div><div class="line">    <span class="attr">post_count</span>: <span class="number">1</span>,</div><div class="line">    <span class="attr">posts</span>: [</div><div class="line">      &#123; <span class="attr">id</span>: <span class="number">3</span>, <span class="attr">body</span>: <span class="string">'하이3'</span>, <span class="attr">comments</span>: [] &#125;</div><div class="line">    ]</div><div class="line">  &#125;</div><div class="line">];</div><div class="line"></div><div class="line">_.go(_.im.remove2(users, <span class="string">'(#2)-&gt;posts-&gt;(#3)'</span>),</div><div class="line">  <span class="function"><span class="keyword">function</span>(<span class="params">users2</span>) </span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(users2[<span class="number">1</span>].posts); <span class="comment">// []</span></div><div class="line">    <span class="built_in">console</span>.log(users[<span class="number">1</span>].posts); <span class="comment">// [&#123; id: 3, body: '하이3', comments: [] &#125;]</span></div><div class="line">  &#125;);</div><div class="line"></div><div class="line">_.go(</div><div class="line">  _.im.set(users, <span class="string">'(#1)-&gt;posts'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">posts</span>) </span>&#123;</div><div class="line">    <span class="keyword">return</span> _.pluck(posts, <span class="string">'body'</span>);</div><div class="line">  &#125;),</div><div class="line">  <span class="function"><span class="keyword">function</span>(<span class="params">users2</span>) </span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(users == users2); <span class="comment">// false</span></div><div class="line">    <span class="built_in">console</span>.log(users2[<span class="number">0</span>].posts); <span class="comment">// ["하이", ""하이2", "하이4"]</span></div><div class="line">    <span class="built_in">console</span>.log(users[<span class="number">0</span>].posts[<span class="number">0</span>]); <span class="comment">// &#123;id: 1, body: "하이", comments: Array(1)&#125;</span></div><div class="line">  &#125;);</div></pre></td></tr></table></figure>
+<p>위와 같이 깊은 값을 불변적으로 다룰 수 있습니다. 이때 변경이 되지 않은 모든 값은 새로 만들지 않고 공유하는 영속성을 가지고 있습니다. Immutable이 지원되는 함수들은 다음과 같습니다.</p>
+<ul>
+<li>_.im.set</li>
+<li>_.im.unset</li>
+<li>_.im.push</li>
+<li>_.im.pop</li>
+<li>_.im.shift</li>
+<li>_.im.unshift</li>
+<li>_.im.extend</li>
+<li>_.im.extend2</li>
+<li>_.im.defaults</li>
+<li>_.im.defaults2</li>
+<li>_.im.remove2</li>
+</ul>
+<h2 id="Box"><a href="#Box" class="headerlink" title="Box"></a>Box</h2><p>Box는 모든 Mutable 함수와 Immutable 함수를 OOP 스타일로 다루는 함수입니다. <code>_.box</code> 함수로 값을 모아두는 인스턴스를 만든 후 메서드를 실행하는 식으로 사용합니다.</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> box1 = _.box(&#123;</div><div class="line">  <span class="attr">users</span>: [</div><div class="line">    &#123;</div><div class="line">      <span class="attr">id</span>: <span class="number">1</span>,</div><div class="line">      <span class="attr">name</span>: <span class="string">'BJ'</span>,</div><div class="line">      <span class="attr">posts</span>: [</div><div class="line">        &#123; <span class="attr">id</span>: <span class="number">1</span>, <span class="attr">body</span>: <span class="string">'하이'</span>, <span class="attr">comments</span>: [&#123; <span class="attr">id</span>: <span class="number">3</span>, <span class="attr">body</span>: <span class="string">'코멘트3'</span> &#125;] &#125;,</div><div class="line">        &#123; <span class="attr">id</span>: <span class="number">2</span>, <span class="attr">body</span>: <span class="string">'하이2'</span>, <span class="attr">comments</span>: [&#123; <span class="attr">id</span>: <span class="number">1</span>, <span class="attr">body</span>: <span class="string">'코멘트1'</span> &#125;, &#123; <span class="attr">id</span>: <span class="number">2</span>, <span class="attr">body</span>: <span class="string">'코멘트2'</span> &#125;] &#125;,</div><div class="line">        &#123; <span class="attr">id</span>: <span class="number">4</span>, <span class="attr">body</span>: <span class="string">'하이4'</span>, <span class="attr">comments</span>: [&#123; <span class="attr">id</span>: <span class="number">4</span>, <span class="attr">body</span>: <span class="string">'코멘트4'</span> &#125;, &#123; <span class="attr">id</span>: <span class="number">5</span>, <span class="attr">body</span>: <span class="string">'코멘트5'</span> &#125;] &#125;</div><div class="line">      ]</div><div class="line">    &#125;,</div><div class="line">    &#123;</div><div class="line">      <span class="attr">id</span>: <span class="number">2</span>,</div><div class="line">      <span class="attr">name</span>: <span class="string">'PJ'</span>,</div><div class="line">      <span class="attr">posts</span>: [</div><div class="line">        &#123; <span class="attr">id</span>: <span class="number">3</span>, <span class="attr">body</span>: <span class="string">'하이3'</span>, <span class="attr">comments</span>: [&#123; <span class="attr">id</span>: <span class="number">6</span>, <span class="attr">body</span>: <span class="string">'코멘트6'</span> &#125;] &#125;</div><div class="line">      ]</div><div class="line">    &#125;</div><div class="line">  ]</div><div class="line">&#125;);</div><div class="line"><span class="built_in">console</span>.log( box1.sel(<span class="string">'users-&gt;(#1)-&gt;name'</span>) ); <span class="comment">// BJ</span></div><div class="line"></div><div class="line">box1.set(<span class="string">'users-&gt;(#1)-&gt;name'</span>, <span class="string">'BJ2'</span>);</div><div class="line"><span class="built_in">console</span>.log( box1.sel(<span class="string">'users-&gt;(#1)-&gt;name'</span>) ); <span class="comment">// BJ2</span></div><div class="line"></div><div class="line">_.go(box1.im.set(<span class="string">'users-&gt;(#1)-&gt;name'</span>, <span class="string">'BJ3'</span>),</div><div class="line">  <span class="function"><span class="keyword">function</span>(<span class="params">box2</span>) </span>&#123;</div><div class="line">    <span class="built_in">console</span>.log( box2.sel(<span class="string">'users-&gt;(#1)-&gt;name'</span>) ); <span class="comment">// BJ3</span></div><div class="line">    <span class="built_in">console</span>.log( box1.sel(<span class="string">'users-&gt;(#1)-&gt;name'</span>) ); <span class="comment">// BJ2</span></div><div class="line">  &#125;);</div></pre></td></tr></table></figure>
+<h2 id="Notification"><a href="#Notification" class="headerlink" title="Notification"></a>Notification</h2><ul>
+<li>_.noti.on</li>
+<li>_.noti.off</li>
+<li>_.noti.emit</li>
+<li>_.noti.emitAll</li>
+</ul>
+<p>이벤트를 듣고 이벤트를 울리는 함수세트입니다. 부수 효과를 최소화할 수 있도록 몇 가지 기능을 제공합니다.</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div></pre></td><td class="code"><pre><div class="line">_.noti.on(<span class="string">"event_name1"</span>, <span class="string">"listener_name1"</span>, <span class="function"><span class="keyword">function</span>(<span class="params">a, b, c</span>) </span>&#123;</div><div class="line">  <span class="built_in">console</span>.log(a, b, c);</div><div class="line">&#125;);</div><div class="line">_.noti.on(<span class="string">"event_name1"</span>, <span class="string">"listener_name2"</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">  <span class="built_in">console</span>.log(_.reduce(<span class="built_in">arguments</span>, (a, b) =&gt; a + b));</div><div class="line">&#125;);</div><div class="line">_.noti.on(<span class="string">"event_name1"</span>, <span class="string">"listener_name3"</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">  <span class="built_in">console</span>.log(_.reduce(<span class="built_in">arguments</span>, (a, b) =&gt; a * b));</div><div class="line">&#125;);</div><div class="line"></div><div class="line">_.noti.emitAll(<span class="string">"event_name1"</span>, [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>]);</div><div class="line"><span class="comment">// 1 2 3 4</span></div><div class="line"><span class="comment">// 10</span></div><div class="line"><span class="comment">// 24</span></div><div class="line"></div><div class="line">_.noti.emit(<span class="string">"event_name1"</span>, <span class="string">"listener_name2"</span>, [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>]);</div><div class="line"><span class="comment">// 10</span></div><div class="line"></div><div class="line">_.noti.emit(<span class="string">"event_name1"</span>, [<span class="string">"listener_name2"</span>, <span class="string">"listener_name3"</span>], [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>]);</div><div class="line"><span class="comment">// 10</span></div><div class="line"><span class="comment">// 24</span></div><div class="line"></div><div class="line">_.noti.emit(<span class="string">"event_name1"</span>, <span class="function"><span class="keyword">function</span>(<span class="params">listener_names</span>) </span>&#123;</div><div class="line">  <span class="keyword">return</span> _.initial(listener_names); <span class="comment">// 여기서 리턴 되는 리스너들만 실행</span></div><div class="line">&#125;, [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>]);</div><div class="line"><span class="comment">// 1 2 3</span></div><div class="line"><span class="comment">// 10</span></div><div class="line"></div><div class="line">_.noti.off(<span class="string">'event_name1'</span>, <span class="string">'listener_name2'</span>); <span class="comment">// event_name1 중 `listener_name2`만 삭제</span></div><div class="line">_.noti.emitAll(<span class="string">"event_name1"</span>, [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>]);</div><div class="line"><span class="comment">// 1 2 3</span></div><div class="line"><span class="comment">// 24</span></div><div class="line"></div><div class="line">_.noti.off(<span class="string">'event_name1'</span>); <span class="comment">// event_name1으로 등록된 모든 리스너 삭제</span></div><div class="line">_.noti.emitAll(<span class="string">"event_name1"</span>, [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>]);</div><div class="line"><span class="comment">// 아무일 없음</span></div></pre></td></tr></table></figure>
+<h2 id="Template"><a href="#Template" class="headerlink" title="Template"></a>Template</h2><p>Partial.js는 함수 스타일의 템플릿 엔진으로 함수 실행, 코드 실행, 인자 선언, Jade 스타일 문법 지원, 일반 HTML 문법 지원, 비동기 제어 등의 기능을 지원합니다.</p>
+<ul>
+<li><a href="/partial.js/#함수-스타일의-템플릿-함수">예제와 설명 보기</a></li>
+</ul>
+<h2 id="Laziness"><a href="#Laziness" class="headerlink" title="Laziness"></a>Laziness</h2><p>Partial.js의 <code>L</code>을 이용하면, 파이프라인 내부에서 함수들의 실행 순서를 재배치하여 적절하게 평가를 지연합니다.</p>
+<ul>
+<li><a href="/partial.js/#지연-평가-L">예제와 설명 보기</a></li>
+</ul>
+
+    </div>
+  </div>
+</article>
+
+
+
+  </div>
+</div>
+      </div>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/partial.js/" class="mobile-nav-link">About</a>
+  
+    <a href="/partial.js/docs" class="mobile-nav-link">Docs</a>
+  
+    <a href="https://github.com/marpple/partial.js" class="mobile-nav-link">Github</a>
+  
+    <a href="https://github.com/functionandjs/book" class="mobile-nav-link">Book</a>
+  
+    <a href="https://github.com/marpple/partial.py" class="mobile-nav-link">Partial.py</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/partial.js/fancybox/jquery.fancybox.css">
+  <script src="/partial.js/fancybox/jquery.fancybox.pack.js"></script>
+
+<script src="/partial.js/js/partial.js"></script>
+<script src="/partial.js/js/script.js"></script>
+
+  </div>
+</body>
+</html>
