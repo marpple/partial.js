@@ -1117,7 +1117,7 @@ var strict_or_lazy2 = __(
   L.take(10),
   console.log);
 
-strict_or_lazy1(50);
+strict_or_lazy2(50);
 // [1, 9, 25, 49, 81, 121, 169, 225, 289, 361]
 // 50 번 반복 (염격)
 
