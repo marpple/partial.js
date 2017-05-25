@@ -3,13 +3,35 @@
 [Site](https://marpple.github.io/partial.js) |
 [Docs](https://marpple.github.io/partial.js/docs)
 
-Partial.js는 함수형 자바스크립트를 더 많은 영역에서 사용하고자, 몇 가지 기능을 확장한 함수형 자바스크립트 라이브러리입니다. Partial.js는 부분 적용, 파이프라인, 불변적인 값 다루기, 가변적인 값 다루기, 템플릿 엔진, 비동기 제어, 이벤트 등의 기능을 제공하고 있습니다. 이 문서는 Partial.js의 주요 기능과 스타일을 소개합니다.
+Partial.js는 함수형 자바스크립트를 더 많은 영역에서 사용하고자, 몇 가지 기능을 확장한 라이브러리입니다. Partial.js는 부분 적용, 파이프라인, 불변적인 값 다루기, 가변적인 값 다루기, 템플릿 엔진, 비동기 제어, 이벤트 등의 기능을 제공하고 있습니다. 이 문서는 Partial.js의 주요 기능과 스타일을 소개합니다.
+
+```javascript
+/* Others */
+fetch('/api/products')
+    .then(res => res.json())
+    .then(products => _(products)
+        .filter(p => p.price > p.discounted_price)
+        .minBy(p => p.price - p.discounted_price))
+    .then(_.flow(
+      p => p.price - p.discounted_price,
+      commify,
+      console.log)); // 1,000
+
+/* Partial.js */
+_.go(fetch('/api/products'),
+    _('json'),
+    _.filter(p => p.price > p.discounted_price),
+    _.min(p => p.price - p.discounted_price),
+    p => p.price - p.discounted_price,
+    commify,
+    console.log); // 1,000
+```
 
 ## 설치하기
 
 ### Partial.js 설치
 
-##### 다운로드:
+##### 다운로드는 아래에서:
 
 소스코드는 https://github.com/marpple/partial.js 에서 받을 수 있습니다. Partial.js는 48kb(compressed) 정도로 작지만 아주 쓸모 있습니다.
 
@@ -800,7 +822,7 @@ _.go(
 
 ### escape
 
-`{{}}`과 `{{{}}}`를 사용하여 출력 모드를 변경할 수 있습니다.
+<code>&#123;&#123;&#125;&#125;</code>과 <code>&#123;&#123;&#123;&#125;&#125;&#125;</code>를 사용하여 출력 모드를 변경할 수 있습니다.
 
 ```html
 <script>
@@ -819,7 +841,7 @@ $('body').append(t1('<h3>하이</h3>'));
 
 ### 코드 실행
 
-`{{}}`나 `{{{}}}`안에서는 자바스크립트 코드(표현식 expression)를 작성할 수 있습니다.
+<code>&#123;&#123;&#125;&#125;</code>나 <code>&#123;&#123;&#123;&#125;&#125;&#125;</code>안에서는 자바스크립트 코드(표현식 expression)를 작성할 수 있습니다.
 
 ```html
 <script>
@@ -951,6 +973,161 @@ _.go(null,
     <div class="age">31</div>
   </li>
 </ul>
+```
+
+## 지연 평가 L
+
+Partial.js의 `L`을 이용하면, 파이프라인 내부에서 함수들의 실행 순서를 재배치하여 적절하게 평가를 지연합니다. 사용법은 간단합니다. 지연 평가하고 싶은 함수의 네임스페이스를 `_` 에서 `L`로 바꿔주면 됩니다. `L`을 통해 지연 평가할 영역을 명시적으로 선택할 수 있습니다. `_.go, _.pipe`등의 파이프라인이 `L`로 시작하여 `L`로 끝날 때까지의 함수들을 재배치하여 성능을 개선합니다.
+
+### 비교
+
+##### 엄격한 평가:
+```javascript
+var count = 0; // 루프 카운트
+var list = [1, 2, 3, 4, 5, 6];
+_.go(list,
+  _.map(function(v) {
+    count++;
+    return v * v;
+  }),
+  _.filter(function(v) {
+    count++;
+    return v < 20;
+  }),
+  _.take(2),
+  console.log);
+// [1, 4]
+
+console.log(count);
+// 12 (12번 반복)
+```
+
+##### 지연 평가:
+```javascript
+var count = 0; // 루프 카운트
+var list = [1, 2, 3, 4, 5, 6];
+_.go(list,
+  L.map(function(v) {
+    count++;
+    return v * v;
+  }),
+  L.filter(function(v) {
+    count++;
+    return v < 20;
+  }),
+  L.take(2),
+  console.log);
+// [1, 4]
+
+console.log(count);
+// 4 (4번 반복)
+```
+
+### 지원 함수들
+
+Partial.js의 지연 평가 지원 함수로는 `L.map`, `L.filter`, `L.reject`, `L.find`, `L.some`, `L.every`, `L.take`, `L.loop`가 있습니다. 이 함수들을 순서대로 나열하면 파이프라인이 평가 시점을 변경하여 성능을 개선합니다.
+
+다음과 같은 상황 등에서 동작합니다.
+
+- map->map->map
+- map->take
+- filter->take
+- map->filter->take
+- map->filter->map->map
+- map->filter->map->take
+- map->reject->map->map->filter->map
+- map->some
+- map->every
+- map->find
+- map->filter->some
+- map->filter->every
+- map->filter->find
+- filter->map->some
+- filter->map->every
+- filter->map->reject->find
+
+지연 평가를 시작시키고 유지 시키는 함수는 `map`, `filter`, `reject`이고 끝을 내는 함수는 `take`, `some`, `every`, `find`, `loop` 입니다.
+
+```javascript
+var users = [
+  { id: 1, name: "ID", age: 12 },
+  { id: 2, name: "BJ", age: 28 },
+  { id: 3, name: "HA", age: 13 },
+  { id: 4, name: "PJ", age: 23 },
+  { id: 5, name: "JE", age: 29 },
+  { id: 6, name: "JM", age: 32 },
+  { id: 7, name: "JE", age: 31 },
+  { id: 8, name: "HI", age: 15 },
+  { id: 9, name: "HO", age: 28 },
+  { id: 10, name: "KO", age: 34 }
+];
+
+// 10대 2명까지만 찾아내기
+_.go(users,
+  L.filter(user => user.age < 20),
+  L.take(2),
+  console.log);
+// [{ id: 1, name: "ID", age: 12 }, { id: 3, name: "HA", age: 13 }]
+// 3번만 반복
+
+// 10대 2명까지만 찾아내서 이름 수집하기
+_.go(users,
+  L.filter(user => user.age < 20),
+  L.map(v => v.name),
+  L.take(2),
+  console.log);
+// ["ID", "HA"]
+// 3번만 반복
+```
+
+### L.strict
+
+`L.strict`를 이용하여 지연 평가를 동작시킬 것인가를 동적으로 변경할 수 있습니다.
+
+##### 숫자로 하기:
+```javascript
+var strict_or_lazy1 = __(
+  _.range,
+  L.strict(100),
+  L.map(v => v * v),
+  L.filter(v => !!(v % 2)),
+  L.take(10),
+  console.log);
+
+strict_or_lazy1(50);
+// [1, 9, 25, 49, 81, 121, 169, 225, 289, 361]
+// 50 번 반복 (염격)
+
+strict_or_lazy1(100);
+// [1, 9, 25, 49, 81, 121, 169, 225, 289, 361]
+// 20 번 반복 (지연)
+
+strict_or_lazy1(15);
+// [1, 9, 25, 49, 81, 121, 169]
+// 15 번 반복 (엄격)
+```
+
+##### 함수로 하기:
+```javascript
+var strict_or_lazy2 = __(
+  _.range,
+  L.strict(list => list.length < 100),
+  L.map(v => v * v),
+  L.filter(v => !!(v % 2)),
+  L.take(10),
+  console.log);
+
+strict_or_lazy1(50);
+// [1, 9, 25, 49, 81, 121, 169, 225, 289, 361]
+// 50 번 반복 (염격)
+
+strict_or_lazy2(100);
+// [1, 9, 25, 49, 81, 121, 169, 225, 289, 361]
+// 20 번 반복 (지연)
+
+strict_or_lazy2(15);
+// [1, 9, 25, 49, 81, 121, 169]
+// 15 번 반복 (엄격)
 ```
 
 ## Underscore
