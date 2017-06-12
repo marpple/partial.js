@@ -349,7 +349,7 @@
     if (arguments.length == 1) return _.property(obj);
     return (function v(obj, i, keys, li) {
       return (obj = obj[keys[i]]) ? li == i ? obj : v(obj, i + 1, keys, li) : li == i ? obj : void 0;
-    })(obj || {}, 0, keys = key.split('.'), keys.length - 1);
+    })(obj || {}, 0, keys = _.isString(key) ? key.split('.') : [''], keys.length - 1);
   };
   _.property = function(key) { return _(_.val, _, key); };
   _.propertyOf = function(obj) {
@@ -1060,18 +1060,17 @@
     });
   };
   _.pluck = function f(data, key) {
-    return arguments.length == 1 ? _(f, _, data) : _.map(data, function(v) { return v[key]; });
+    return arguments.length == 1 ? _(f, _, data) : _.map(data, _.property(key));
   };
   _.deep_pluck = _.deepPluck = function f(data, keys) {
     if (arguments.length == 1) return _(f, _, data);
-    keys = keys.split('.');
-    var new_keys;
-    return _.flatten(_.map(_.isArray(data) ? data : [data], function(val) {
-      var current = val;
-      var i = -1;
-      while (++i < keys.length && _.isObject(current) && !_.isArray(current)) current = current[keys[i]];
-      return i < keys.length && _.isObject(current) ? _.deep_pluck(current, new_keys || (new_keys = _.rest(keys, i).join('.'))) : current;
-    }));
+    var keys = _.isString(keys) ? keys.split(/\s*\.\s*/) : [''], len = keys.length, new_keys;
+    return _.reduce(likearr(data) ? data : [data], function(mem, val) {
+      var current = val, i = -1;
+      while (++i < len && _.isObject(current) && !_.isArray(current)) current = current[keys[i]];
+      return mem.concat(i >= len ? (_.isArray(current) ? [current] : current) :
+        (_.isArray(current) ? f(current, new_keys || (new_keys = _.rest(keys, i).join('.'))) : void 0));
+    }, []);
   };
 
   // async not supported
@@ -1801,8 +1800,8 @@
     }
     function make_sel(el) {
       return _.isString(el) ? el : _.isArray(el) ? map(el, function(val) {
-        return (_.isString(val) ? val : (likearr(val) ? val[0] : val).getAttribute('box_sel'));
-      }).join('->') : (likearr(el) ? el[0] : el).getAttribute('box_sel');
+          return (_.isString(val) ? val : (likearr(val) ? val[0] : val).getAttribute('_sel'));
+        }).join('->') : (likearr(el) ? el[0] : el).getAttribute('_sel');
     }
   };
 
