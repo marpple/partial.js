@@ -1,4 +1,4 @@
-// Partial.js 1.0
+// Partial.js 1.0.0
 // Project Lead - Indong Yoo
 // Maintainers - Piljung Park, Hanah Choi
 // Contributors - Joeun Ha, Byeongjin Kim, Jeongik Park
@@ -220,12 +220,12 @@
         return;
       }
       return thenable(res[i]) && (has_promise = true) ? (function(i) {
-        res[i].then(function(v) {
-          res[i] = v;
-          u(i + 1, res, length, has_promise);
-        });
-        return true;
-      })(i) : u(i + 1, res, length, has_promise);
+          res[i].then(function(v) {
+            res[i] = v;
+            u(i + 1, res, length, has_promise);
+          });
+          return true;
+        })(i) : u(i + 1, res, length, has_promise);
     })(0, (res = is_r ? res : [res]), res.length, false);
   }
 
@@ -254,8 +254,8 @@
       if (unpack_promise(v, c)) return;
       is_mr(v) ?
         fs[i++].apply(self, (v[v.length++] = function() { c(to_mr(arguments)); }) && v) : v === __ ?
-        fs[i++].call(self, function() { c(to_mr(arguments)); }) :
-        fs[i++].call(self, v, function() { c(to_mr(arguments)); });
+          fs[i++].call(self, function() { c(to_mr(arguments)); }) :
+          fs[i++].call(self, v, function() { c(to_mr(arguments)); });
     })(v);
     return promise;
   }
@@ -349,7 +349,7 @@
     if (arguments.length == 1) return _.property(obj);
     return (function v(obj, i, keys, li) {
       return (obj = obj[keys[i]]) ? li == i ? obj : v(obj, i + 1, keys, li) : li == i ? obj : void 0;
-    })(obj || {}, 0, keys = key.split('.'), keys.length - 1);
+    })(obj || {}, 0, keys = _.isString(key) ? key.split('.') : [''], keys.length - 1);
   };
   _.property = function(key) { return _(_.val, _, key); };
   _.propertyOf = function(obj) {
@@ -656,7 +656,6 @@
   _.l = _.lambda = lambda; function lambda(str) {
     if (typeof str !== 'string') return str;
     str = str.replace(/\*\*/g, '"');
-    str = str.replace(/\*/g, '"');
     if (!has_lambda) str = str.replace(/`/g, "'");
     if (lambda[str]) return lambda[str];
 
@@ -1061,18 +1060,17 @@
     });
   };
   _.pluck = function f(data, key) {
-    return arguments.length == 1 ? _(f, _, data) : _.map(data, function(v) { return v[key]; });
+    return arguments.length == 1 ? _(f, _, data) : _.map(data, _.property(key));
   };
   _.deep_pluck = _.deepPluck = function f(data, keys) {
     if (arguments.length == 1) return _(f, _, data);
-    keys = keys.split('.');
-    var new_keys;
-    return _.flatten(_.map(_.isArray(data) ? data : [data], function(val) {
-      var current = val;
-      var i = -1;
-      while (++i < keys.length && _.isObject(current) && !_.isArray(current)) current = current[keys[i]];
-      return i < keys.length && _.isObject(current) ? _.deep_pluck(current, new_keys || (new_keys = _.rest(keys, i).join('.'))) : current;
-    }));
+    var keys = _.isString(keys) ? keys.split(/\s*\.\s*/) : [''], len = keys.length, new_keys;
+    return _.reduce(likearr(data) ? data : [data], function(mem, val) {
+      var current = val, i = -1;
+      while (++i < len && _.isObject(current) && !_.isArray(current)) current = current[keys[i]];
+      return mem.concat(i >= len ? (_.isArray(current) ? [current] : current) :
+        (_.isArray(current) ? f(current, new_keys || (new_keys = _.rest(keys, i).join('.'))) : void 0));
+    }, []);
   };
 
   // async not supported
@@ -1305,6 +1303,7 @@
     var di = DataIter2(arguments, 2, this);
     if (di) var data = di[0], iter = di[1];
     else var data = d, iter = i;
+    if (_.is_object(iter)) iter = _.c(iter)
 
     for (var i = 0, l = getLength(data); i < l; i++)
       if (iter(data[i], i, data)) return i;
@@ -1317,6 +1316,7 @@
     var di = DataIter2(arguments, 2, this);
     if (di) var data = di[0], iter = di[1];
     else var data = d, iter = i;
+    if (_.is_object(iter)) iter = _.c(iter)
 
     for(var i = getLength(data) - 1; i >= 0; i--)
       if (iter(data[i], i, data)) return i;
@@ -1548,8 +1548,8 @@
   function line(source, tag_stack) {
     source = source.replace(REG8, "\n").replace(/^[ \t]*/, "");
     return source.match(/^[\[.#\w\-]/) ? source.replace(/^(\[.*\]|\{.*?\}|\S)+ ?/, function(str) {
-      return start_tag(str, tag_stack);
-    }) : source;
+        return start_tag(str, tag_stack);
+      }) : source;
   }
   function push_in(ary, index, data) {
     var rest_ary = ary.splice(index);
@@ -1616,9 +1616,9 @@
     return sel && _.reduce(sel.split(/\s*->\s*/), function(mem, key) {
         if (!mem || !key) return;
         return !key.match(/^\((.+)\)/) ? (!key.match(/\[(.*)\]/) ? mem[key] : function(mem, numbers) {
-          if (numbers.length > 2 || numbers.length < 1 || _.filter(numbers, function(v) { return isNaN(v); }).length) return _.Err('[] sel in [num] or [num ~ num]');
-          var s = numbers[0], e = numbers[1]; return !e ? mem[s<0 ? mem.length+s : s] : slice.call(mem, s<0 ? mem.length+s : s, e<0 ? mem.length+e : e + 1);
-        }(mem, _.map(RegExp.$1.replace(/\s/g, '').split('~'), _.parseInt))) : _.find(mem, _.lambda(RegExp.$1));
+              if (numbers.length > 2 || numbers.length < 1 || _.filter(numbers, function(v) { return isNaN(v); }).length) return _.Err('[] sel in [num] or [num ~ num]');
+              var s = numbers[0], e = numbers[1]; return !e ? mem[s<0 ? mem.length+s : s] : slice.call(mem, s<0 ? mem.length+s : s, e<0 ? mem.length+e : e + 1);
+            }(mem, _.map(RegExp.$1.replace(/\s/g, '').split('~'), _.parseInt))) : _.find(mem, _.lambda(RegExp.$1));
       }, start);
   };
 
@@ -1656,11 +1656,11 @@
       start: im_start,
       selected: _.reduce(sel.split(/\s*->\s*/), function(clone, key) {
         return !key.match(/^\((.+)\)/) ? /*start*/(!key.match(/\[(.*)\]/) ? clone[key] = _.clone(clone[key]) : function(clone, numbers) {
-          if (numbers.length > 2 || numbers.length < 1 || _.filter(numbers, _.pipe(_.identity, isNaN)).length) return _.Err('[] sel in [num] or [num ~ num]');
-          var s = numbers[0], e = numbers[1]; return !e ? clone[s] = _.clone(clone[s<0 ? clone.length+s : s]) : function(clone, oris) {
-            return each(oris, function(ori) { clone[clone.indexOf(ori)] = _.clone(ori); });
-          }(clone, slice.call(clone, s<0 ? clone.length+s : s, e<0 ? clone.length+e : e + 1));
-        }(clone, map(RegExp.$1.replace(/\s/g, '').split('~'), _.pipe(_.identity, parseInt))))/*end*/ :
+              if (numbers.length > 2 || numbers.length < 1 || _.filter(numbers, _.pipe(_.identity, isNaN)).length) return _.Err('[] sel in [num] or [num ~ num]');
+              var s = numbers[0], e = numbers[1]; return !e ? clone[s] = _.clone(clone[s<0 ? clone.length+s : s]) : function(clone, oris) {
+                  return each(oris, function(ori) { clone[clone.indexOf(ori)] = _.clone(ori); });
+                }(clone, slice.call(clone, s<0 ? clone.length+s : s, e<0 ? clone.length+e : e + 1));
+            }(clone, map(RegExp.$1.replace(/\s/g, '').split('~'), _.pipe(_.identity, parseInt))))/*end*/ :
           function(clone, ori) { return clone[clone.indexOf(ori)] = _.clone(ori); } (clone, _.find(clone, _.lambda(RegExp.$1)))
       }, im_start)
     };
@@ -1802,8 +1802,8 @@
     }
     function make_sel(el) {
       return _.isString(el) ? el : _.isArray(el) ? map(el, function(val) {
-        return (_.isString(val) ? val : (likearr(val) ? val[0] : val).getAttribute('box_sel'));
-      }).join('->') : (likearr(el) ? el[0] : el).getAttribute('box_sel');
+            return (_.isString(val) ? val : (likearr(val) ? val[0] : val).getAttribute('_sel'));
+          }).join('->') : (likearr(el) ? el[0] : el).getAttribute('_sel');
     }
   };
 
@@ -1831,7 +1831,7 @@
         if (!_notice) return ;
         if (_.isString(keys)) return emit_loop(emit_args, _notice, keys);
         if (_.isArray(keys)) each(keys, _(emit_loop, emit_args, _notice));
-      }(notices[name], _.isFunction(keys) ? keys() : keys);
+      }(notices[name], _.isFunction(keys) ? keys(_.keys(notices[name])) : keys);
     }
     function emit_loop(emit_args, _notice, key) {
       _set(_notice, key, _.reject(_notice[key], function(func) {
