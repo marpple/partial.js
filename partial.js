@@ -1303,6 +1303,7 @@
     var di = DataIter2(arguments, 2, this);
     if (di) var data = di[0], iter = di[1];
     else var data = d, iter = i;
+    if (_.is_object(iter)) iter = _.c(iter)
 
     for (var i = 0, l = getLength(data); i < l; i++)
       if (iter(data[i], i, data)) return i;
@@ -1315,6 +1316,7 @@
     var di = DataIter2(arguments, 2, this);
     if (di) var data = di[0], iter = di[1];
     else var data = d, iter = i;
+    if (_.is_object(iter)) iter = _.c(iter)
 
     for(var i = getLength(data) - 1; i >= 0; i--)
       if (iter(data[i], i, data)) return i;
