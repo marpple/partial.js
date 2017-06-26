@@ -9,28 +9,35 @@
   //    }
   // });
 
+
+  if (/docs/.test(window.location.href))
+    _.go($('h3'),
+      _.take(3), _.rest, _.to_mr,
+      _.spread(
+        function(v) { v.id = '_' },
+        function(v) { v.id = '___' }));
+
+  var tags = _.map($('#sidebar a'), _.v('hash'));
+  var idx = 0, len = tags.length - 1, move_href = function(href) { window.location.href = href; };
+
+  _.go($(document),
+    _('on', 'keydown', function(e) {
+      if (window.location.hash) idx = _.index_of(tags, window.location.hash);
+      if (e.which == 74) { move_href(tags[idx < len ? ++idx : len]) }
+      if (e.which == 75) { move_href(tags[idx > 0 ? --idx : 0]) }
+    }));
+
+  // Page Position hold
   var $sidebar = $('#sidebar'), $main = $('#main');
-
-  $main.on('scroll', function() {
-    sessionStorage.mainState = $main.scrollTop();
-  });
-
-  $sidebar.on('scroll', function() {
-    sessionStorage.sidebarState = $sidebar.scrollTop();
-  });
+  $main.on('scroll', function() { sessionStorage.mainState = $main.scrollTop(); });
+  $sidebar.on('scroll', function() { sessionStorage.sidebarState = $sidebar.scrollTop(); });
 
   window.addEventListener('DOMContentLoaded', function() {
     sessionStorage.currentLocation = window.location.href;
-
     if (sessionStorage.prevLocation == sessionStorage.currentLocation) {
-      if (sessionStorage.mainState != "undefined") {
-        $main.scrollTop(sessionStorage.mainState);
-      }
-      if (sessionStorage.sidebarState != "undefined") {
-        $sidebar.scrollTop(sessionStorage.sidebarState);
-      }
+      if (sessionStorage.mainState != "undefined") $main.scrollTop(sessionStorage.mainState);
+      if (sessionStorage.sidebarState != "undefined") $sidebar.scrollTop(sessionStorage.sidebarState);
     }
-
     sessionStorage.mainState = sessionStorage.sidebarState = undefined;
     sessionStorage.prevLocation = sessionStorage.currentLocation;
   });

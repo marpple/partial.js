@@ -11,7 +11,7 @@
 <meta property="og:url" content="https://marpple.github.io/partial.js/docs/index.html">
 <meta property="og:site_name" content="Partial.js">
 <meta property="og:description" content="Partial_.partial_.partial을 통해 인자를 부분 적용해둔 함수를 만들 수 있습니다.12345678function add(a, b) &amp;#123;  return a + b;&amp;#125;var add10 = _.partial(add, 10);var result = add10(5);console.log(result);// 15 __ == _.par">
-<meta property="og:updated_time" content="2017-05-31T08:58:43.000Z">
+<meta property="og:updated_time" content="2017-06-26T08:30:03.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Partial.js Documents Page">
 <meta name="twitter:description" content="Partial_.partial_.partial을 통해 인자를 부분 적용해둔 함수를 만들 수 있습니다.12345678function add(a, b) &amp;#123;  return a + b;&amp;#125;var add10 = _.partial(add, 10);var result = add10(5);console.log(result);// 15 __ == _.par">
@@ -78,7 +78,7 @@ ga('send', 'pageview');
   <div class="widget-wrap" id="docs">
     
     <div class="widget-title">
-      <a href="#partial">partial</a>
+      <a href="#Partial">Partial</a>
     </div>
     <div class="widget">
       <ul>
@@ -88,22 +88,18 @@ ga('send', 'pageview');
         </li>
         
         <li>
-          <a href="#">_</a>
+          <a href="#_">_</a>
         </li>
         
         <li>
-          <a href="#">___</a>
-        </li>
-        
-        <li>
-          <a href="#method">method</a>
+          <a href="#___">___</a>
         </li>
         
       </ul>
     </div>
     
     <div class="widget-title">
-      <a href="#pipe">pipe</a>
+      <a href="#Pipe">Pipe</a>
     </div>
     <div class="widget">
       <ul>
@@ -128,7 +124,7 @@ ga('send', 'pageview');
     </div>
     
     <div class="widget-title">
-      <a href="#collections">collections</a>
+      <a href="#Collections">Collections</a>
     </div>
     <div class="widget">
       <ul>
@@ -237,7 +233,7 @@ ga('send', 'pageview');
     </div>
     
     <div class="widget-title">
-      <a href="#array">array</a>
+      <a href="#Array">Array</a>
     </div>
     <div class="widget">
       <ul>
@@ -334,7 +330,7 @@ ga('send', 'pageview');
     </div>
     
     <div class="widget-title">
-      <a href="#object">object</a>
+      <a href="#Object">Object</a>
     </div>
     <div class="widget">
       <ul>
@@ -625,7 +621,7 @@ ga('send', 'pageview');
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">sub</span>(<span class="params">a, b</span>) </span>&#123;</div><div class="line">  <span class="keyword">return</span> a - b;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">var</span> sub10 = _.partial(sub, _, <span class="number">10</span>);</div><div class="line"><span class="keyword">var</span> result = sub10(<span class="number">20</span>);</div><div class="line"><span class="built_in">console</span>.log(result);</div><div class="line"><span class="comment">// 10</span></div></pre></td></tr></table></figure>
 <h3 id="-1"><a href="#-1" class="headerlink" title="___"></a>___</h3><p>부분 적용의 새로운 구분자인 <code>___</code>를 활용하면 중간 지점에 인자가 가변적으로 적용되도록 비워둘 수 있습니다. 이것을 이용해 맨 오른쪽 인자나 맨 오른쪽에서 두 번째에만 인자를 적용해두는 것도 가능합니다. <code>___</code>를 기준으로 왼편의 인자들을 왼쪽부터 적용하고 오른편의 인자들을 오른쪽부터 적용할 준비를 해둔 함수를 리턴합니다. 부분 적용된 함수를 나중에 실행하면 그때 받은 인자들로 왼쪽과 오른쪽을 먼저 채운 후, 남은 인자들로 가운데 <code>___</code> 자리를 채웁니다.</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> pc = _.partial(<span class="built_in">console</span>.log, ___, <span class="number">2</span>, <span class="number">3</span>);</div><div class="line">pc(<span class="number">1</span>);</div><div class="line"><span class="comment">// 결과: 1 2 3</span></div><div class="line"><span class="comment">// ___ 자리에 1이 들어가고 2, 3은 맨 오른쪽에 들어갑니다.</span></div><div class="line">pc(<span class="number">1</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>);</div><div class="line"><span class="comment">// 결과: 1 4 5 6 2 3</span></div><div class="line"><span class="comment">// ___ 자리에 1, 4, 5, 6이 들어가고 2, 3은 맨 오른쪽에 들어갑니다.</span></div><div class="line"></div><div class="line"><span class="keyword">var</span> pc = _.partial(<span class="built_in">console</span>.log, _, <span class="number">2</span>, ___, <span class="number">6</span>);</div><div class="line">pc(<span class="number">1</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>);</div><div class="line"><span class="comment">// 결과: 1 2 3 4 5 6</span></div><div class="line"><span class="comment">// _에 1이 들어가고 2를 넘어가고 ___ 자리에 3, 4, 5가 채워지고 6이 맨 오른쪽에 들어갑니다.</span></div><div class="line">pc(<span class="number">1</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">7</span>, <span class="number">8</span>, <span class="number">9</span>);</div><div class="line"><span class="comment">// 결과: 1 2 3 4 5 7 8 9 6</span></div><div class="line"><span class="comment">// _에 1이 들어가고 2를 넘어가고 ___ 자리에 3, 4, 5, 7, 8, 9가 채워지고 6이 맨 오른쪽에 들어갑니다.</span></div><div class="line"></div><div class="line"><span class="keyword">var</span> pc = _.partial(<span class="built_in">console</span>.log, _, <span class="number">2</span>, ___, <span class="number">5</span>, _, <span class="number">7</span>);</div><div class="line">pc(<span class="number">1</span>);</div><div class="line"><span class="comment">// 결과: 1 2 5 undefined 7</span></div><div class="line"><span class="comment">// _ 자리에 1이 들어가고 2와 5사이는 유동적이므로 모이고 5가 들어간 후 _가 undefined로 대체 되고 7이 들어갑니다.</span></div><div class="line">pc(<span class="number">1</span>, <span class="number">3</span>, <span class="number">4</span>);</div><div class="line"><span class="comment">// 결과: 1 2 3 5 4 7</span></div><div class="line"><span class="comment">// _ 자리에 1이 들어가고 2와 5사이에 3이 들어가고 _ 를 4로 채운 후 7이 들어갑니다.</span></div><div class="line"><span class="comment">// 왼쪽의 _ 들이 우선 순위가 제일 높고 ___ 보다 오른쪽의 _ 들이 우선순위가 높습니다.</span></div><div class="line">pc(<span class="number">1</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">6</span>, <span class="number">8</span>);</div><div class="line"><span class="comment">// 결과: 1 2 3 4 6 5 8 7</span></div><div class="line"><span class="comment">// _ 자리에 1이 들어가고 2와 5사이에 3, 4, 6이 들어가고 _ 를 8로 채운 후 7이 들어갑니다.</span></div></pre></td></tr></table></figure>
-<h2 id="Pipe"><a href="#Pipe" class="headerlink" title="Pipe"></a>Pipe</h2><h3 id="-2"><a href="#-2" class="headerlink" title="__"></a>__</h3><h3 id="pipe"><a href="#pipe" class="headerlink" title="_.pipe"></a>_.pipe</h3><p><code>_.pipe</code>는 함수들을 모아서 하나의 함수로 합성하는 함수입니다. 왼쪽에서 오른쪽으로 실행됩니다.</p>
+<h2 id="Pipe"><a href="#Pipe" class="headerlink" title="Pipe"></a>Pipe</h2><h3 id="pipe"><a href="#pipe" class="headerlink" title="_.pipe"></a>_.pipe</h3><p><code>_.pipe</code>는 함수들을 모아서 하나의 함수로 합성하는 함수입니다. 왼쪽에서 오른쪽으로 실행됩니다.</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">sum</span>(<span class="params">a, b</span>) </span>&#123;</div><div class="line">  <span class="keyword">return</span> a + b;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">square</span>(<span class="params">a</span>) </span>&#123;</div><div class="line">  <span class="keyword">return</span> a * a;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">var</span> f1 = _.pipe(sum, square, square);</div><div class="line"><span class="keyword">var</span> result = f1(<span class="number">1</span>, <span class="number">2</span>)</div><div class="line"><span class="built_in">console</span>.log(result);</div><div class="line"><span class="comment">// 81</span></div></pre></td></tr></table></figure>
 <h3 id="go"><a href="#go" class="headerlink" title="_.go"></a>_.go</h3><p><code>_.go</code>는 파이프라인의 즉시 실행 버전입니다. 첫 번째 인자로 받은 값을 두 번째 인자로 받은 함수에게 넘겨주고 두 번째 인자로 받은 함수의 결과는 세 번째 함수에게 넘겨주는 것을 반복하다가 마지막 함수의 결과를 리턴해줍니다.</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">_.go(<span class="number">10</span>, <span class="comment">// 첫 번째 함수에서 사용할 인자</span></div><div class="line">  <span class="function"><span class="keyword">function</span>(<span class="params">a</span>) </span>&#123; <span class="keyword">return</span> a * <span class="number">10</span> &#125;, <span class="comment">// 연속 실행할 함수 1</span></div><div class="line">  <span class="comment">// 100</span></div><div class="line">  <span class="function"><span class="keyword">function</span>(<span class="params">a</span>) </span>&#123; <span class="keyword">return</span> a - <span class="number">50</span> &#125;, <span class="comment">// 연속 실행할 함수 2</span></div><div class="line">  <span class="comment">// 50</span></div><div class="line">  <span class="function"><span class="keyword">function</span>(<span class="params">a</span>) </span>&#123; <span class="keyword">return</span> a + <span class="number">10</span> &#125;); <span class="comment">// 연속 실행할 함수 3</span></div><div class="line">  <span class="comment">// 60</span></div></pre></td></tr></table></figure>
