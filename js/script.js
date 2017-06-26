@@ -10,6 +10,7 @@
   // });
 
 
+  // Keyboard Control
   if (/docs/.test(window.location.href))
     _.go($('h3'),
       _.take(3), _.rest, _.to_mr,
@@ -22,9 +23,10 @@
 
   _.go($(document),
     _('on', 'keydown', function(e) {
+      var keyCode = e.keyCode || e.which;
       if (window.location.hash) idx = _.index_of(tags, window.location.hash);
-      if (e.which == 74) { move_href(tags[idx < len ? ++idx : len]) }
-      if (e.which == 75) { move_href(tags[idx > 0 ? --idx : 0]) }
+      if (keyCode == 74) { return move_href(tags[idx < len ? ++idx : len]) }
+      if (keyCode == 75) { return move_href(tags[idx > 0 ? --idx : 0]) }
     }));
 
   // Page Position hold
