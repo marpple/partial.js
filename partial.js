@@ -1060,7 +1060,7 @@
     });
   };
   _.pluck = function f(data, key) {
-    return arguments.length == 1 ? _(f, _, data) : _.map(data, _.property(key));
+    return arguments.length == 1 ? _(f, _, data) : _.map(data, _.isNumber(key) ? function(v) { return v[key]; } : _.property(key));
   };
   _.deep_pluck = _.deepPluck = function f(data, keys) {
     if (arguments.length == 1) return _(f, _, data);
