@@ -1,4 +1,4 @@
-// Partial.js 1.0.0
+// Partial.js 1.0.2
 // Project Lead - Indong Yoo
 // Maintainers - Piljung Park, Hanah Choi
 // Contributors - Joeun Ha, Byeongjin Kim, Jeongik Park
@@ -69,11 +69,11 @@
         do lazys.push(f);
         while ((f = fs[++i]) && f._p_lzne);
         if (f._p_lze) lazys.push(f); else f = fs[--i];
-        v = f._p_go_lazy(lazys, v && v._mr ? v[0] : v);
+        v = f._p_go_lazy(lazys, v && v.__mr ? v[0] : v);
       } else if (f == __) v = __;
       else if (f._p_cb) return go_async(null, v, fs, i);
       else if (!v) v = f(v);
-      else if (v._mr) {
+      else if (v.__mr) {
         if (thenable_mr(v)) return go_async(null, v, fs, i);
         if (v._stop) return v.length == 1 ? v[0] : v._stop = false || v;
         v = f.apply(undefined, v);
@@ -84,7 +84,7 @@
   };
   _.mr = mr, _.to_mr = to_mr, _.is_mr = is_mr, _.mr_cat = mr_cat;
   _.stop = function() {
-    arguments._stop = arguments._mr = true;
+    arguments._stop = arguments.__mr = true;
     return arguments;
   };
   function goapply(self, v, fs, start) {
@@ -95,11 +95,11 @@
         do lazys.push(f);
         while ((f = fs[++i]) && f._p_lzne);
         if (f._p_lze) lazys.push(f); else f = fs[--i];
-        v = f._p_go_lazy(lazys, v && v._mr ? v[0] : v);
+        v = f._p_go_lazy(lazys, v && v.__mr ? v[0] : v);
       } else if (f == __) v = __;
       else if (f._p_cb) return go_async(self, v, fs, i-1);
       else if (!v) v = f.call(self, v);
-      else if (v._mr) {
+      else if (v.__mr) {
         if (thenable_mr(v)) return go_async(self, v, fs, i-1);
         if (v._stop) return v.length == 1 ? v[0] : v._stop = false || v;
         v = f.apply(self, v);
@@ -108,7 +108,7 @@
     }
     return v;
   }
-  function mr() { return arguments._mr = true, arguments; }
+  function mr() { return arguments.__mr = true, arguments; }
   function mr_cat() {
     var args = [];
     for (var i = 0, len = arguments.length; i < len; i++) {
@@ -116,15 +116,15 @@
       if (is_mr(arg)) for (var j = 0, len2 = arg.length; j < len2; j++) args.push(arg[j]);
       else args.push(arg);
     }
-    return args._mr = true, args;
+    return args.__mr = true, args;
   }
-  function to_mr(args) { return args._mr = true, args; }
-  function is_mr(v) { return v && v._mr; }
+  function to_mr(args) { return args.__mr = true, args; }
+  function is_mr(v) { return v && v.__mr; }
 
   _.pipe = __; function __(_fs) {
     var fs = Array.isArray(_fs) ? _fs : arguments;
     return function() {
-      arguments._mr = true;
+      arguments.__mr = true;
       return this == window || this == _ ? _.go(arguments, fs) : goapply(this, arguments, fs);
     }
   }
@@ -195,7 +195,7 @@
   _.branch = function() {
     var fs = arguments;
     return function() {
-      arguments._mr = true;
+      arguments.__mr = true;
       goapply(this, arguments, fs);
       return arguments;
     };
@@ -247,7 +247,7 @@
           do lazys.push(fs[i]);
           while ((fs[++i]) && fs[i]._p_lzne);
           if (fs[i]._p_lze) lazys.push(fs[i]); else i--;
-          v = fs[i]._p_go_lazy(lazys, v && v._mr ? v[0] : v);
+          v = fs[i]._p_go_lazy(lazys, v && v.__mr ? v[0] : v);
         } else if (!fs[i]._p_cb) v = is_mr(v) ? fs[i++].apply(self, v) :
           v === __ ? fs[i++].call(self) : fs[i++].call(self, v);
       } while (i == args_len || i < args_len && !fs[i]._p_cb);
@@ -324,7 +324,7 @@
   _.args2 = function() { return arguments[2]; };
   _.args3 = function() { return arguments[3]; };
   _.args4 = function() { return arguments[4]; };
-  _.a = _.c = _.always = _.constant = function(v) { return function() { return v; }; };
+  _.a = _.c = _.always = _.constant = function(v) { return (arguments.length == 0) ? function() { return __; } : function() { return v; }; };
   _.true = _.constant(true);
   _.false = _.constant(false);
   _.null = _.constant(null);
@@ -388,7 +388,7 @@
     return values;
   };
   _.toArray = _.to_array = function(obj) {
-    return likearr(obj) ? slice.call(obj) : _.values(obj);
+    return _.isArray(obj) ? obj : likearr(obj) ? slice.call(obj) : _.values(obj);
   };
   _.keyval = _.obj = _.object = function f(list, vals) {
     if (_.isString(list)) {
@@ -656,6 +656,7 @@
   _.l = _.lambda = lambda; function lambda(str) {
     if (typeof str !== 'string') return str;
     str = str.replace(/\*\*/g, '"');
+    str = str.replace(/\*/g, '"');
     if (!has_lambda) str = str.replace(/`/g, "'");
     if (lambda[str]) return lambda[str];
 
@@ -669,16 +670,16 @@
       ex_par[0].replace(/(?:\b[A-Z]|\.[a-zA-Z_$])[a-zA-Z_$\d]*|[a-zA-Z_$][a-zA-Z_$\d]*\s*:|this|arguments|'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"/g, '').match(/([a-z_$][a-z_$\d]*)/gi) || [],
       'return (' + ex_par[1] + ')');
   }
-  function bexdf(setter, obj1/* objs... */) {
-    for (var i = 2, len = arguments.length; i < len; i++)
-      if (obj1 && arguments[i]) setter(obj1, arguments[i]);
+  function bexdf(setter, args) {
+    for (var i = 1, len = args.length, obj1 = args[0]; i < len; i++)
+      if (obj1 && args[i]) setter(obj1, args[i]);
     if (obj1) delete obj1._memoize;
     return obj1;
   }
   function setter(r, s) { for (var key in s) r[key] = s[key]; }
   function dsetter(r, s) { for (var key in s) if (!_.has(r, key)) r[key] = s[key]; }
-  _.extend = function() { return bexdf.apply(null, [setter].concat(_.toArray(arguments))); };
-  _.defaults = function() { return bexdf.apply(null, [dsetter].concat(_.toArray(arguments))); };
+  _.extend = function() { return bexdf(setter, arguments); };
+  _.defaults = function() { return bexdf(dsetter, arguments); };
 
   function flat(new_arr, arr, noDeep, start) {
     each(arr, function(v) {
@@ -732,14 +733,14 @@
     if (keys) {
       if (!keys.length) return data;
       var mp = iter(data[keys[0]], keys[0], data);
-      if (mp && (mp._mr ? thenable_mr(mp) : mp.then && _.isFunction(mp.then)))
+      if (mp && (mp.__mr ? thenable_mr(mp) : mp.then && _.isFunction(mp.then)))
         return _each_async(data, iter, keys, mp, 1);
       for (var i = 1, l = keys.length; i < l; i++)
         iter(data[keys[i]], keys[i], data);
     } else {
       if (!data.length) return data;
       var mp = iter(data[0], 0, data);
-      if (mp && (mp._mr ? thenable_mr(mp) : mp.then && _.isFunction(mp.then)))
+      if (mp && (mp.__mr ? thenable_mr(mp) : mp.then && _.isFunction(mp.then)))
         return _each_async(data, iter, null, mp, 1);
       for (var i = 1, l = data.length; i < l; i++)
         iter(data[i], i, data);
@@ -767,7 +768,7 @@
     if (keys) {
       if (!keys.length) return res;
       var mp = iter(data[keys[0]], keys[0], data);
-      if (mp && (mp._mr ? thenable_mr(mp) : mp.then && _.isFunction(mp.then)))
+      if (mp && (mp.__mr ? thenable_mr(mp) : mp.then && _.isFunction(mp.then)))
         return _map_async(data, iter, keys, mp, 1, res);
       res[0] = mp;
       for (var i = 1, l = res.length = keys.length; i < l; i++)
@@ -775,7 +776,7 @@
     } else {
       if (!data.length) return res;
       var mp = iter(data[0], 0, data);
-      if (mp && (mp._mr ? thenable_mr(mp) : mp.then && _.isFunction(mp.then)))
+      if (mp && (mp.__mr ? thenable_mr(mp) : mp.then && _.isFunction(mp.then)))
         return _map_async(data, iter, null, mp, 1, res);
       res[0] = mp;
       for (var i = 1, l = res.length = data.length; i < l; i++)
@@ -786,6 +787,23 @@
   _.if_arr_map = function f(v, iter) {
     if (arguments.length == 1) return _(f, _, v);
     return _.is_array(v) ? _.map(v, iter) : iter(v);
+  };
+
+  _.sum = function f(data) {
+    if (_.is_function(data)) return _(f, ___, data);
+    if (!_.is_function(arguments[arguments.length-1])) arguments[arguments.length++] = _.idtt;
+    return _.go(_.to_mr(arguments),
+      _.map,
+      function(list) {
+        if (!list.length) return;
+        var i = 0, result = list[0], len = list.length;
+        while (++i < len) result += list[i];
+        return result;
+      });
+  };
+
+  _.join = function f(arr, sep) {
+    return (arguments.length == 0 || typeof arr == "string") ? _(f, _, arr) : _.toArray(arr).join(sep);
   };
 
   var _reduce_async = function f(data, iter, keys, mp, i) {
@@ -799,7 +817,7 @@
     if (arguments.length == 2 && _.isFunction(d)) return _(f, ___, d, _.isFunction(i) ? i : _(_.clone, i));
     if (arguments.length < 4) var data = d, iter = i, memo = m;
     else var data = arguments[arguments.length-3], iter = Iter(arguments, true), memo = arguments[arguments.length-1];
-    memo = _.isFunction(memo) ? memo.call(this) : memo;
+    memo = _.isFunction(memo) ? memo.call(this, d) : memo;
 
     if (this != _ && this != G) iter = _.bind(iter, this);
     var keys = likearr(data) ? null : _keys(data);
@@ -812,7 +830,7 @@
       var l = keys.length;
       if (!l || l==i) return memo;
       memo = iter(memo, data[keys[i]], keys[i++], data);
-      if (memo && (memo._mr ? thenable_mr(memo) : memo.then && _.isFunction(memo.then)))
+      if (memo && (memo.__mr ? thenable_mr(memo) : memo.then && _.isFunction(memo.then)))
         return _reduce_async(data, iter, keys, memo, i);
       for (; i < l; i++) memo = iter(memo, data[keys[i]], keys[i], data);
     } else {
@@ -820,7 +838,7 @@
       var l = data.length;
       if (!l || l==i) return memo;
       memo = iter(memo, data[i], i++, data);
-      if (memo && (memo._mr ? thenable_mr(memo) : memo.then && _.isFunction(memo.then)))
+      if (memo && (memo.__mr ? thenable_mr(memo) : memo.then && _.isFunction(memo.then)))
         return _reduce_async(data, iter, null, memo, i);
       for (; i < l; i++) memo = iter(memo, data[i], i, data);
     }
@@ -853,7 +871,7 @@
       memo = arguments.length > 2 ? memo : data[keys[i--]];
       if (!keys.length || i==-1) return memo;
       memo = iter(memo, data[keys[i]], keys[i--], data);
-      if (memo && (memo._mr ? thenable_mr(memo) : memo.then && _.isFunction(memo.then)))
+      if (memo && (memo.__mr ? thenable_mr(memo) : memo.then && _.isFunction(memo.then)))
         return _reduce_async(data, iter, keys, memo, i);
       for (; i > -1; i--) memo = iter(memo, data[keys[i]], keys[i], data);
     } else {
@@ -861,7 +879,7 @@
       memo = arguments.length > 2 ? memo : data[i--];
       if (!data.length || i==-1) return memo;
       memo = iter(memo, data[i], i--, data);
-      if (memo && (memo._mr ? thenable_mr(memo) : memo.then && _.isFunction(memo.then)))
+      if (memo && (memo.__mr ? thenable_mr(memo) : memo.then && _.isFunction(memo.then)))
         return _reduce_async(data, iter, null, memo, i);
       for (; i > -1; i--) memo = iter(memo, data[i], i, data);
     }
@@ -910,7 +928,7 @@
     if (keys) {
       if (!keys.length) return;
       var mp = iter(data[keys[0]], keys[0], data);
-      if (mp && (mp._mr ? thenable_mr(mp) : mp.then && _.isFunction(mp.then)))
+      if (mp && (mp.__mr ? thenable_mr(mp) : mp.then && _.isFunction(mp.then)))
         return _find_async(data, iter, keys, mp, 1);
       else if (mp) return data[keys[0]];
       for (var i = 1, l = keys.length; i < l; i++)
@@ -918,7 +936,7 @@
     } else {
       if (!data.length) return;
       var mp = iter(data[0], 0, data);
-      if (mp && (mp._mr ? thenable_mr(mp) : mp.then && _.isFunction(mp.then)))
+      if (mp && (mp.__mr ? thenable_mr(mp) : mp.then && _.isFunction(mp.then)))
         return _find_async(data, iter, null, mp, 1);
       else if (mp) return data[0];
       for (var i = 1, l = data.length; i < l; i++)
@@ -945,7 +963,7 @@
     if (keys) {
       if (!keys.length) return data;
       var mp = iter(data[keys[0]], keys[0], data);
-      if (mp && (mp._mr ? thenable_mr(mp) : mp.then && _.isFunction(mp.then)))
+      if (mp && (mp.__mr ? thenable_mr(mp) : mp.then && _.isFunction(mp.then)))
         return _filter_async(data, iter, keys, mp, 1, res);
       else if (mp) res.push(data[keys[0]]);
       for (var i = 1, l = keys.length; i < l; i++)
@@ -953,7 +971,7 @@
     } else {
       if (!data.length) return data;
       var mp = iter(data[0], 0, data);
-      if (mp && (mp._mr ? thenable_mr(mp) : mp.then && _.isFunction(mp.then)))
+      if (mp && (mp.__mr ? thenable_mr(mp) : mp.then && _.isFunction(mp.then)))
         return _filter_async(data, iter, null, mp, 1, res);
       else if (mp) res.push(data[0]);
       for (var i = 1, l = data.length; i < l; i++)
@@ -983,7 +1001,7 @@
     if (keys) {
       if (!keys.length) return data;
       var mp = iter(data[keys[0]], keys[0], data);
-      if (mp && (mp._mr ? thenable_mr(mp) : mp.then && _.isFunction(mp.then)))
+      if (mp && (mp.__mr ? thenable_mr(mp) : mp.then && _.isFunction(mp.then)))
         return _reject_async(data, iter, keys, mp, 1, res);
       else if (!mp) res.push(data[keys[0]]);
       for (var i = 1, l = keys.length; i < l; i++)
@@ -991,7 +1009,7 @@
     } else {
       if (!data.length) return data;
       var mp = iter(data[0], 0, data);
-      if (mp && (mp._mr ? thenable_mr(mp) : mp.then && _.isFunction(mp.then)))
+      if (mp && (mp.__mr ? thenable_mr(mp) : mp.then && _.isFunction(mp.then)))
         return _reject_async(data, iter, null, mp, 1, res);
       else if (!mp) res.push(data[0]);
       for (var i = 1, l = data.length; i < l; i++)
@@ -1019,7 +1037,7 @@
       if (ks) {
         if (!ks.length) return false;
         var mp = iter(data[ks[0]], ks[0], data);
-        if (mp && (mp._mr ? thenable_mr(mp) : mp.then && _.isFunction(mp.then)))
+        if (mp && (mp.__mr ? thenable_mr(mp) : mp.then && _.isFunction(mp.then)))
           return _every_or_some_async(data, iter, ks, mp, 1, is_some);
         else if (is_some ? mp : !mp) return is_some;
         for (var i = 1, l = ks.length; i < l; i++)
@@ -1028,7 +1046,7 @@
       } else {
         if (!data.length) return false;
         var mp = iter(data[0], 0, data);
-        if (mp && (mp._mr ? thenable_mr(mp) : mp.then && _.isFunction(mp.then)))
+        if (mp && (mp.__mr ? thenable_mr(mp) : mp.then && _.isFunction(mp.then)))
           return _every_or_some_async(data, iter, null, mp, 1, is_some);
         else if (is_some ? mp : !mp) return is_some;
         for (var i = 1, l = data.length; i < l; i++)
@@ -1272,6 +1290,11 @@
     for (var i = 0, l = getLength(data); i < l; i++)
       if (tmp.indexOf(cmp[i]) == -1) { tmp.push(cmp[i]); res.push(data[i]); }
     return res;
+  };
+  
+  _.append = function(arr, item) {
+    for (var i = 1, l = arguments.length; i < l; i++) arr[arr.length++] = arguments[i];
+    return arr;
   };
 
   function getLength(list) { return list == null ? void 0 : list.length; }
@@ -1802,8 +1825,8 @@
     }
     function make_sel(el) {
       return _.isString(el) ? el : _.isArray(el) ? map(el, function(val) {
-          return (_.isString(val) ? val : (likearr(val) ? val[0] : val).getAttribute('_sel'));
-        }).join('->') : (likearr(el) ? el[0] : el).getAttribute('_sel');
+        return (_.isString(val) ? val : (likearr(val) ? val[0] : val).getAttribute('_sel'));
+      }).join('->') : (likearr(el) ? el[0] : el).getAttribute('_sel');
     }
   };
 
