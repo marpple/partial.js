@@ -1,4 +1,4 @@
-// Partial.js 1.0.2
+// Partial.js 1.0.3
 // Project Lead - Indong Yoo
 // Maintainers - Piljung Park, Hanah Choi
 // Contributors - Joeun Ha, Byeongjin Kim, Jeongik Park
@@ -220,10 +220,11 @@
         return;
       }
       return thenable(res[i]) && (has_promise = true) ? (function(i) {
-        res[i].then(function(v) {
+        function _idtt(v) {
           res[i] = v;
           u(i + 1, res, length, has_promise);
-        });
+        }
+        res[i].then(_idtt).catch(_idtt);
         return true;
       })(i) : u(i + 1, res, length, has_promise);
     })(0, (res = is_r ? res : [res]), res.length, false);
@@ -307,6 +308,29 @@
       return _.go.call(this, store,
         _(_.find, _, function(fnset) { return fnset[0].apply(context, args); }),
         function(fnset) { return fnset ? fnset[1].apply(context, args) : void 0; });
+    }
+  };
+
+  _.try = function(try_func, catch_func) {
+    catch_func = catch_func || _.mr;
+    return function() {
+      var args = arguments;
+      var self = this;
+      try { var v = try_func.apply(this, arguments); }
+      catch(e) { return catch_func.apply(self, [e].concat(_.toArray(args))); }
+      return thenable(v) || thenable_mr(v) ? _.go(v,
+        _.has_error(function(e) {
+            return catch_func.apply(self, [e].concat(_.toArray(args)));
+          },
+          _.mr)) : v;
+    }
+  };
+
+  _.has_error = function(err_func, func) {
+    return function() {
+      return (_.find(arguments, function(arg) {
+        return arg && arg instanceof Error;
+      }) ? err_func : func).apply(this, arguments);
     }
   };
 
@@ -795,7 +819,7 @@
     return _.go(_.to_mr(arguments),
       _.map,
       function(list) {
-        if (!list.length) return;
+        if (!list.length) return list;
         var i = 0, result = list[0], len = list.length;
         while (++i < len) result += list[i];
         return result;
@@ -1291,7 +1315,7 @@
       if (tmp.indexOf(cmp[i]) == -1) { tmp.push(cmp[i]); res.push(data[i]); }
     return res;
   };
-  
+
   _.append = function(arr, item) {
     for (var i = 1, l = arguments.length; i < l; i++) arr[arr.length++] = arguments[i];
     return arr;
@@ -1326,7 +1350,6 @@
     var di = DataIter2(arguments, 2, this);
     if (di) var data = di[0], iter = di[1];
     else var data = d, iter = i;
-    if (_.is_object(iter)) iter = _.c(iter)
 
     for (var i = 0, l = getLength(data); i < l; i++)
       if (iter(data[i], i, data)) return i;
@@ -1339,7 +1362,6 @@
     var di = DataIter2(arguments, 2, this);
     if (di) var data = di[0], iter = di[1];
     else var data = d, iter = i;
-    if (_.is_object(iter)) iter = _.c(iter)
 
     for(var i = getLength(data) - 1; i >= 0; i--)
       if (iter(data[i], i, data)) return i;
@@ -1432,8 +1454,8 @@
     } else {
       var keys = _.wrap_arr(iter), l = keys.length;
       while (++i < l) {
-        var key = keys[i], val = data[key];
-        if (val) res[key] = val;
+        var key = keys[i];
+        if (key in data) res[key] = data[key];
       }
     }
     return res;
