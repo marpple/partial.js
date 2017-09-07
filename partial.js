@@ -1,4 +1,4 @@
-// Partial.js 1.0.3
+// Partial.js 1.0.4
 // Project Lead - Indong Yoo
 // Maintainers - Piljung Park, Hanah Choi
 // Contributors - Joeun Ha, Byeongjin Kim, Jeongik Park
@@ -1528,13 +1528,16 @@
     var space_length = snt.replace(/\t/g, "").length;
     return space_length / TAB_SIZE + tab_length;
   }
-  window.__ptf_storage = {};
   function s(convert, var_names/*, source...*/) {
+    function __PTFS__() {
+      arguments[arguments.length++] = __PTFS__;
+      return _.go(_.mr(source, arguments, self), insert_datas1, insert_datas2, _.idtt);
+    }
     var source = remove_comment(_.map(_.rest(arguments, 2), function(str_or_func) {
       if (_.isString(str_or_func)) return str_or_func;
-      var key = _.uniqueId("func");
-      window.__ptf_storage[key] = str_or_func;
-      return '__ptf_storage.' + key;
+      var key = _.uniqueId("f");
+      __PTFS__[key] = str_or_func;
+      return '__PTFS__.' + key;
     }).join(""));
 
     var self = { matcher: {} };
@@ -1542,14 +1545,12 @@
     source = source.replace(s_matcher_reg1, "__PJT__");
     self.matcher[s_matcher_reg2] = s_matcher(2, s_matcher_reg2, source, var_names);
     source = convert(source.replace(s_matcher_reg2, "{{}}").replace(/__PJT__/g, "{{{}}}"));
-
-    return function() {
-      return _.go(_.mr(source, arguments, self), insert_datas1, insert_datas2, _.idtt);
-    }
+    return __PTFS__;
   }
   function s_matcher(length, re, source, var_names) {
     return map(source.match(re), function(matched) {
-      return new Function(var_names, "return " + matched.substring(length, matched.length-length) + ";");
+      return new Function(var_names + (var_names ? ', ' : '') + '__PTFS__',
+        "return " + matched.substring(length, matched.length-length) + ";");
     });
   }
   function remove_comment(source) {

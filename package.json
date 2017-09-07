@@ -1,6 +1,6 @@
 {
   "name": "partial-js",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "functional javascript.",
   "main": "partial.js",
   "keywords": [
