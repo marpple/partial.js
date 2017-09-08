@@ -1,4 +1,4 @@
-// Partial.js 1.0.4
+// Partial.js 1.0.5
 // Project Lead - Indong Yoo
 // Maintainers - Piljung Park, Hanah Choi
 // Contributors - Joeun Ha, Byeongjin Kim, Jeongik Park
@@ -1530,7 +1530,10 @@
   }
   function s(convert, var_names/*, source...*/) {
     function __PTFS__() {
-      arguments[arguments.length++] = __PTFS__;
+      var l = arguments.length;
+      while (l--) arguments[l+1] = arguments[l];
+      arguments.length++;
+      arguments[0] = __PTFS__;
       return _.go(_.mr(source, arguments, self), insert_datas1, insert_datas2, _.idtt);
     }
     var source = remove_comment(_.map(_.rest(arguments, 2), function(str_or_func) {
@@ -1549,7 +1552,7 @@
   }
   function s_matcher(length, re, source, var_names) {
     return map(source.match(re), function(matched) {
-      return new Function(var_names + (var_names ? ', ' : '') + '__PTFS__',
+      return new Function('__PTFS__' + (var_names ? ', ' : '') + var_names,
         "return " + matched.substring(length, matched.length-length) + ";");
     });
   }
