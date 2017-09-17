@@ -719,7 +719,7 @@ Partial.js는 함수 스타일의 템플릿 엔진으로 함수 실행, 코드 �
 
 ### Jade 스타일 문법 지원
 
-Partial.js의 템플릿 함수 종류에는 인자를 여러 개 받아 사용할 수 있는 `_.template`, 인자를 `$`로 한 개만 받아 사용하는 `_.template$`, 배열을 받아 반복 시킨 문자열을 만드는 `_.template.each` 등이 있습니다. `_.template` 시리즈는 모두 Jade 스타일의 문법을 지원하며, 짧은 이름으로 `_.t`, `_.t$`, `_.teach`, `_.teach$`로 사용 가능합니다.
+Partial.js의 템플릿 함수 종류에는 인자를 여러 개 받아 사용할 수 있는 `_.template`, 인자를 `$`로 한 개만 받아 사용하는 `_.template$` 등이 있습니다. `_.template` 시리즈는 모두 Jade 스타일의 문법을 지원하며, 짧은 이름인 `_.t`, `_.t$`로 사용 가능합니다.
 
 ```html
 <script>
@@ -797,7 +797,7 @@ _.go(
 
 ### 일반 HTML 전용 _.string
 
-일반 HTML만 사용할 때는 Jade 파싱 절차가 생략되는 `_.string`, `_.string$`, `_.seach`, `_.seach$` 등을 사용하는 것이 좋습니다.
+일반 HTML만 사용할 때는 Jade 파싱 절차가 생략되는 `_.string`, `_.string$`, `_.s`, `_.s$` 등을 사용하는 것이 좋습니다.
 
 ```html
 <script>
@@ -914,6 +914,11 @@ Partial.js의 {{}}에서는 표현식을 자유롭게 사용할 수 있으므로
 
 ```html
 <script>
+_.sum([1, 2, 3], function(v) {
+  return v * 10;
+});
+// 60
+
 var users = [
   { name: "Cojamm", age: 32 },
   { name: "JIP", age: 31 }
