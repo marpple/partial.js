@@ -908,9 +908,9 @@ $('body').append(
 
 위와 같이 코딩하면 두 줄 이상의 코드도 실행이 가능하고 중첩 따옴표 등의 문제로부터 자유로워집니다. 아무 함수나 실행 가능하고 아무 메서드나 실행 가능합니다. 전역에 선언된 함수나, 인자로 넘긴 함수나, 미리 익명 함수 등으로 선언한 함수도 사용이 가능하며, 클로저, 스코프 등의 특성도 모두 이용이 가능합니다. Handlebars 등은 Helper 등록이 까다롭고, 사용하기 불편한 편입니다. Helper 들의 중첩 활용도 지원하지 않고 그것을 해결하고자 한 오픈소스들도 잘 동작하지 않아 사용이 어렵습니다.
 
-### _.teach
+### _.sum
 
-`_.teach`와 `_.seach`는 `_.template`, `_.string`의 `each` 버전입니다. 배열을 받아 반복하여 문자열을 합칩니다.
+Partial.js의 {{}}에서는 표현식을 자유롭게 사용할 수 있으므로 Partial.js의 함수인 _.sum을 함께 사용하여 배열을 통해 반복된 문자열을 만들 수 있습니다.
 
 ```html
 <script>
@@ -922,7 +922,7 @@ var users = [
 _.go(users,
   _.template('users', '\
     ul.users\
-      {{_.go(users, ', _.teach('user', '\
+      {{_.sum(users, ', _.t('user', '\
         li.user\
           .name {{user.name}}\
           .age {{user.age}}'), ')}}'),
@@ -946,17 +946,17 @@ _.go(users,
 
 ### 비동기 제어
 
-`_.template`, `_.teach` 등의 템플릿 함수들은 Partial.js의 비동기 제어 콘셉트를 그대로 지원합니다. 중간에 비동기 상황을 만나면 결과를 기다린 후 문자열을 조합합니다.
+템플릿 함수들은 Partial.js의 비동기 제어 콘셉트를 그대로 지원합니다. 중간에 비동기 상황을 만나면 결과를 기다린 후 문자열을 조합합니다.
 
 ```html
 <script>
 _.go(null,
   _.template$('\
     ul.users\
-      {{_.go($.get("/users"), ', _.teach('user', '\
+      {{_.go($.get("/users"), ', _.sum(_.t('user', '\
         li.user\
           .name {{user.name}}\
-          .age {{user.age}}'), ')}}'),
+          .age {{user.age}}')), ')}}'),
   function(html) {
     $('body').append(html)
   });
