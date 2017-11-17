@@ -471,7 +471,7 @@ console.log(_.pluck(users, 'age'));
 // [32, 25, 32, 28, 27]
 ```
 
-`sortedUsers`는 새로운 객체입니다. `sortedUsers`는 나이순으로 정렬이 되었는데, `users`는 원본 그대로 유지됩니다. 다른 곳에서 `users`에 의존하느 ㄴ곳이 있다면 `sortedUsers`처럼 새로운 객체를 만들어 정렬을 하는 방식이 부수효과가 없고 유리합니다.
+`sortedUsers`는 새로운 객체입니다. `sortedUsers`는 나이순으로 정렬이 되었는데, `users`는 원본 그대로 유지됩니다. 다른 곳에서 `users`에 의존하는 곳이 있다면 `sortedUsers`처럼 새로운 객체를 만들어 정렬을 하는 방식이 부수효과가 없고 유리합니다.
 
 `sortedUsers`는 새로운 값이지만 배열안의 값은 기존 값을 공유합니다.
 
