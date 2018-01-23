@@ -1,4 +1,4 @@
-// Partial.js 1.1.0
+// Partial.js 1.1.1
 // Project Lead - Indong Yoo
 // Maintainers - Piljung Park, Hanah Choi
 // Contributors - Joeun Ha, Byeongjin Kim, Jeongik Park
@@ -296,6 +296,7 @@
 
   _.if = _.If = function(predi, fn) {
     var store = [fn ? [predi, fn] : [_.identity, predi]];
+    G.console && console.warn("_.if 함수는 곧 _.if2로 대체될 예정입니다.");
     return _.extend(If, {
       else_if: elseIf,
       elseIf: elseIf,
@@ -303,12 +304,35 @@
     });
     function elseIf(predi, fn) { return store.push(fn ? [predi, fn] : [_.identity, predi]) && If; }
     function If() {
-      var context = this, args = arguments;
+      var args = arguments;
       return _.go.call(this, store,
-        _(_.find, _, function(fnset) { return fnset[0].apply(context, args); }),
-        function(fnset) { return fnset ? fnset[1].apply(context, args) : void 0; });
+        _.find(function(fnset) { return fnset[0].apply(this, args); }),
+        function(fnset) { return fnset ? fnset[1].apply(this, args) : void 0; });
     }
   };
+
+  _.if2 = _.If2 = function() {
+    var predi = _.pipe.apply(this, arguments);
+    return function() {
+      var store = [[predi, _.pipe.apply(this, arguments)]];
+      return _.extend(If, {
+        else_if: elseIf,
+        elseIf: elseIf,
+        else: function() { return store.push([_.constant(true), _.pipe.apply(this, arguments)]) && If; }
+      });
+      function elseIf() {
+        var predi = _.pipe.apply(this, arguments);
+        return function() { return store.push([predi, _.pipe.apply(this, arguments)]) && If; };
+      }
+      function If() {
+        var args = arguments;
+        return _.go.call(this, store,
+          _.find(function(fnset) { return fnset[0].apply(this, args); }),
+          function(fnset) { return fnset ? fnset[1].apply(this, args) : void 0; });
+      }
+    };
+  };
+
   _.or = function() {
     var fns = arguments;
     return function() {
@@ -345,7 +369,7 @@
   _.loge = window.console && window.console.error ? console.error.bind ? console.error.bind(console) : function() { console.error.apply(console, arguments); } : _.idtt;
   _.Err = function(message) { return new Error(message); };
   _.hi = _.tap(_.log);
-  _.Hi = function(pre) { return _(_.log, pre); };
+  _.Hi = function(pre) { return _.tap(_(_.log, pre))};
 
   _.f = function(nodes) {
     var f = _.val(window, nodes);
@@ -734,7 +758,7 @@
 
   _.cmap = collf(null, function(data, iter, ks, evd, i, l, k) {
     if (!l) return _.aidtt([]);
-    var res = [];
+    var res = i == 0 ? [evd] : [];
     while (++i < l) res[i] = iter(data[k = ks ? ks[i] : i], k, data);
     return _.map(res, _.aidtt);
   });
