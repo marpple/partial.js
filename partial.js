@@ -312,17 +312,17 @@
   };
 
   _.if2 = _.If2 = function() {
-    var predi = _.pipe.apply(this, arguments);
+    var predi = _.pipe(arguments);
     return function() {
-      var store = [[predi, _.pipe.apply(this, arguments)]];
+      var store = [[predi, _.pipe(arguments)]];
       return _.extend(If, {
         else_if: elseIf,
         elseIf: elseIf,
-        else: function() { return store.push([_.constant(true), _.pipe.apply(this, arguments)]) && If; }
+        else: function() { return store.push([_.constant(true), _.pipe(arguments)]) && If; }
       });
       function elseIf() {
         var predi = _.pipe.apply(this, arguments);
-        return function() { return store.push([predi, _.pipe.apply(this, arguments)]) && If; };
+        return function() { return store.push([predi, _.pipe(arguments)]) && If; };
       }
       function If() {
         var args = arguments;
