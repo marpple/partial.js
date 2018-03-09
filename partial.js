@@ -1,4 +1,4 @@
-// Partial.js 1.1.3
+// Partial.js 1.1.4
 // Project Lead - Indong Yoo
 // Maintainers - Piljung Park, Hanah Choi
 // Contributors - Joeun Ha, Byeongjin Kim, Jeongik Park
