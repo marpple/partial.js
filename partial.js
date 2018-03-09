@@ -260,16 +260,23 @@
     var f = __(arguments);
     return f.__catch_pipe = true, f;
   };
-
   _.all2 = function(args) {
-    var res = [], tmp;
-    for (var i = 1, l = arguments.length; i < l; i++) {
-      tmp = _.is_mr(args) ?
-        arguments[i].apply(this == _ ? null : this, args) : arguments[i].call(this == _ ? null : this, args);
+    var res = [], tmp, i = 0, al = arguments.length, thiz = this == _ ? null : this;
+    while (++i < al) {
+      tmp = arguments[i][_.is_mr(args) ? 'apply' : 'call'](thiz, args);
       if (_.is_mr(tmp)) for (var j = 0, l = tmp.length; j < l; j++) res.push(tmp[j]);
       else res.push(tmp);
     }
     return to_mr(res);
+  };
+  _.all = _.All = function(arg) {
+    var fns = [], count = -1;
+    if (_.is_number(arg))
+      return function f() { return ++count < arg ? (fns.push(_.pipe(arguments)), f) : _.all2.apply(this, [to_mr(arguments)].concat(fns)) };
+    fns = _.last(arguments);
+    if (_.is_array(fns)) return _.all2.apply(this, [to_mr(arg)].concat(fns));
+    fns = _.to_array(arguments);
+    return function() { return _.all2.apply(this, [to_mr(arguments)].concat(fns)) }
   };
   _.spread2 = function(args) {
     var fns = _.rest(arguments, 1), res = [], tmp;
@@ -280,12 +287,6 @@
       else res.push(tmp);
     }
     return to_mr(res);
-  };
-  _.all = _.All = function() {
-    var fns = _.last(arguments);
-    if (_.isArray(fns)) return _.all2.apply(this, [to_mr(_.initial(arguments))].concat(fns));
-    fns = _.toArray(arguments);
-    return function() { return _.all2.apply(this, [to_mr(arguments)].concat(fns)); };
   };
   _.spread = _.Spread = function() {
     var fns = _.last(arguments);
@@ -336,12 +337,13 @@
   _.or = function() {
     var fns = arguments;
     return function() {
+      var args = to_mr(arguments);
       return function f(res, i) {
         if (i == fns.length) return;
         return _.go(res, fns[i], function(res) {
-          return res || _.go(mr(res, i+1), f);
+          return res || f(args, i+1);
         });
-      }(to_mr(arguments), 0);
+      }(args, 0);
     }
   };
 
@@ -483,11 +485,15 @@
   }(0);
 
   _.wait = function(t) {
-    return _.callback(function() {
-      var args = arguments, cb = args[args.length-1];
-      args.length--;
-      setTimeout(function() { cb.apply(null, args); }, t || 0);
-    });
+    return function() {
+      var args = arguments;
+      return _.go(new Promise(function(resolve) {
+          setTimeout(resolve, t || 0);
+        }),
+        function() {
+          return _.to_mr(arguments);
+        })
+    };
   };
   _.delay = function(func, wait) {
     var args = slice.call(arguments, 2);
@@ -667,13 +673,30 @@
 
     if (str.indexOf('#') == 0)
       return lambda[str] = function(id) { return function($) { return $.id == id; } }(parseInt(str.substr(1)));
-    if (!str.match(/=>/))
-      return lambda[str] = new Function('$', 'return (' + str + ')');
+
+    if (!str.match(/=>/)) return lambda[str] = new Function(lamda_make_$args_str(str), 'return (' + str + ')');
+
     if (has_lambda) return lambda[str] = eval(str); // es6 lambda
     var ex_par = str.split(/\s*=>\s*/);
     return lambda[str] = new Function(
       ex_par[0].replace(/(?:\b[A-Z]|\.[a-zA-Z_$])[a-zA-Z_$\d]*|[a-zA-Z_$][a-zA-Z_$\d]*\s*:|this|arguments|'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"/g, '').match(/([a-z_$][a-z_$\d]*)/gi) || [],
       'return (' + ex_par[1] + ')');
+  }
+
+  function lamda_make_$args_str(str) {
+    return _.go(
+      str.match(/\$\d*/g),
+      _.map(function(v) { return v.slice(1) }),
+      _.max,
+      function(num_args) {
+        if (num_args == "" || num_args == undefined) return '$';
+        return _.go(
+          _.range(2, parseInt(num_args)+1),
+          _.reduce(function(m, v) {
+            return m + ', $' + v;
+          }, "$")
+        )
+      });
   }
 
   function bexdf(setter, args) {
@@ -1602,7 +1625,10 @@
       return _.select(_box_data, make_sel(el));
     }
     function make_sel(el) {
-      return _.isString(el) ? el : function(el){
+      return _.isString(el) ? function(el) {
+        if (el.indexOf('./') < 0) return el;
+        return make_sel(document.querySelector('[_sel="' + el + '"]'));
+      }(el) : function(el){
         try {
           var selector = el.getAttribute('_sel').trim();
           if (selector.indexOf('./') < 0) return selector;
@@ -1770,7 +1796,7 @@
     try {
       if (val && val instanceof Promise) finale(_.extend({ _state: 3, _value: val }));
       else if (val && typeof val.then == 'function') tryp(_.bind(val.then, val), self);
-      else finale(_.extend({ _state: 1, _value: val }));
+      else finale(_.extend(self, { _state: 1, _value: val }));
     } catch (e) { reject(self, e); }
   }
   function reject(self, val) {
