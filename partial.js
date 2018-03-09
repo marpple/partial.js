@@ -1794,7 +1794,7 @@
   }
   function resovle(self, val) {
     try {
-      if (val && val instanceof Promise) finale(_.extend({ _state: 3, _value: val }));
+      if (val && val instanceof Promise) finale(_.extend(self, { _state: 3, _value: val }));
       else if (val && typeof val.then == 'function') tryp(_.bind(val.then, val), self);
       else finale(_.extend(self, { _state: 1, _value: val }));
     } catch (e) { reject(self, e); }
