@@ -471,7 +471,7 @@ console.log(_.pluck(users, 'age'));
 // [32, 25, 32, 28, 27]
 ```
 
-`sortedUsers`는 새로운 객체입니다. `sortedUsers`는 나이순으로 정렬이 되었는데, `users`는 원본 그대로 유지됩니다. 다른 곳에서 `users`에 의존하느 ㄴ곳이 있다면 `sortedUsers`처럼 새로운 객체를 만들어 정렬을 하는 방식이 부수효과가 없고 유리합니다.
+`sortedUsers`는 새로운 객체입니다. `sortedUsers`는 나이순으로 정렬이 되었는데, `users`는 원본 그대로 유지됩니다. 다른 곳에서 `users`에 의존하는 곳이 있다면 `sortedUsers`처럼 새로운 객체를 만들어 정렬을 하는 방식이 부수효과가 없고 유리합니다.
 
 `sortedUsers`는 새로운 값이지만 배열안의 값은 기존 값을 공유합니다.
 
@@ -719,7 +719,7 @@ Partial.js는 함수 스타일의 템플릿 엔진으로 함수 실행, 코드 �
 
 ### Jade 스타일 문법 지원
 
-Partial.js의 템플릿 함수 종류에는 인자를 여러 개 받아 사용할 수 있는 `_.template`, 인자를 `$`로 한 개만 받아 사용하는 `_.template$`, 배열을 받아 반복 시킨 문자열을 만드는 `_.template.each` 등이 있습니다. `_.template` 시리즈는 모두 Jade 스타일의 문법을 지원하며, 짧은 이름으로 `_.t`, `_.t$`, `_.teach`, `_.teach$`로 사용 가능합니다.
+Partial.js의 템플릿 함수 종류에는 인자를 여러 개 받아 사용할 수 있는 `_.template`, 인자를 `$`로 한 개만 받아 사용하는 `_.template$` 등이 있습니다. `_.template` 시리즈는 모두 Jade 스타일의 문법을 지원하며, 짧은 이름인 `_.t`, `_.t$`로 사용 가능합니다.
 
 ```html
 <script>
@@ -797,7 +797,7 @@ _.go(
 
 ### 일반 HTML 전용 _.string
 
-일반 HTML만 사용할 때는 Jade 파싱 절차가 생략되는 `_.string`, `_.string$`, `_.seach`, `_.seach$` 등을 사용하는 것이 좋습니다.
+일반 HTML만 사용할 때는 Jade 파싱 절차가 생략되는 `_.string`, `_.string$`, `_.s`, `_.s$` 등을 사용하는 것이 좋습니다.
 
 ```html
 <script>
@@ -908,12 +908,17 @@ $('body').append(
 
 위와 같이 코딩하면 두 줄 이상의 코드도 실행이 가능하고 중첩 따옴표 등의 문제로부터 자유로워집니다. 아무 함수나 실행 가능하고 아무 메서드나 실행 가능합니다. 전역에 선언된 함수나, 인자로 넘긴 함수나, 미리 익명 함수 등으로 선언한 함수도 사용이 가능하며, 클로저, 스코프 등의 특성도 모두 이용이 가능합니다. Handlebars 등은 Helper 등록이 까다롭고, 사용하기 불편한 편입니다. Helper 들의 중첩 활용도 지원하지 않고 그것을 해결하고자 한 오픈소스들도 잘 동작하지 않아 사용이 어렵습니다.
 
-### _.teach
+### _.sum
 
-`_.teach`와 `_.seach`는 `_.template`, `_.string`의 `each` 버전입니다. 배열을 받아 반복하여 문자열을 합칩니다.
+Partial.js의 {{}}에서는 표현식을 자유롭게 사용할 수 있으므로 Partial.js의 함수인 _.sum을 함께 사용하여 배열을 통해 반복된 문자열을 만들 수 있습니다.
 
 ```html
 <script>
+_.sum([1, 2, 3], function(v) {
+  return v * 10;
+});
+// 60
+
 var users = [
   { name: "Cojamm", age: 32 },
   { name: "JIP", age: 31 }
@@ -922,7 +927,7 @@ var users = [
 _.go(users,
   _.template('users', '\
     ul.users\
-      {{_.go(users, ', _.teach('user', '\
+      {{_.sum(users, ', _.t('user', '\
         li.user\
           .name {{user.name}}\
           .age {{user.age}}'), ')}}'),
@@ -946,17 +951,17 @@ _.go(users,
 
 ### 비동기 제어
 
-`_.template`, `_.teach` 등의 템플릿 함수들은 Partial.js의 비동기 제어 콘셉트를 그대로 지원합니다. 중간에 비동기 상황을 만나면 결과를 기다린 후 문자열을 조합합니다.
+템플릿 함수들은 Partial.js의 비동기 제어 콘셉트를 그대로 지원합니다. 중간에 비동기 상황을 만나면 결과를 기다린 후 문자열을 조합합니다.
 
 ```html
 <script>
 _.go(null,
   _.template$('\
     ul.users\
-      {{_.go($.get("/users"), ', _.teach('user', '\
+      {{_.go($.get("/users"), ', _.sum(_.t('user', '\
         li.user\
           .name {{user.name}}\
-          .age {{user.age}}'), ')}}'),
+          .age {{user.age}}')), ')}}'),
   function(html) {
     $('body').append(html)
   });
