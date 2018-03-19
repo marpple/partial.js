@@ -43,7 +43,7 @@ _.go(fetch('/api/products'),
 
 ##### npm:
 ```shell
-$ npm intall --save partial-js
+$ npm install --save partial-js
 ```
 
 ##### Node.js에서:
