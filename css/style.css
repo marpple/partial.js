@@ -122,6 +122,12 @@ star:before {
   content: "\f005";
   color: #ffc660;
 }
+li.star:after {
+  font-family: FontAwesome;
+  font-size: 12px;
+  content: "\f005";
+  color: #ffc660;
+}
 html,
 body,
 #container {
