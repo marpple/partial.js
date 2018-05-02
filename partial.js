@@ -708,8 +708,12 @@
   function setter(r, s) { for (var key in s) r[key] = s[key]; }
   function dsetter(r, s) { for (var key in s) if (!_.has(r, key)) r[key] = s[key]; }
 
-  _.extend = function() { return bexdf(setter, arguments); };
-  _.defaults = function() { return bexdf(dsetter, arguments); };
+  _.extend = function f(a) {
+    return arguments.length == 1 ? _.partial(f, _, a) : bexdf(setter, arguments);
+  };
+  _.defaults = function f(a) {
+    return arguments.length == 1 ? _.partial(f, _, a) : bexdf(dsetter, arguments);
+  };
 
   function flat(new_arr, arr, noDeep, start) {
     each(arr, function(v) {
