@@ -1,4 +1,4 @@
-// Partial.js 1.1.4
+// Partial.js 1.1.6
 // Project Lead - Indong Yoo
 // Maintainers - Piljung Park, Hanah Choi
 // Contributors - Joeun Ha, Byeongjin Kim, Jeongik Park
@@ -1147,13 +1147,13 @@
   };
 
   // async not supported
-  _.find_i = _.findIndex = collf(function(data, iter, X, X, i, l) {
+  _.find_i = _.findIndex = collf(function(data, iter, X, X_, i, l) {
     while (++i < l) if (iter(data[i], i, data)) return i;
     return -1;
   });
 
   // async not supported
-  _.findLastIndex = _.find_last_i = collf(function(data, iter, X, X, X, l) {
+  _.findLastIndex = _.find_last_i = collf(function(data, iter, X, X_, X__, l) {
     while (l--) if (iter(data[l], l, data)) return l;
     return -1;
   });
