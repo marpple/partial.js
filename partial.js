@@ -1,4 +1,4 @@
-// Partial.js 1.1.7
+// Partial.js 1.1.8
 // Respect Underscore.js
 // (c) 2015-2017 Marpple. MIT Licensed.
 !function(G) {
@@ -9,12 +9,13 @@
     window._previous_underscore = function() { return prev_ };
   window._partial_namespace = function() { return _ };
 
-  _.partial = _; function _(fn) {
+  _.partial = _;
+  function _(fn) {
     if (_.isString(fn)) return _.method.apply(null, arguments);
     var args1 = [], args3, len = arguments.length, ___idx = len;
     for (var i = 1; i < len; i++) {
       var arg = arguments[i];
-      if (arg == ___ && (___idx = i) && (args3 = [])) continue;
+      if (arg === ___ && (___idx = i) && (args3 = [])) continue;
       if (i < ___idx) args1.push(arg);
       else args3.push(arg);
     }
@@ -26,20 +27,20 @@
   function _to_unde(args1, args2, args3) {
     if (args2) args1 = args1.concat(args2);
     if (args3) args1 = args1.concat(args3);
-    for (var i = 0, len = args1.length; i < len; i++) if (args1[i] == _) args1[i] = undefined;
+    for (var i = 0, len = args1.length; i < len; i++) if (args1[i] === _) args1[i] = undefined;
     return args1;
   }
   function merge_args(args1, args2, args3) {
     if (!args2.length) return args3 ? _to_unde(args1, args3) : _to_unde(_.clone(args1));
     var n_args1 = _.clone(args1), args2 = _.to_array(args2), i = -1, l = n_args1.length;
-    while (++i < l) if (n_args1[i] == _) n_args1[i] = args2.shift();
+    while (++i < l) if (n_args1[i] === _) n_args1[i] = args2.shift();
     if (!args3) return _to_unde(n_args1, args2.length ? args2 : undefined);
     var n_arg3 = _.clone(args3), i = n_arg3.length;
     if (args2.length) {
-      while (i--) if (n_arg3[i] == _) n_arg3[i] = args2.pop();
+      while (i--) if (n_arg3[i] === _) n_arg3[i] = args2.pop();
       return _to_unde(n_args1, args2, n_arg3);
     }
-    while (i-- && n_arg3[i] == _) n_arg3.pop();
+    while (i-- && n_arg3[i] === _) n_arg3.pop();
     return _to_unde(n_args1, n_arg3);
   }
   _.m = _.method = function(method) {
@@ -156,7 +157,7 @@
     var fs = typeof _fs == 'function' ? arguments : _fs;
     return function() {
       arguments.__mr = true;
-      return this == window || this == _ ? _.go(arguments, fs) : goapply(this, arguments, fs);
+      return this === window || this === _ ? _.go(arguments, fs) : goapply(this, arguments, fs);
     }
   }
   _.indent = ___; function ___(_fs) {
@@ -182,7 +183,7 @@
     }
   };
 
-  _.go.async = function(v) { return go_async(_.go == this ? null : this, v, arguments, 1); };
+  _.go.async = function(v) { return go_async(_.go === this ? null : this, v, arguments, 1); };
   __.async = function(_fs) {
     var fs = _.is_fn(_fs) ? arguments : _fs;
     function f() { return go_async(this, to_mr(arguments), fs, 0); }
@@ -265,7 +266,7 @@
     return f.__catch_pipe = true, f;
   };
   _.all2 = function(args) {
-    var res = [], tmp, i = 0, al = arguments.length, thiz = this == _ ? null : this;
+    var res = [], tmp, i = 0, al = arguments.length, thiz = this === _ ? null : this;
     while (++i < al) {
       tmp = arguments[i][_.is_mr(args) ? 'apply' : 'call'](thiz, args);
       if (_.is_mr(tmp)) for (var j = 0, l = tmp.length; j < l; j++) res.push(tmp[j]);
@@ -286,7 +287,7 @@
     var fns = _.rest(arguments, 1), res = [], tmp;
     for (var i = 0, fl = fns.length, al = args.length; i < fl || i < al; i++) {
       tmp = _.is_mr(args[i]) ?
-        (fns[i] || _.idtt).apply(this == _ ? null : this, args[i]) : (fns[i] || _.idtt).call(this == _ ? null : this, args[i]);
+        (fns[i] || _.idtt).apply(this === _ ? null : this, args[i]) : (fns[i] || _.idtt).call(this === _ ? null : this, args[i]);
       if (_.is_mr(tmp)) for (var j = 0, l = tmp.length; j < l; j++) res.push(tmp[j]);
       else res.push(tmp);
     }
