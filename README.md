@@ -1,3 +1,6 @@
+# This package has been deprecated
+partialjs는 더이상 업데이트하거나 운영하지 않습니다. ES6+ 기반 함수형 라이브러리인 [fxjs](https://github.com/marpple/FxJS)를 사용해주세요.
+
 # Functional Javascript Library - Partial.js
 
 [Site](https://marpple.github.io/partial.js) |
